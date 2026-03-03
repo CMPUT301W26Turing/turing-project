@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <ImageView
+        android:id="@+id/profilePicture"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:src="@drawable/default_profile_icon"
+        android:scaleType="centerCrop"
+        android:contentDescription="@string/profile_picture"
+        app:shapeAppearanceOverlay="@style/CircleImageView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <TextView
+        android:id="@+id/greetingMessage"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Hello,"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toEndOf="@id/profilePicture"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <TextView
+        app:id="@+id/greetingSubtext"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Ready for your next win?"
+        android:textSize="12sp"
+        app:layout_constraintTop_toBottomOf="@id/greetingMessage"
+        app:layout_constraintStart_toEndOf="@id/profilePicture"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/standardNotificationButton"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        app:icon="@drawable/notification_icon"
+        app:iconTint="@color/primaryIcon"
+        app:iconSize="32dp"
+        style="@style/CircularButtonStyleIconOnly"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/activeLotteries"
+        android:layout_width="160dp"
+        android:layout_height="140dp"
+        android:text="#TODO"
+        app:icon="@drawable/placeholder_image"
+        app:iconTint="@color/primaryIcon"
+        app:iconGravity="top"
+        app:layout_constraintTop_toBottomOf="@+id/profilePicture"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/upcomingLotteries"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/upcomingLotteries"
+        android:layout_width="160dp"
+        android:layout_height="140dp"
+        style="@style/DefaultButtonLook"
+        app:icon="@drawable/placeholder_image"
+        app:iconTint="@color/primaryIcon"
+        app:layout_constraintTop_toBottomOf="@+id/profilePicture"
+        app:layout_constraintStart_toEndOf="@id/activeLotteries"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <TextView
+        android:id="@+id/quickActions"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Quick Actions"
+        android:textSize="18sp"
+        app:layout_constraintTop_toBottomOf="@id/activeLotteries"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <ScrollView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="0dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/quickActions"
+        app:layout_constraintEnd_toEndOf="parent">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/joinByQrCode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Join by QR Code"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/browseEvents"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Browse Events"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/myNotifications"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="My Notifications"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/myHistory"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="My History"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/myProfile"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="My Profile"/>
+
+        </LinearLayout>
+    </ScrollView>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
