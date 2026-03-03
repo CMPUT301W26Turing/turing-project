@@ -6,4 +6,9 @@
     <color name="primaryBackground">#F8F9FC</color>
     <color name="primaryIcon">#475569</color>
     <color name="secondaryIcon">#1337ec</color>
+    <color name="headerText">#474747</color>
+    <color name="headerSubtext">#9497A4</color>
+    <color name="secondaryBackground">#D4D8E9</color>
+    <color name="tertiaryBackground">#E7E7E7</color>
+    <color name="darkIconTint">#646464</color>
 </resources>
