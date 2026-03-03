@@ -4,18 +4,19 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/primaryBackground"
     android:padding="16dp">
 
     <ImageView
         android:id="@+id/profilePicture"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:src="@drawable/default_profile_icon"
-        android:scaleType="centerCrop"
         android:contentDescription="@string/profile_picture"
-        app:shapeAppearanceOverlay="@style/CircleImageView"
+        android:scaleType="centerCrop"
+        android:src="@drawable/default_profile_icon"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintTop_toTopOf="parent"
+        app:shapeAppearanceOverlay="@style/CircleImageView" />
 
     <TextView
         android:id="@+id/greetingMessage"
@@ -25,7 +26,7 @@
         android:textSize="22sp"
         android:textStyle="bold"
         app:layout_constraintStart_toEndOf="@id/profilePicture"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/greetingSubtext"
@@ -33,60 +34,62 @@
         android:layout_height="wrap_content"
         android:text="Ready for your next win?"
         android:textSize="12sp"
-        app:layout_constraintTop_toBottomOf="@id/greetingMessage"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/profilePicture"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintTop_toBottomOf="@id/greetingMessage" />
 
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/standardNotificationButton"
+        style="@style/CircularButtonStyleIconOnly"
         android:layout_width="32dp"
         android:layout_height="32dp"
         app:icon="@drawable/notification_icon"
-        app:iconTint="@color/primaryIcon"
         app:iconSize="32dp"
-        style="@style/CircularButtonStyleIconOnly"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:iconTint="@color/primaryIcon"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <LinearLayout
         android:id="@+id/passiveText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_horizontal"
         android:layout_marginTop="14dp"
-        app:layout_constraintTop_toBottomOf="@id/profilePicture"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintTop_toBottomOf="@id/profilePicture">
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/activeLotteries"
             android:layout_width="0dp"
-            android:layout_weight="1"
             android:layout_height="110dp"
-            android:layout_marginEnd="8dp">
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="vertical"
                 android:gravity="start"
+                android:orientation="vertical"
                 android:padding="16dp">
 
                 <ImageView
                     android:id="@+id/activeLotteriesIcon"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:src="@drawable/placeholder_image"/>
+                    android:src="@drawable/placeholder_image" />
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Active"/>
+                    android:text="Active" />
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Lotteries"/>
+                    android:text="Lotteries" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -94,28 +97,31 @@
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/upcomingLotteries"
             android:layout_width="0dp"
-            android:layout_weight="1"
             android:layout_height="110dp"
-            android:layout_marginStart="8dp">
+            android:layout_marginStart="8dp"
+            android:layout_weight="1">
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="vertical"
                 android:gravity="start"
+                android:orientation="vertical"
                 android:padding="16dp">
 
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:src="@drawable/placeholder_image"/>
+                    android:src="@drawable/placeholder_image" />
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Upcoming"/>
+                    android:text="Upcoming" />
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Next Draw"/>
+                    android:text="Next Draw" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
@@ -124,20 +130,20 @@
         android:id="@+id/quickActions"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:paddingTop="16dp"
         android:text="Quick Actions"
         android:textSize="18sp"
-        android:paddingTop="16dp"
-        app:layout_constraintTop_toBottomOf="@id/passiveText"
-        app:layout_constraintStart_toStartOf="parent"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/passiveText" />
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:paddingTop="12dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/quickActions"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/quickActions">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -158,34 +164,35 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:gravity="center_vertical"
                     android:orientation="horizontal"
-                    android:padding="16dp"
-                    android:gravity="center_vertical">
+                    android:padding="16dp">
 
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:layout_weight="1">
+                        android:layout_weight="1"
+                        android:orientation="vertical">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Join by QR Code"
-                        android:textStyle="bold"
-                        android:textColor="@color/primaryBlue"/>
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Scan to enter instantly"
-                        android:textColor="@color/primaryBlue"/>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Join by QR Code"
+                            android:textColor="@color/primaryBlue"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Scan to enter instantly"
+                            android:textColor="@color/primaryBlue" />
 
                     </LinearLayout>
 
                     <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:src="@drawable/placeholder_image"/>
+                        android:src="@drawable/placeholder_image" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -202,34 +209,35 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:gravity="center_vertical"
                     android:orientation="horizontal"
-                    android:padding="16dp"
-                    android:gravity="center_vertical">
+                    android:padding="16dp">
 
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:layout_weight="1">
+                        android:layout_weight="1"
+                        android:orientation="vertical">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Browse Events"
-                            android:textStyle="bold"
-                            android:textColor="@color/white"/>
+                            android:textColor="@color/white"
+                            android:textStyle="bold" />
+
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Find new lotteries to join"
-                            android:textColor="@color/white"/>
+                            android:textColor="@color/white" />
 
                     </LinearLayout>
 
                     <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:src="@drawable/placeholder_image"/>
+                        android:src="@drawable/placeholder_image" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -245,32 +253,33 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:gravity="center_vertical"
                     android:orientation="horizontal"
-                    android:padding="16dp"
-                    android:gravity="center_vertical">
+                    android:padding="16dp">
 
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:layout_weight="1">
+                        android:layout_weight="1"
+                        android:orientation="vertical">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="My Notifications"
-                            android:textStyle="bold"/>
+                            android:textStyle="bold" />
+
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Check updates &amp; alerts"/>
+                            android:text="Check updates &amp; alerts" />
 
                     </LinearLayout>
 
                     <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:src="@drawable/placeholder_image"/>
+                        android:src="@drawable/placeholder_image" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -286,32 +295,33 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:gravity="center_vertical"
                     android:orientation="horizontal"
-                    android:padding="16dp"
-                    android:gravity="center_vertical">
+                    android:padding="16dp">
 
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:layout_weight="1">
+                        android:layout_weight="1"
+                        android:orientation="vertical">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="My History"
-                            android:textStyle="bold"/>
+                            android:textStyle="bold" />
+
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Review past participation"/>
+                            android:text="Review past participation" />
 
                     </LinearLayout>
 
                     <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:src="@drawable/placeholder_image"/>
+                        android:src="@drawable/placeholder_image" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -327,32 +337,33 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:gravity="center_vertical"
                     android:orientation="horizontal"
-                    android:padding="16dp"
-                    android:gravity="center_vertical">
+                    android:padding="16dp">
 
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:layout_weight="1">
+                        android:layout_weight="1"
+                        android:orientation="vertical">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="My Profile"
-                            android:textStyle="bold"/>
+                            android:textStyle="bold" />
+
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Manage account settings"/>
+                            android:text="Manage account settings" />
 
                     </LinearLayout>
 
                     <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:src="@drawable/placeholder_image"/>
+                        android:src="@drawable/placeholder_image" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
