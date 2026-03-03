@@ -1,21 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/primaryBackground"
     android:padding="16dp">
 
     <ImageView
         android:id="@+id/profilePicture"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:src="@drawable/default_profile_icon"
-        android:scaleType="centerCrop"
         android:contentDescription="@string/profile_picture"
-        app:shapeAppearanceOverlay="@style/CircleImageView"
+        android:scaleType="centerCrop"
+        android:src="@drawable/default_profile_icon"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintTop_toTopOf="parent"
+        app:shapeAppearanceOverlay="@style/CircleImageView" />
 
     <TextView
         android:id="@+id/greetingMessage"
@@ -25,103 +26,346 @@
         android:textSize="22sp"
         android:textStyle="bold"
         app:layout_constraintStart_toEndOf="@id/profilePicture"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        app:id="@+id/greetingSubtext"
+        android:id="@+id/greetingSubtext"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="Ready for your next win?"
         android:textSize="12sp"
-        app:layout_constraintTop_toBottomOf="@id/greetingMessage"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/profilePicture"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintTop_toBottomOf="@id/greetingMessage" />
+
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/standardNotificationButton"
+        style="@style/CircularButtonStyleIconOnly"
         android:layout_width="32dp"
         android:layout_height="32dp"
         app:icon="@drawable/notification_icon"
-        app:iconTint="@color/primaryIcon"
         app:iconSize="32dp"
-        style="@style/CircularButtonStyleIconOnly"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/activeLotteries"
-        android:layout_width="160dp"
-        android:layout_height="140dp"
-        android:text="#TODO"
-        app:icon="@drawable/placeholder_image"
         app:iconTint="@color/primaryIcon"
-        app:iconGravity="top"
-        app:layout_constraintTop_toBottomOf="@+id/profilePicture"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/passiveText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/upcomingLotteries"/>
+        app:layout_constraintTop_toBottomOf="@id/profilePicture">
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/upcomingLotteries"
-        android:layout_width="160dp"
-        android:layout_height="140dp"
-        style="@style/DefaultButtonLook"
-        app:icon="@drawable/placeholder_image"
-        app:iconTint="@color/primaryIcon"
-        app:layout_constraintTop_toBottomOf="@+id/profilePicture"
-        app:layout_constraintStart_toEndOf="@id/activeLotteries"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/activeLotteries"
+            android:layout_width="0dp"
+            android:layout_height="110dp"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="start"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <ImageView
+                    android:id="@+id/activeLotteriesIcon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/placeholder_image" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Active" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Lotteries" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/upcomingLotteries"
+            android:layout_width="0dp"
+            android:layout_height="110dp"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="start"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/placeholder_image" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Upcoming" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Next Draw" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+    </LinearLayout>
 
     <TextView
         android:id="@+id/quickActions"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:paddingTop="16dp"
         android:text="Quick Actions"
         android:textSize="18sp"
-        app:layout_constraintTop_toBottomOf="@id/activeLotteries"
-        app:layout_constraintStart_toStartOf="parent"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/passiveText" />
 
     <ScrollView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="0dp"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:paddingTop="12dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/quickActions"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintTop_toBottomOf="@id/quickActions">
+
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <com.google.android.material.button.MaterialButton
+            <com.google.android.material.card.MaterialCardView
                 android:id="@+id/joinByQrCode"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Join by QR Code"/>
+                android:layout_width="match_parent"
+                android:layout_height="86dp"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="12dp"
+                android:clickable="true"
+                android:focusable="true"
+                app:strokeColor="@color/primaryBlue"
+                app:strokeWidth="2dp">
 
-            <com.google.android.material.button.MaterialButton
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Join by QR Code"
+                            android:textColor="@color/primaryBlue"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Scan to enter instantly"
+                            android:textColor="@color/primaryBlue" />
+
+                    </LinearLayout>
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/placeholder_image" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+
+            <com.google.android.material.card.MaterialCardView
                 android:id="@+id/browseEvents"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Browse Events"/>
+                android:layout_width="match_parent"
+                android:layout_height="86dp"
+                android:layout_marginBottom="12dp"
+                android:backgroundTint="@color/primaryBlue"
+                android:clickable="true"
+                android:focusable="true">
 
-            <com.google.android.material.button.MaterialButton
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Browse Events"
+                            android:textColor="@color/white"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Find new lotteries to join"
+                            android:textColor="@color/white" />
+
+                    </LinearLayout>
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/placeholder_image" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+
+            <com.google.android.material.card.MaterialCardView
                 android:id="@+id/myNotifications"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="My Notifications"/>
+                android:layout_width="match_parent"
+                android:layout_height="86dp"
+                android:layout_marginBottom="12dp"
+                android:clickable="true"
+                android:focusable="true">
 
-            <com.google.android.material.button.MaterialButton
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="My Notifications"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Check updates &amp; alerts" />
+
+                    </LinearLayout>
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/placeholder_image" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+
+            <com.google.android.material.card.MaterialCardView
                 android:id="@+id/myHistory"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="My History"/>
+                android:layout_width="match_parent"
+                android:layout_height="86dp"
+                android:layout_marginBottom="12dp"
+                android:clickable="true"
+                android:focusable="true">
 
-            <com.google.android.material.button.MaterialButton
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="My History"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Review past participation" />
+
+                    </LinearLayout>
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/placeholder_image" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+
+            <com.google.android.material.card.MaterialCardView
                 android:id="@+id/myProfile"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="My Profile"/>
+                android:layout_width="match_parent"
+                android:layout_height="86dp"
+                android:layout_marginBottom="12dp"
+                android:clickable="true"
+                android:focusable="true">
 
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="My Profile"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Manage account settings" />
+
+                    </LinearLayout>
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/placeholder_image" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
     </ScrollView>
 

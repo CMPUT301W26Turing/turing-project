@@ -5,17 +5,27 @@
         <item name="android:windowBackground">@color/primaryBackground</item>
         <item name="android:textColor">@color/black</item>
         <item name="materialButtonStyle">@style/DefaultButtonLook</item>
+        <item name="materialCardViewStyle">@style/DefaultCardLook</item>
     </style>
 
     <style name="Theme.TuringEventLottery" parent="Base.Theme.TuringEventLottery" />
 
-    <style name= "DefaultButtonLook" parent="Widget.Material3.Button">
+    <style name="DefaultButtonLook" parent="Widget.Material3.Button">
         <item name="android:backgroundTint">@color/white</item>
         <item name="android:textColor">@color/black</item>
         <item name="android:textSize">22sp</item>
         <item name="android:paddingLeft">16dp</item>
         <item name="android:paddingRight">16dp</item>
         <item name="cornerRadius">12dp</item>
+    </style>
+
+    <style name="DefaultCardLook" parent="Widget.MaterialComponents.CardView">
+        <item name="android:backgroundTint">@color/white</item>
+        <item name="android:textColor">@color/black</item>
+        <item name="android:textSize">22sp</item>
+        <item name="android:padding">16dp</item>
+        <item name="cornerRadius">12dp</item>
+        <item name="cardElevation">6dp</item>
     </style>
 
     <style name="CircularButtonStyleIconOnly" parent="Widget.Material3.Button">
