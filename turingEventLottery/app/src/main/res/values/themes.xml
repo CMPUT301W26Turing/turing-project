@@ -1,9 +1,33 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
+<resources
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <style name="Base.Theme.TuringEventLottery" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="android:windowBackground">@color/primaryBackground</item>
+        <item name="android:textColor">@color/black</item>
+        <item name="materialButtonStyle">@style/DefaultButtonLook</item>
     </style>
 
     <style name="Theme.TuringEventLottery" parent="Base.Theme.TuringEventLottery" />
+
+    <style name= "DefaultButtonLook" parent="Widget.Material3.Button">
+        <item name="android:backgroundTint">@color/white</item>
+        <item name="android:textColor">@color/black</item>
+        <item name="android:textSize">22sp</item>
+        <item name="android:paddingLeft">16dp</item>
+        <item name="android:paddingRight">16dp</item>
+        <item name="cornerRadius">12dp</item>
+    </style>
+
+    <style name="CircularButtonStyleIconOnly" parent="Widget.Material3.Button">
+        <item name="android:padding">0dp</item>
+        <item name="android:textSize">0sp</item>
+        <item name="cornerRadius">20dp</item>
+        <item name="iconPadding">0dp</item>
+        <item name="backgroundTint">@color/white</item>
+    </style>
+
+    <style name="CircleImageView" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
 </resources>
