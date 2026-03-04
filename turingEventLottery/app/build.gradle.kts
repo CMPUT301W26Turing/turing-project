@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.turing_eventlottery"
-        minSdk = 36
+        minSdk = 24
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
