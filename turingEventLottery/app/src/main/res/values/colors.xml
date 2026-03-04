@@ -4,6 +4,7 @@
     <color name="white">#FFFFFFFF</color>
     <color name="primaryBlue">#1337ec</color>
     <color name="primaryBackground">#F8F9FC</color>
+    <color name="alternateBackground">#F6F6F8</color>
     <color name="primaryIcon">#475569</color>
     <color name="secondaryIcon">#1337ec</color>
     <color name="headerText">#474747</color>

@@ -25,7 +25,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="24dp"
                 android:layout_marginEnd="20dp"
                 android:fontFamily="@font/poppins_semibold"
                 android:text="ORGANIZER DASHBOARD"
@@ -40,7 +40,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
-                android:layout_marginTop="-10dp"
+                android:layout_marginTop="-6dp"
                 android:layout_marginEnd="20dp"
                 android:fontFamily="@font/poppins_semibold"
                 android:text="Welcome back, Name"
@@ -137,13 +137,15 @@
                 app:layout_constraintTop_toBottomOf="@+id/activeLotteriesCard" />
 
             <FrameLayout
-                android:id="@+id/frameLayout"
+                android:id="@+id/createEventCard"
                 android:layout_width="match_parent"
                 android:layout_height="150dp"
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginEnd="20dp"
                 android:background="@drawable/blue_icon_background"
+                android:clickable="true"
+                android:focusable="true"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/textView6">
@@ -212,10 +214,12 @@
                 android:backgroundTint="@color/primaryBackground"
                 android:clickable="true"
                 android:focusable="true"
+                android:checkable="false"
+                app:checkedIconVisible="false"
                 app:cardBackgroundColor="@color/primaryBackground"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/frameLayout">
+                app:layout_constraintTop_toBottomOf="@+id/createEventCard">
 
 
                 <LinearLayout
@@ -280,6 +284,8 @@
                 android:backgroundTint="@color/primaryBackground"
                 android:clickable="true"
                 android:focusable="true"
+                android:checkable="false"
+                app:checkedIconVisible="false"
                 app:cardBackgroundColor="@color/primaryBackground"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -348,6 +354,8 @@
                 android:backgroundTint="@color/primaryBackground"
                 android:clickable="true"
                 android:focusable="true"
+                android:checkable="false"
+                app:checkedIconVisible="false"
                 app:cardBackgroundColor="@color/primaryBackground"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -455,7 +463,6 @@
             app:fabCradleMargin="8dp"
             app:hideOnScroll="true"
             app:fabAlignmentMode="center"
-            app:fabAttached="true"
             app:fabCradleRoundedCornerRadius="28dp"
             app:fabCradleVerticalOffset="10dp"
             app:backgroundTint="@android:color/white">
