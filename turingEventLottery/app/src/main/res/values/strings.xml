@@ -1,4 +1,7 @@
 <resources>
-    <string name="app_name">turing-EventLottery</string>
+    <string name="app_name">EventLottery</string>
     <string name="profile_picture">Profile Picture</string>
+    <string name="titleHeaderSubtext">Simple, fast event signups</string>
+    <string name="who_are_you">Who are you?</string>
+    <string name="select_your_role">Select your role to continue</string>
 </resources>

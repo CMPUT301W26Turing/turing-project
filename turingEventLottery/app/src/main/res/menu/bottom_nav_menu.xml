@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_home"
+        android:icon="@drawable/baseline_home_24"
+        android:title="Home" />
+
+    <item
+        android:id="@+id/nav_events"
+        android:icon="@drawable/outline_calendar_month_24"
+        android:title="Events" />
+
+    <item
+        android:id="@+id/nav_gap"
+        android:enabled="false"
+        android:title="Create"
+        android:icon="@null" />
+
+    <item
+        android:id="@+id/nav_alerts"
+        android:icon="@drawable/baseline_notifications_24"
+        android:title="Alerts" />
+
+    <item
+        android:id="@+id/nav_profile"
+        android:icon="@drawable/baseline_person_24"
+        android:title="Profile" />
+</menu>

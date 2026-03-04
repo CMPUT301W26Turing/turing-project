@@ -12,14 +12,28 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TuringEventLottery">
         <activity
-            android:name=".MainActivity"
+            android:name=".GreetingActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".EntrantActivity"
+            android:exported="false" />
+        <activity
+            android:name=".OrganizerActivity"
+            android:exported="false" />
+        <activity
+            android:name=".CreateEventActivity"
+            android:exported="false" />
+        <activity
+            android:name=".MainActivity"
+            android:exported="false" />
+        <meta-data
+            android:name="preloaded_fonts"
+            android:resource="@array/preloaded_fonts" />
     </application>
 
 </manifest>
