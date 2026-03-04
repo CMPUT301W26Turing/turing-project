@@ -269,7 +269,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:src="@drawable/outline_arrow_forward_ios_24"
-                android:tint="@color/headerSubtext" />
+                app:tint="@color/headerSubtext" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 

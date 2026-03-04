@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -9,6 +10,8 @@
         android:id="@+id/scrollView2"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:paddingBottom="80dp"
+        android:clipToPadding="false"
         tools:layout_editor_absoluteX="1dp"
         tools:layout_editor_absoluteY="1dp">
 
@@ -444,5 +447,44 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
 
+        <com.google.android.material.bottomappbar.BottomAppBar
+            android:id="@+id/bottomAppBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            app:fabCradleMargin="8dp"
+            app:hideOnScroll="true"
+            app:fabAlignmentMode="center"
+            app:fabAttached="true"
+            app:fabCradleRoundedCornerRadius="28dp"
+            app:fabCradleVerticalOffset="10dp"
+            app:backgroundTint="@android:color/white">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+            <com.google.android.material.bottomnavigation.BottomNavigationView
+                android:id="@+id/bottomNav"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:backgroundTint="@android:color/transparent"
+                app:menu="@menu/bottom_nav_menu"
+                app:labelVisibilityMode="labeled"
+                app:itemIconTint="@color/bottom_nav_color"
+                app:itemTextColor="@color/bottom_nav_color"
+                app:itemActiveIndicatorStyle="@style/NavIndicator"/>
+        </com.google.android.material.bottomappbar.BottomAppBar>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabCreate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="Create"
+            android:layout_marginBottom="32dp"
+            android:translationZ="10dp"
+            android:elevation="10dp"
+            android:outlineAmbientShadowColor="@color/primaryBlue"
+            android:outlineSpotShadowColor="@color/primaryBlue"
+            app:srcCompat="@drawable/baseline_add_24"
+            app:layout_anchor="@id/bottomAppBar"
+            app:layout_anchorGravity="center"
+            app:tint="@android:color/white"
+            app:backgroundTint="@color/primaryBlue"/>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
