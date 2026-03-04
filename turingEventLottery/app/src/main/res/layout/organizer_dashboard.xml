@@ -118,7 +118,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:src="@drawable/baseline_confirmation_number_24"
-                            android:tint="@color/primaryBackground" />
+                            app:tint="@color/primaryBackground" />
                     </FrameLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -236,7 +236,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:layout_gravity="center_vertical"
-                            android:tint="@color/primaryBlue"
+                            app:tint="@color/primaryBlue"
                             app:srcCompat="@drawable/outline_calendar_month_24" />
                     </FrameLayout>
 
@@ -266,7 +266,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:src="@drawable/outline_arrow_forward_ios_24"
-                        android:tint="@color/headerSubtext" />
+                        app:tint="@color/headerSubtext" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -304,7 +304,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:layout_gravity="center_vertical"
-                            android:tint="@color/greenIconTint"
+                            app:tint="@color/greenIconTint"
                             app:srcCompat="@drawable/outline_analytics_24" />
                     </FrameLayout>
 
@@ -334,7 +334,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:src="@drawable/outline_arrow_forward_ios_24"
-                        android:tint="@color/headerSubtext" />
+                        app:tint="@color/headerSubtext" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -372,7 +372,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:layout_gravity="center_vertical"
-                            android:tint="@color/orangeIconTint"
+                            app:tint="@color/orangeIconTint"
                             app:srcCompat="@drawable/outline_campaign_24" />
                     </FrameLayout>
 
@@ -402,7 +402,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:src="@drawable/outline_arrow_forward_ios_24"
-                        android:tint="@color/headerSubtext" />
+                        app:tint="@color/headerSubtext" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
