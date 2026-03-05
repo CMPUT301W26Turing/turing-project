@@ -8,7 +8,8 @@ public abstract class User {
     protected final String userId;
     protected String contactInfo;
 
-
+    // Default constructor needed for Firestore deserialization
+    public User() {}
     /**
      * Constructs a new User with the specified user ID and contact information
      * @param userId
