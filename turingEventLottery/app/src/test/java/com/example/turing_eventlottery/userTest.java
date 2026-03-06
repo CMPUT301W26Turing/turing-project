@@ -1,22 +1,20 @@
 package com.example.turing_eventlottery;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 
 import org.junit.Before;
 import org.junit.Test;
 
+import com.example.turing_eventlottery.model.User;
+
 public class userTest {
     private User testUser;
 
-    private static class TestUser extends User {
-        public TestUser(String deviceId, String contactInfo) {
-            super(deviceId, contactInfo);
-        }
-    }
-
     @Before
     public void setUp() {
-        testUser = new TestUser("device123", "test@example.com");
+        testUser = new User("device123", false, false, false);
     }
 
     @Test
@@ -25,13 +23,23 @@ public class userTest {
     }
 
     @Test
-    public void testUserContactInfoMatchesStored() {
-        assertEquals("test@example.com", testUser.getContactInfo());
+    public void testUsersContactInfoIsNull() {
+        assertNull(testUser.getContactInfo());
     }
 
     @Test
     public void testUpdatedContactInfoCorrectlyChanged() {
         testUser.setContactInfo("newemail@example.com");
         assertEquals("newemail@example.com", testUser.getContactInfo());
+    }
+
+    @Test
+    public void testUserIsNotAdminByDefault() {
+        assertFalse(testUser.isAdmin());
+    }
+
+    @Test
+    public void testUserIsNotBannedByDefault() {
+        assertFalse(testUser.isAdmin());
     }
 }
