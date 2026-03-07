@@ -84,12 +84,14 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Active" />
+                    android:text="Active"
+                    android:textColor="@color/headerSubtext"/>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Lotteries" />
+                    android:text="Lotteries"
+                    android:textColor="@color/headerText"/>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -111,17 +113,23 @@
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:src="@drawable/placeholder_image" />
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/outline_calendar_month_24"
+                    android:padding="6dp"
+                    app:tint="@color/orangeIconTint"
+                    android:background="@color/orangeIconBackground"/>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Upcoming" />
+                    android:text="Upcoming"
+                    android:textColor="@color/headerSubtext"/>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Next Draw" />
+                    android:text="Next Draw"
+                    android:textColor="@color/headerText"/>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
@@ -178,6 +186,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Join by QR Code"
+                            android:textSize="18sp"
                             android:textColor="@color/primaryBlue"
                             android:textStyle="bold" />
 
@@ -223,6 +232,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Browse Events"
+                            android:textSize="18sp"
                             android:textColor="@color/white"
                             android:textStyle="bold" />
 
@@ -267,12 +277,15 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="My Notifications"
+                            android:textColor="@color/headerText"
+                            android:textSize="18sp"
                             android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Check updates &amp; alerts" />
+                            android:text="Check updates &amp; alerts"
+                            android:textColor="@color/headerSubtext"/>
 
                     </LinearLayout>
 
@@ -309,12 +322,15 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="My History"
-                            android:textStyle="bold" />
+                            android:textStyle="bold"
+                            android:textColor="@color/headerText"
+                            android:textSize="18sp"/>
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Review past participation" />
+                            android:text="Review past participation"
+                            android:textColor="@color/headerSubtext"/>
 
                     </LinearLayout>
 
@@ -351,12 +367,15 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="My Profile"
-                            android:textStyle="bold" />
+                            android:textStyle="bold"
+                            android:textSize="18sp"
+                            android:textColor="@color/headerText"/>
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Manage account settings" />
+                            android:text="Manage account settings"
+                            android:textColor="@color/headerSubtext"/>
 
                     </LinearLayout>
 
