@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="browse_events_interests_spinner">
+        <item>Interests</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+    </string-array>
+    <string-array name="browse_events_availability_spinner">
+        <item>Availability</item>
+        <item>Open</item>
+        <item>Closing Soon</item>
+    </string-array>
+</resources>
