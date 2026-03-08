@@ -45,7 +45,7 @@ public class EventDetailsView extends AppCompatActivity {
     }
 
     private void displayEvent(Event event) {
-        nameView.setText(event.getEventName());
+        nameView.setText(event.getName());
         locationView.setText(event.getLocation());
         dateTimeView.setText(event.getDate() + " • " + event.getTime());
         descriptionView.setText(event.getDescription());

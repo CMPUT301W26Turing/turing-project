@@ -71,7 +71,6 @@
             android:orientation="vertical"
             android:padding="20dp">
 
-            <!-- Upload Poster Section -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/uploadPosterCard"
                 android:layout_width="match_parent"
@@ -121,7 +120,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Event Details -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -143,6 +141,7 @@
                 app:hintEnabled="false">
 
                 <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/eventNameInput"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="e.g. Summer Lottery Bash"
@@ -170,6 +169,7 @@
                 app:hintEnabled="false">
 
                 <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/eventDescriptionInput"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="top"
@@ -178,7 +178,83 @@
                     android:minLines="3" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Schedule Section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/poppins_semibold"
+                        android:text="Category"
+                        android:textColor="@color/headerText"
+                        android:textSize="14sp" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        app:boxCornerRadiusBottomEnd="12dp"
+                        app:boxCornerRadiusBottomStart="12dp"
+                        app:boxCornerRadiusTopEnd="12dp"
+                        app:boxCornerRadiusTopStart="12dp"
+                        app:hintEnabled="false">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/eventCategoryInput"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="e.g. Music"
+                            android:inputType="text" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/poppins_semibold"
+                        android:text="Location"
+                        android:textColor="@color/headerText"
+                        android:textSize="14sp" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        app:boxCornerRadiusBottomEnd="12dp"
+                        app:boxCornerRadiusBottomStart="12dp"
+                        app:boxCornerRadiusTopEnd="12dp"
+                        app:boxCornerRadiusTopStart="12dp"
+                        app:hintEnabled="false">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/eventLocationInput"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="e.g. Toronto"
+                            android:inputType="text" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+            </LinearLayout>
+
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -235,10 +311,12 @@
                         app:hintEnabled="false">
 
                         <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/eventDateInput"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:hint="mm/dd/yyyy, --:--"
-                            android:focusable="false" />
+                            android:focusable="false"
+                            android:clickable="true" />
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <LinearLayout
@@ -272,10 +350,12 @@
                                 app:hintEnabled="false">
 
                                 <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/regStartInput"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:hint="mm/dd/yyyy, --:--"
                                     android:focusable="false"
+                                    android:clickable="true"
                                     android:textSize="12sp" />
                             </com.google.android.material.textfield.TextInputLayout>
                         </LinearLayout>
@@ -305,10 +385,12 @@
                                 app:hintEnabled="false">
 
                                 <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/regEndInput"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:hint="mm/dd/yyyy, --:--"
                                     android:focusable="false"
+                                    android:clickable="true"
                                     android:textSize="12sp" />
                             </com.google.android.material.textfield.TextInputLayout>
                         </LinearLayout>
@@ -317,7 +399,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Lottery Settings Section -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -383,12 +464,15 @@
                                 android:src="@drawable/baseline_person_24"
                                 app:tint="@color/primaryBlue" />
 
-                            <TextView
-                                android:layout_width="wrap_content"
+                            <EditText
+                                android:id="@+id/winnersToDrawInput"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="8dp"
+                                android:background="@android:color/transparent"
                                 android:fontFamily="@font/poppins_semibold"
-                                android:text="10"
+                                android:hint="10"
+                                android:inputType="number"
                                 android:textColor="@color/headerText"
                                 android:textSize="18sp" />
                         </LinearLayout>
@@ -431,12 +515,15 @@
                                 android:src="@drawable/baseline_person_24"
                                 app:tint="@color/primaryBlue" />
 
-                            <TextView
-                                android:layout_width="wrap_content"
+                            <EditText
+                                android:id="@+id/waitlistCapInput"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="8dp"
+                                android:background="@android:color/transparent"
                                 android:fontFamily="@font/poppins_semibold"
-                                android:text="100"
+                                android:hint="100"
+                                android:inputType="number"
                                 android:textColor="@color/headerText"
                                 android:textSize="18sp" />
                         </LinearLayout>
@@ -444,7 +531,6 @@
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
 
-            <!-- Restrictions Section -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

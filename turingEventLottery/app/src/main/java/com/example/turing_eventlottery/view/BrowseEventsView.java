@@ -65,7 +65,7 @@ public class BrowseEventsView extends AppCompatActivity {
             location.setText(event.getLocation());
 
             TextView name = card.findViewById(R.id.eventName);
-            name.setText(event.getEventName());
+            name.setText(event.getName());
 
             TextView dateTime = card.findViewById(R.id.dateTimeText);
             dateTime.setText(event.getDate() + " • " + event.getTime());
