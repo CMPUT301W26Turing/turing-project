@@ -3,7 +3,7 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="primaryBlue">#1337ec</color>
-    <color name="primaryBackground">#d8dee4</color>
+    <color name="primaryBackground">#FFFFFF</color>
     <color name="secondaryBackground">#F8F9FC</color>
     <color name="tertiaryBackground">#E7E7E7</color>
     <!-- <color name="alternateBackground">#F6F6F8</color> -->
