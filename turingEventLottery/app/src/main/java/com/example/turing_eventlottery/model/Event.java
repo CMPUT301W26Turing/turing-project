@@ -2,6 +2,8 @@ package com.example.turing_eventlottery.model;
 
 import com.google.firebase.firestore.Exclude;
 
+import java.util.ArrayList;
+
 public class Event {
     private String id;
     private String organizerId;
@@ -9,7 +11,6 @@ public class Event {
     private String category;
     private String location;
     private String date;
-    private String time;
     private String posterUrl;
     private String description;
     private String regStart;
@@ -17,19 +18,31 @@ public class Event {
     private int winnersToDraw;
     private int waitlistCap;
     private boolean geolocationRequired;
+    private ArrayList<String> waitlist;
+    private ArrayList<String> participants;
 
     public Event() {}
 
-    public Event(String id, String organizerId, String name, String category, String location, String date, String time, String posterUrl, String description) {
+    public Event(String id, String organizerId, String name, String category,
+                 String location, String date, String time, String posterUrl,
+                 String description, String regStart, String regEnd,
+                 int winnersToDraw, int waitlistCap, boolean geolocationRequired,
+                 ArrayList<String> waitlist, ArrayList<String> participants) {
         this.id = id;
         this.organizerId = organizerId;
         this.name = name;
         this.category = category;
         this.location = location;
         this.date = date;
-        this.time = time;
         this.posterUrl = posterUrl;
         this.description = description;
+        this.regStart = regStart;
+        this.regEnd = regEnd;
+        this.winnersToDraw = winnersToDraw;
+        this.waitlistCap = waitlistCap;
+        this.geolocationRequired = geolocationRequired;
+        this.waitlist = waitlist;
+        this.participants = participants;
     }
 
     @Exclude
@@ -51,9 +64,6 @@ public class Event {
     public String getDate() { return date; }
     public void setDate(String date) { this.date = date; }
 
-    public String getTime() { return time; }
-    public void setTime(String time) { this.time = time; }
-
     public String getPosterUrl() { return posterUrl; }
     public void setPosterUrl(String posterUrl) { this.posterUrl = posterUrl; }
 
@@ -74,4 +84,14 @@ public class Event {
 
     public boolean isGeolocationRequired() { return geolocationRequired; }
     public void setGeolocationRequired(boolean geolocationRequired) { this.geolocationRequired = geolocationRequired; }
+
+    public ArrayList<String> getWaitlist() { return waitlist; }
+    public void setWaitlist(ArrayList<String> waitlist) { this.waitlist = waitlist; }
+    public void addToWaitlist(String userId) { waitlist.add(userId); }
+    public void removeFromWaitlist(String userId) { waitlist.remove(userId); }
+
+    public ArrayList<String> getParticipants() { return participants; }
+    public void setParticipants(ArrayList<String> participants) { this.participants = participants; }
+    public void addToParticipants(String userId) { participants.add(userId); }
+    public void removeFromParticipants(String userId) { participants.remove(userId); }
 }
