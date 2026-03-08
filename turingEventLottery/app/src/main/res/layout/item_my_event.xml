@@ -126,7 +126,7 @@
                 android:id="@+id/actionText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Dashboard"
+                android:text="Manage Event"
                 android:textColor="@color/primaryBlue"
                 android:textSize="14sp"
                 android:textStyle="bold" />

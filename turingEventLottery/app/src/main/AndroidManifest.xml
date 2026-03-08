@@ -37,6 +37,7 @@
         <activity
             android:name=".view.EventDetailsView"
             android:exported="false" />
+        <activity android:name=".view.ManageEventView" />
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />

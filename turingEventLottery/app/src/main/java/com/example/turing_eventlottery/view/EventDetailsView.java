@@ -47,7 +47,7 @@ public class EventDetailsView extends AppCompatActivity {
     private void displayEvent(Event event) {
         nameView.setText(event.getName());
         locationView.setText(event.getLocation());
-        dateTimeView.setText(event.getDate() + " • " + event.getTime());
+        dateTimeView.setText(event.getDate());
         descriptionView.setText(event.getDescription());
 
         String posterUrl = event.getPosterUrl();
