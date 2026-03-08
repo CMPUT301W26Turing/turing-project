@@ -5,9 +5,10 @@ import android.provider.Settings;
 
 import com.example.turing_eventlottery.model.User;
 import com.example.turing_eventlottery.model.UserRepository;
+import com.example.turing_eventlottery.model.UserCallback;
 
 /**
- * ViewModel responsible for managin user-related data
+ * ViewModel responsible for managing user-related data
  * for the application views. This class acts as the intermediary between
  * the View layer and the User model.
  *
@@ -25,6 +26,7 @@ import com.example.turing_eventlottery.model.UserRepository;
 public class UserViewModel {
     private User user;
     private Context context;
+    private UserRepository userRepository;
 
     /**
      * Creates a UserViewModel and initializes the user object.
@@ -34,6 +36,7 @@ public class UserViewModel {
     public UserViewModel(Context context) {
         this.context = context;
         this.user = new User();
+        this.userRepository = new UserRepository();
     }
 
     /**
@@ -49,13 +52,14 @@ public class UserViewModel {
     }
 
     /**
-     * Updates the contact information from the current user.
+     * Loads the current user that is associated
+     * with the device.
      *
      * @return the user ID of the current user
      */
-    public String loadUser() {
+    public void loadUser(UserCallback callback) {
         String deviceId = getDeviceId();
-        return user.getUserId();
+        userRepository.getUser(deviceId, callback);
     }
 
     /**

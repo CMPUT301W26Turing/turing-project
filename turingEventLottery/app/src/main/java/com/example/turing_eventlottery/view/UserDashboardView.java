@@ -2,12 +2,15 @@ package com.example.turing_eventlottery.view;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.turing_eventlottery.R;
 import com.example.turing_eventlottery.model.User;
+import com.example.turing_eventlottery.model.UserCallback;
 import com.example.turing_eventlottery.viewmodel.UserViewModel;
 import com.google.android.material.card.MaterialCardView;
 
@@ -27,7 +30,6 @@ import com.google.android.material.card.MaterialCardView;
  */
 
 public class UserDashboardView extends AppCompatActivity {
-    private UserViewModel userViewModel;
 
     /**
      * Initializes the dashboard UI and sets up navigation
@@ -41,7 +43,19 @@ public class UserDashboardView extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.user_dashboard);
 
-        userViewModel = new UserViewModel(this);
+        UserViewModel userViewModel = new UserViewModel(this);
+
+        userViewModel.loadUser(new UserCallback() {
+            @Override
+            public void onSuccess(User user) {
+                // Update UI here
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                // Some logcat method to trace error, need to do more research
+            }
+        });
 
         MaterialCardView joinByQrCode = findViewById(R.id.joinByQrCode);
         MaterialCardView browseEvents = findViewById(R.id.browseEvents);

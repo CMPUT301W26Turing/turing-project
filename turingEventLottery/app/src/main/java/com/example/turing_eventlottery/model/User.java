@@ -21,7 +21,6 @@ public class User {
     private String contactInfo;
     private boolean isAdmin = false;
     private boolean isBanned = false;
-    private boolean isGuest = false;
 
     /**
      * A default constructor required for Firebase Firestore.
@@ -31,35 +30,30 @@ public class User {
     public User() {} // for Firestone
 
     /**
-     * Creates a guest user.
-     *
-     * @param userId the userId
-     * @param isGuest the flag for a guest user
-     * @param isAdmin the flag for an admin user
-     * @param isBanned the flag for a banned user
-     */
-    public User(String userId, boolean isGuest, boolean isAdmin, boolean isBanned) {
-        this.userId = userId;
-        this.isGuest = isGuest;
-        this.isAdmin = isAdmin;
-        this.isBanned = isBanned;
-        this.contactInfo = null;
-    }
-
-    /**
-     * Creates an entrant, organizer, or admin user with
-     * contact information.
+     * Creates a user (entrant/organizer/admin)
+     * with contact information.
      *
      * @param userId the unique identifier of the user
      * @param contactInfo the user's contact information
+     * @param isAdmin true if admin
      * @param isBanned true if the user is banned
      */
-    public User(String userId, String contactInfo, boolean isBanned) {
+    public User(String userId, String contactInfo, boolean isAdmin, boolean isBanned) {
         this.userId = userId;
         this.contactInfo = contactInfo;
-        this.isAdmin = false;
-        this.isGuest = false;
+        this.isAdmin = isAdmin;
         this.isBanned = isBanned;
+    }
+
+    /**
+     * Creates a "guest" user for new devices that are
+     * not found in the database.
+     *
+     * @param userId the userID
+     * @return new user
+     */
+    public User createGuest(String userId) {
+        return new User(userId, null, false, false);
     }
 
     /**
@@ -96,15 +90,6 @@ public class User {
      */
     public boolean isBanned() {
         return isBanned;
-    }
-
-    /**
-     * Checks if the user is a guest
-     *
-     * @return true if the user is a guest, otherwise returns false
-     */
-    public boolean isGuest() {
-        return isGuest;
     }
 
     /**

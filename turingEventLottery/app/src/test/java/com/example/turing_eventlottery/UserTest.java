@@ -19,37 +19,29 @@ public class UserTest {
     @Before
     public void setUp() {
         // Guest user
-        guestUser = new User("guest", true, false, false);
+        guestUser = new User("guest", null, false, false);
 
         // Admin user
-        adminUser = new User("admin123", false, true, false);
+        adminUser = new User("admin123", null, true, false);
 
         // Banned user
-        bannedUser = new User("user01", "user01@example.com", true);
+        bannedUser = new User("user01", "user01@example.com", false, true);
 
         // setBannedUser
-        setBannedUser = new User("user02", "user02@example.com", false);
-    }
-
-    @Test
-    public void testGuestUserFlags() {
-        assertTrue(guestUser.isGuest());
-        assertFalse(guestUser.isAdmin());
-        assertFalse(guestUser.isBanned());
+        setBannedUser = new User("user02", "user02@example.com", false, false);
     }
 
     @Test
     public void testAdminUserFlags() {
         assertTrue(adminUser.isAdmin());
-        assertFalse(adminUser.isGuest());
         assertFalse(adminUser.isBanned());
+        assertNull(adminUser.getContactInfo());
     }
 
     @Test
     public void testBannedUserFlagsAndContact() {
         assertTrue(bannedUser.isBanned());
         assertEquals("user01@example.com", bannedUser.getContactInfo());
-        assertFalse(bannedUser.isGuest());
         assertFalse(bannedUser.isAdmin());
     }
 

@@ -22,10 +22,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
  * @see UserCallback
  */
 public class UserRepository {
-    private static final User DEFAULT_GUEST_USER = new User("guest", true, false, false);
     private static final String TAG = "UserRepository";
     private static final String COLLECTION_NAME = "users";
-
     private final CollectionReference usersCollection;
 
     /**
@@ -45,22 +43,19 @@ public class UserRepository {
      * @param callback callback used to return the result asynchronously
      */
     public void getUser(String userId, UserCallback callback) {
-        if (userId.equals("guest")) {
-            callback.onSuccess(DEFAULT_GUEST_USER);
-            return;
-        }
-
         usersCollection.document(userId).get()
                 .addOnSuccessListener(document -> {
                     if (document.exists()) {
                         User user = document.toObject(User.class);
                         callback.onSuccess(user);
                     } else {
-                        callback.onSuccess(DEFAULT_GUEST_USER);
+                        // User not in database, treat as guest
+                        callback.onSuccess(new User(userId, null, false, false));
                     }
                 })
+                // On failure, treat as guest
                 .addOnFailureListener(e -> {
-                    callback.onSuccess(DEFAULT_GUEST_USER);
+                    callback.onSuccess(new User(userId, null, false, false));
                 });
     }
 
@@ -71,7 +66,6 @@ public class UserRepository {
      * @param user the user to add or update
      */
     public void addOrUpdateUser(User user) {
-        if (user.isGuest()) return; // never store guest user in the database
 
         usersCollection.document(user.getUserId())
                 .set(user)
