@@ -1,4 +1,4 @@
-package com.example.turing_eventlottery;
+package com.example.turing_eventlottery.view;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -8,9 +8,10 @@ import android.widget.FrameLayout;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.turing_eventlottery.R;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-public class OrganizerActivity extends AppCompatActivity {
+public class OrganizerDashboardView extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,7 +23,7 @@ public class OrganizerActivity extends AppCompatActivity {
         FloatingActionButton fabCreate = findViewById(R.id.fabCreate);
 
         View.OnClickListener startCreateEvent = v -> {
-            Intent intent = new Intent(OrganizerActivity.this, CreateEventActivity.class);
+            Intent intent = new Intent(OrganizerDashboardView.this, CreateEventActivity.class);
             startActivity(intent);
         };
 
