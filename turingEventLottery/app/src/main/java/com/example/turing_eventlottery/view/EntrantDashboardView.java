@@ -2,8 +2,6 @@ package com.example.turing_eventlottery.view;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -29,7 +27,7 @@ import com.google.android.material.card.MaterialCardView;
  * @see UserViewModel
  */
 
-public class UserDashboardView extends AppCompatActivity {
+public class EntrantDashboardView extends AppCompatActivity {
 
     /**
      * Initializes the dashboard UI and sets up navigation
@@ -63,25 +61,25 @@ public class UserDashboardView extends AppCompatActivity {
         MaterialCardView myHistory = findViewById(R.id.myHistory);
         MaterialCardView myProfile = findViewById(R.id.myProfile);
 
-        //joinByQrCode.setOnClickListener(v -> {
-        //    Intent intent = new Intent(this, JoinByQrCode.class);
-        //    startActivity(intent);
-        //});
+//        joinByQrCode.setOnClickListener(v -> {
+//            Intent intent = new Intent(this, JoinByQrCode.class);
+//            startActivity(intent);
+//        });
         browseEvents.setOnClickListener(v -> {
-            Intent intent = new Intent(this, BrowseEventsView.class);
+            Intent intent = new Intent(EntrantDashboardView.this, BrowseEventsView.class);
             startActivity(intent);
         });
-        //myNotifications.setOnClickListener(v -> {
-        //    Intent intent = new Intent(this, MyNotifications.class);
-        //    startActivity(intent);
-        //});
-        //myHistory.setOnClickListener(v -> {
-        //    Intent intent = new Intent(this, MyHistory.class);
-        //    startActivity(intent);
-        //});
-        //myProfile.setOnClickListener(v -> {
-        //    Intent intent = new Intent(this, MyProfile.class);
-        //    startActivity(intent);
-        //});
+//        myNotifications.setOnClickListener(v -> {
+//            Intent intent = new Intent(this, MyNotifications.class);
+//            startActivity(intent);
+//        });
+//        myHistory.setOnClickListener(v -> {
+//            Intent intent = new Intent(this, MyHistory.class);
+//            startActivity(intent);
+//        });
+//        myProfile.setOnClickListener(v -> {
+//            Intent intent = new Intent(this, MyProfile.class);
+//            startActivity(intent);
+//        });
     }
 }

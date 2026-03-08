@@ -1,4 +1,4 @@
-package com.example.turing_eventlottery;
+package com.example.turing_eventlottery.view;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -6,9 +6,10 @@ import android.os.Bundle;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.turing_eventlottery.R;
 import com.google.android.material.card.MaterialCardView;
 
-public class GreetingActivity extends AppCompatActivity {
+public class GreetingView extends AppCompatActivity {
     MaterialCardView entrantCard;
     MaterialCardView organizerCard;
     MaterialCardView administratorCard;
@@ -23,12 +24,12 @@ public class GreetingActivity extends AppCompatActivity {
         administratorCard = findViewById(R.id.administratorCard);
         
         entrantCard.setOnClickListener(v -> {
-            Intent intent = new Intent(GreetingActivity.this, EntrantActivity.class);
+            Intent intent = new Intent(GreetingView.this, EntrantDashboardView.class);
             startActivity(intent);
         });
 
         organizerCard.setOnClickListener(v -> {
-            Intent intent = new Intent(GreetingActivity.this, OrganizerActivity.class);
+            Intent intent = new Intent(GreetingView.this, OrganizerDashboardView.class);
             startActivity(intent);
         });
     }
