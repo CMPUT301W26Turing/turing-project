@@ -7,6 +7,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.Window;
 import android.widget.ImageView;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,10 +26,12 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.materialswitch.MaterialSwitch;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.android.material.tabs.TabLayout;
+import com.google.firebase.Timestamp;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class ManageEventView extends AppCompatActivity {
 
@@ -36,12 +39,15 @@ public class ManageEventView extends AppCompatActivity {
     private EventRepository eventRepository;
     private NotificationRepository notificationRepository;
     
-    private TextView eventName, eventDateTime, capacityValue, spotsRemaining;
+    private TextView eventName, eventDateTime, capacityValue, spotsRemaining, sortText;
     private LinearProgressIndicator capacityProgress;
     private MaterialSwitch geoSwitch;
     private TabLayout statusTabs;
     private RecyclerView entrantsRecyclerView;
     private MaterialButton runLotteryButton, drawSingleButton;
+    private WaitingEntrantsAdapter entrantsAdapter;
+    private List<Map<String, Object>> waitlistData = new ArrayList<>();
+
     private ImageView exportButton;
 
     @Override
@@ -72,6 +78,7 @@ public class ManageEventView extends AppCompatActivity {
         runLotteryButton = findViewById(R.id.runLotteryButton);
         drawSingleButton = findViewById(R.id.drawSingleButton);
         exportButton = findViewById(R.id.exportButton);
+        sortText = findViewById(R.id.sortText);
 
         if (exportButton != null) {
             exportButton.setOnClickListener(v -> {
@@ -83,8 +90,13 @@ public class ManageEventView extends AppCompatActivity {
 
         runLotteryButton.setOnClickListener(v -> runLottery());
         drawSingleButton.setOnClickListener(v -> drawSingle());
+        if (sortText != null) {
+            sortText.setOnClickListener(v -> showSortMenu());
+        }
 
         entrantsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        entrantsAdapter = new WaitingEntrantsAdapter(new ArrayList<>());
+        entrantsRecyclerView.setAdapter(entrantsAdapter);
     }
 
     private void loadEventDetails() {
@@ -93,6 +105,7 @@ public class ManageEventView extends AppCompatActivity {
         eventRepository.getEventById(eventId, event -> {
             if (event != null) {
                 displayEvent(event);
+                loadWaitlistEntrants();
             } else {
                 Toast.makeText(this, "Error loading event", Toast.LENGTH_SHORT).show();
             }
@@ -102,25 +115,78 @@ public class ManageEventView extends AppCompatActivity {
     private void displayEvent(Event event) {
         eventName.setText(event.getName());
         eventDateTime.setText(event.getDate());
-        
-        int currentWaitlist = event.getWaitlist() != null ? event.getWaitlist().size() : 0;
+
         int cap = event.getWaitlistCap();
         
-        capacityValue.setText(currentWaitlist + "/" + cap);
-        spotsRemaining.setText((cap - currentWaitlist) + " spots remaining");
+        eventRepository.getWaitlistCount(event.getId(), count -> {
+            int currentWaitlist = count != null ? count : 0;
+            capacityValue.setText(currentWaitlist + "/" + cap);
+            spotsRemaining.setText((cap - currentWaitlist) + " spots remaining");
+
+            if (cap > 0) {
+                capacityProgress.setProgress((currentWaitlist * 100) / cap);
+            }
+            statusTabs.getTabAt(0).setText("Waiting " + currentWaitlist);
+        });
         
-        if (cap > 0) {
-            capacityProgress.setProgress((currentWaitlist * 100) / cap);
-        }
-        
+        eventRepository.getParticipantsCount(event.getId(), count -> {
+            int enrolled = count != null ? count : 0;
+            statusTabs.getTabAt(2).setText("Enrolled " + enrolled);
+        });
+
         geoSwitch.setChecked(event.isGeolocationRequired());
-        
         runLotteryButton.setText("Run Lottery (" + event.getWinnersToDraw() + ")");
+    }
+
+    private void loadWaitlistEntrants() {
+        if (eventId == null) return;
         
-        // Update tab counts
-        statusTabs.getTabAt(0).setText("Waiting " + currentWaitlist);
-        int enrolled = event.getParticipants() != null ? event.getParticipants().size() : 0;
-        statusTabs.getTabAt(2).setText("Enrolled " + enrolled);
+        eventRepository.getWaitlistEntrants(eventId, entrants -> {
+            if (entrants != null) {
+                this.waitlistData = entrants;
+                entrantsAdapter.updateEntrants(new ArrayList<>(waitlistData));
+            } else {
+                Toast.makeText(this, "Failed to load entrants", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void showSortMenu() {
+        PopupMenu popup = new PopupMenu(this, sortText);
+        popup.getMenu().add("Name (A-Z)");
+        popup.getMenu().add("Date Applied (Newest first)");
+        
+        popup.setOnMenuItemClickListener(item -> {
+            if (item.getTitle().equals("Name (A-Z)")) {
+                sortWaitlist(true);
+            } else {
+                sortWaitlist(false);
+            }
+            return true;
+        });
+        popup.show();
+    }
+
+    private void sortWaitlist(boolean byName) {
+        if (waitlistData == null || waitlistData.isEmpty()) return;
+
+        if (byName) {
+            Collections.sort(waitlistData, (a, b) -> {
+                String nameA = (String) a.get("username");
+                String nameB = (String) b.get("username");
+                if (nameA == null) nameA = "";
+                if (nameB == null) nameB = "";
+                return nameA.compareToIgnoreCase(nameB);
+            });
+        } else {
+            Collections.sort(waitlistData, (a, b) -> {
+                Timestamp tsA = (Timestamp) a.get("timestamp");
+                Timestamp tsB = (Timestamp) b.get("timestamp");
+                if (tsA == null || tsB == null) return 0;
+                return tsB.compareTo(tsA); // Descending
+            });
+        }
+        entrantsAdapter.updateEntrants(new ArrayList<>(waitlistData));
     }
 
     private void runLottery() {

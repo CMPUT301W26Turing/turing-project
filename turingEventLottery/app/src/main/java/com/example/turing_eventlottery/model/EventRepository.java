@@ -7,6 +7,7 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
@@ -160,6 +161,49 @@ public class EventRepository {
                 .get()
                 .addOnSuccessListener(document -> {
                     callback.onCallback(document.exists());
+                });
+    }
+
+    public void getWaitlistCount(String eventId, EventCallback<Integer> callback) {
+        eventsCollection
+                .document(eventId)
+                .collection("waitlist")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    int count = queryDocumentSnapshots.size();
+                    callback.onCallback(count);
+                });
+    }
+
+    public void getParticipantsCount(String eventId, EventCallback<Integer> callback) {
+        eventsCollection
+                .document(eventId)
+                .collection("participants")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    int count = queryDocumentSnapshots.size();
+                    callback.onCallback(count);
+                });
+    }
+
+    public void getWaitlistEntrants(String eventId, EventCallback<List<Map<String, Object>>> callback) {
+        eventsCollection
+                .document(eventId)
+                .collection("waitlist")
+                .orderBy("timestamp", Query.Direction.DESCENDING)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<Map<String, Object>> entrants = new ArrayList<>();
+                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                        Map<String, Object> data = document.getData();
+                        data.put("userId", document.getId());
+                        entrants.add(data);
+                    }
+                    callback.onCallback(entrants);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error getting waitlist entrants", e);
+                    callback.onCallback(null);
                 });
     }
 }

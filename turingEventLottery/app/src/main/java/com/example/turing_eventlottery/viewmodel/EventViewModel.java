@@ -30,12 +30,15 @@ public class EventViewModel {
         eventRepository.getEventById(eventId, callback);
     }
 
-    public void joinWaitlist(User user, String eventId) {
+    public void joinWaitlist(User user, String eventId, EventCallback<Boolean> callback) {
         if ("Guest".equals(user.getUserName())) {
+            callback.onCallback(false);
             return;
         }
 
         eventRepository.addUserToWaitList(eventId, user, success -> {
+            callback.onCallback(success);
+
             // debug in Logcat
             if (success) {
                 System.out.println("User added to waitlist");
@@ -45,8 +48,10 @@ public class EventViewModel {
         });
     }
 
-    public void leaveWaitlist(User user, String eventId) {
-        eventRepository.removeUserFromWaitlist(eventId, user.getUserId(), success -> {
+    public void leaveWaitlist(User user, String eventId, EventCallback<Boolean> callback) {
+        eventRepository.removeUserFromWaitlist(eventId, user, success -> {
+            callback.onCallback(success);
+          
             // debug in Logcat
             if (success) {
                 System.out.println("User removed from waitlist");
