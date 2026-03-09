@@ -37,10 +37,15 @@
         <activity
             android:name=".view.EventDetailsView"
             android:exported="false" />
-        <activity android:name=".view.MyProfileView"
+        <activity
+            android:name=".view.MyProfileView"
             android:exported="false" />
-        <activity android:name=".view.ManageEventView"
+        <activity 
+            android:name=".view.ManageEventView"
             android:exported="false />
+        <activity 
+            android:name=".view.MyNotificationsView" 
+            android:exported="false" />
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
