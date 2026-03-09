@@ -29,13 +29,18 @@
             android:name=".view.OrganizerDashboardView"
             android:exported="false" />
         <activity
-            android:name=".view.CreateEventActivity"
+            android:name=".view.CreateEventView"
+            android:exported="false" />
+        <activity
+            android:name=".view.MyEventsView"
             android:exported="false" />
         <activity
             android:name=".view.EventDetailsView"
             android:exported="false" />
         <activity android:name=".view.MyProfileView"
             android:exported="false" />
+        <activity android:name=".view.ManageEventView"
+            android:exported="false />
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
