@@ -20,7 +20,6 @@ import java.util.List;
 
 public class BrowseEventsView extends AppCompatActivity {
     private LinearLayout eventsContainer;
-    private EventViewModel eventViewModel;
     private TextView resultsText;
     private TextView upcomingLotteries;
 
@@ -33,7 +32,7 @@ public class BrowseEventsView extends AppCompatActivity {
         eventsContainer = findViewById(R.id.eventsContainer);
         resultsText = findViewById(R.id.resultsText);
         upcomingLotteries = findViewById(R.id.upcomingText);
-        eventViewModel = new EventViewModel();
+        EventViewModel eventViewModel = new EventViewModel();
         eventViewModel.getEvents(this::displayEvents);
 
     }

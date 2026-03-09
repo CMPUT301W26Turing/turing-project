@@ -50,12 +50,12 @@ public class UserRepository {
                         callback.onSuccess(user);
                     } else {
                         // User not in database, treat as guest
-                        callback.onSuccess(new User(userId, null, false, false));
+                        callback.onSuccess(User.createGuest(userId));
                     }
                 })
                 // On failure, treat as guest
                 .addOnFailureListener(e -> {
-                    callback.onSuccess(new User(userId, null, false, false));
+                    callback.onSuccess(User.createGuest(userId));
                 });
     }
 

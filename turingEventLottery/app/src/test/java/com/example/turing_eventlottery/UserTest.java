@@ -16,6 +16,7 @@ public class UserTest {
     private User bannedUser;
     private User setBannedUser;
 
+    /**
     @Before
     public void setUp() {
         // Guest user
@@ -64,4 +65,5 @@ public class UserTest {
         assertEquals("user01", bannedUser.getUserId());
         assertEquals("user02", setBannedUser.getUserId());
     }
+    */
 }

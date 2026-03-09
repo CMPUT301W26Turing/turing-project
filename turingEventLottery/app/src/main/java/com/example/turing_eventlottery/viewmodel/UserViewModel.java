@@ -59,16 +59,17 @@ public class UserViewModel {
      */
     public void loadUser(UserCallback callback) {
         String deviceId = getDeviceId();
-        userRepository.getUser(deviceId, callback);
+        userRepository.getUser(deviceId, loadedUser -> {
+            user = loadedUser;
+            callback.onSuccess(loadedUser);
+        });
     }
 
-    /**
-     * Updates the contact information for the current user.
-     *
-     * @param contactInfo the new contact information
-     */
-    public void updateContactInfo(String contactInfo) {
-        String deviceId = getDeviceId();
-        user.setContactInfo(contactInfo);
+    public void updateUserProfile(String name, String email, String phone) {
+        user.setUserName(name);
+        user.setUserEmail(email);
+        user.setUserPhoneNumber(phone);
+
+        userRepository.addOrUpdateUser(user);
     }
 }

@@ -1,11 +1,15 @@
 package com.example.turing_eventlottery.model;
 
+import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class EventRepository {
     private static final String TAG = "EventRepository";
@@ -62,5 +66,44 @@ public class EventRepository {
                 System.err.println("Failed to fetch event: " + task.getException());
             }
         });
+    }
+
+    public void addUserToWaitList(String eventId, User user, EventCallback<Boolean> callback) {
+        if ("Guest".equals(user.getUserName())) {
+            callback.onCallback(false);
+            return;
+        }
+
+        DocumentReference eventRef = eventsCollection.document(eventId);
+        Map<String, Object> waitlistEntry = new HashMap<>();
+        waitlistEntry.put("username", user.getUserName());
+        waitlistEntry.put("timestamp", Timestamp.now());
+
+        eventRef.collection("waitlist")
+                .document(user.getUserId())
+                .set(waitlistEntry)
+                .addOnSuccessListener(v -> callback.onCallback(true))
+                .addOnFailureListener(e -> callback.onCallback(false));
+    }
+
+    public void removeUserFromWaitlist(String eventId, User user, EventCallback<Boolean> callback) {
+        CollectionReference waitlistRef = eventsCollection.document(eventId).collection("waitlist");
+
+        waitlistRef.document(user.getUserId())
+                .delete()
+                .addOnSuccessListener(v -> callback.onCallback(true))
+                .addOnFailureListener(e -> callback.onCallback(false));
+    }
+
+    public void checkUserOnWaitlist(String eventId, User user, EventCallback<Boolean> callback) {
+        eventsCollection
+                .document(eventId)
+                .collection("waitlist")
+                .document(user.getUserId())
+                .get()
+                .addOnSuccessListener(document -> {
+                    boolean onWaitlist = document.exists();
+                    callback.onCallback(document.exists());
+                });
     }
 }
