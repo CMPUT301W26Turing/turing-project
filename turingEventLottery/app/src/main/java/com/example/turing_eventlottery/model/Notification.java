@@ -8,16 +8,18 @@ public class Notification {
     private String eventId;
     private String eventName;
     private String eventDate;
-    private String status; // e.g., "Invited"
+    private String message;
+    private String status;
     private long timestamp;
 
     public Notification() {}
 
-    public Notification(String userId, String eventId, String eventName, String eventDate, String status) {
+    public Notification(String userId, String eventId, String eventName, String eventDate, String message, String status) {
         this.userId = userId;
         this.eventId = eventId;
         this.eventName = eventName;
         this.eventDate = eventDate;
+        this.message = message;
         this.status = status;
         this.timestamp = System.currentTimeMillis();
     }
@@ -37,6 +39,9 @@ public class Notification {
 
     public String getEventDate() { return eventDate; }
     public void setEventDate(String eventDate) { this.eventDate = eventDate; }
+
+    public String getMessage() { return message; }
+    public void setMessage(String message) { this.message = message; }
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }

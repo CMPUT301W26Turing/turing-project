@@ -18,6 +18,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 public class OrganizerDashboardView extends AppCompatActivity {
 
     MaterialCardView myEventsButton;
+    MaterialCardView sendNotificationButton;
     TextView activeLotteriesNumber;
 
     EventRepository eventRepository;
@@ -33,6 +34,7 @@ public class OrganizerDashboardView extends AppCompatActivity {
         FrameLayout createEventCard = findViewById(R.id.createEventCard);
         FloatingActionButton fabCreate = findViewById(R.id.fabCreate);
         myEventsButton = findViewById(R.id.myEventsButton);
+        sendNotificationButton = findViewById(R.id.sendNotificationButton);
         activeLotteriesNumber = findViewById(R.id.activeLotteriesNumber);
 
         View.OnClickListener startCreateEvent = v -> {
@@ -52,6 +54,13 @@ public class OrganizerDashboardView extends AppCompatActivity {
             Intent intent = new Intent(OrganizerDashboardView.this, MyEventsView.class);
             startActivity(intent);
         });
+
+        sendNotificationButton.setOnClickListener(v -> {
+            Intent intent = new Intent(OrganizerDashboardView.this, SendNotificationView.class);
+            startActivity(intent);
+        });
+
+
         eventRepository = new EventRepository();
         userViewModel = new UserViewModel(this);
 
