@@ -119,7 +119,6 @@ public class EventRepository {
                 .document(user.getUserId())
                 .get()
                 .addOnSuccessListener(document -> {
-                    boolean onWaitlist = document.exists();
                     callback.onCallback(document.exists());
                 });
     }
