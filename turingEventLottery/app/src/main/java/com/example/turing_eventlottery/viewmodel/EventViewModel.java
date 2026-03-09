@@ -1,28 +1,29 @@
 package com.example.turing_eventlottery.viewmodel;
 
-import android.widget.Toast;
-
-import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
-
 import com.example.turing_eventlottery.model.Event;
-import com.example.turing_eventlottery.model.EventRepository;
 import com.example.turing_eventlottery.model.EventCallback;
+import com.example.turing_eventlottery.model.EventRepository;
 import com.example.turing_eventlottery.model.User;
 
 import java.util.List;
-import java.util.function.Consumer;
 
 public class EventViewModel {
-    private enum WaitlistResult {GUEST, SUCCESS, FAILURE}
-    private EventRepository eventRepository;
+    private final EventRepository eventRepository;
 
     public EventViewModel() {
         this.eventRepository = new EventRepository();
     }
 
+    public void addEvent(Event event, EventCallback<Boolean> callback) {
+        eventRepository.addEvent(event, callback);
+    }
+
     public void getEvents(EventCallback<List<Event>> callback) {
         eventRepository.getEvents(callback);
+    }
+
+    public void getEventsByOrganizer(String organizerId, EventCallback<List<Event>> callback) {
+        eventRepository.getEventsByOrganizer(organizerId, callback);
     }
 
     public void getEventById(String eventId, EventCallback<Event> callback) {
@@ -45,7 +46,7 @@ public class EventViewModel {
     }
 
     public void leaveWaitlist(User user, String eventId) {
-        eventRepository.removeUserFromWaitlist(eventId, user, success -> {
+        eventRepository.removeUserFromWaitlist(eventId, user.getUserId(), success -> {
             // debug in Logcat
             if (success) {
                 System.out.println("User removed from waitlist");
@@ -60,7 +61,6 @@ public class EventViewModel {
             callback.onCallback(false);
             return;
         }
-
         eventRepository.checkUserOnWaitlist(eventId, user, callback);
     }
 }

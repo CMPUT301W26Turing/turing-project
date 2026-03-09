@@ -18,6 +18,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.turing_eventlottery.R;
 import com.example.turing_eventlottery.model.Event;
 import com.example.turing_eventlottery.model.EventRepository;
+import com.example.turing_eventlottery.model.Notification;
+import com.example.turing_eventlottery.model.NotificationRepository;
 import com.example.turing_eventlottery.model.QRCodeModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.materialswitch.MaterialSwitch;
@@ -25,18 +27,21 @@ import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.android.material.tabs.TabLayout;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class ManageEventView extends AppCompatActivity {
 
     private String eventId;
     private EventRepository eventRepository;
+    private NotificationRepository notificationRepository;
     
     private TextView eventName, eventDateTime, capacityValue, spotsRemaining;
     private LinearProgressIndicator capacityProgress;
     private MaterialSwitch geoSwitch;
     private TabLayout statusTabs;
     private RecyclerView entrantsRecyclerView;
-    private MaterialButton runLotteryButton;
+    private MaterialButton runLotteryButton, drawSingleButton;
     private ImageView exportButton;
 
     @Override
@@ -47,6 +52,7 @@ public class ManageEventView extends AppCompatActivity {
 
         eventId = getIntent().getStringExtra("EVENT_ID");
         eventRepository = new EventRepository();
+        notificationRepository = new NotificationRepository();
 
         initViews();
         loadEventDetails();
@@ -64,6 +70,7 @@ public class ManageEventView extends AppCompatActivity {
         statusTabs = findViewById(R.id.statusTabs);
         entrantsRecyclerView = findViewById(R.id.entrantsRecyclerView);
         runLotteryButton = findViewById(R.id.runLotteryButton);
+        drawSingleButton = findViewById(R.id.drawSingleButton);
         exportButton = findViewById(R.id.exportButton);
 
         if (exportButton != null) {
@@ -73,6 +80,9 @@ public class ManageEventView extends AppCompatActivity {
                 }
             });
         }
+
+        runLotteryButton.setOnClickListener(v -> runLottery());
+        drawSingleButton.setOnClickListener(v -> drawSingle());
 
         entrantsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
     }
@@ -111,6 +121,61 @@ public class ManageEventView extends AppCompatActivity {
         statusTabs.getTabAt(0).setText("Waiting " + currentWaitlist);
         int enrolled = event.getParticipants() != null ? event.getParticipants().size() : 0;
         statusTabs.getTabAt(2).setText("Enrolled " + enrolled);
+    }
+
+    private void runLottery() {
+        eventRepository.getEventById(eventId, event -> {
+            if (event == null) return;
+            eventRepository.getWaitlistUsers(eventId, waitingUserIds -> {
+                if (waitingUserIds == null || waitingUserIds.isEmpty()) {
+                    Toast.makeText(this, "No users in waiting list", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                int numToDraw = Math.min(event.getWinnersToDraw(), waitingUserIds.size());
+                Collections.shuffle(waitingUserIds);
+                List<String> winners = waitingUserIds.subList(0, numToDraw);
+
+                for (String userId : winners) {
+                    notifyWinner(userId, event);
+                }
+                Toast.makeText(this, "Lottery completed. " + numToDraw + " entrants invited.", Toast.LENGTH_SHORT).show();
+                loadEventDetails();
+            });
+        });
+    }
+
+    private void drawSingle() {
+        eventRepository.getEventById(eventId, event -> {
+            if (event == null) return;
+            eventRepository.getWaitlistUsers(eventId, waitingUserIds -> {
+                if (waitingUserIds == null || waitingUserIds.isEmpty()) {
+                    Toast.makeText(this, "No users in waiting list", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                Collections.shuffle(waitingUserIds);
+                String winnerId = waitingUserIds.get(0);
+                notifyWinner(winnerId, event);
+                Toast.makeText(this, "One entrant invited.", Toast.LENGTH_SHORT).show();
+                loadEventDetails();
+            });
+        });
+    }
+
+    private void notifyWinner(String userId, Event event) {
+        eventRepository.updateWaitlistStatus(event.getId(), userId, "Invited", success -> {
+            if (success) {
+                Notification notification = new Notification(
+                        userId,
+                        event.getId(),
+                        event.getName(),
+                        event.getDate(),
+                        "Invited"
+                );
+                notificationRepository.addNotification(notification);
+            }
+        });
     }
 
     private void showQRCode(String eventId) {
