@@ -42,9 +42,9 @@
             android:exported="false" />
         <activity 
             android:name=".view.ManageEventView"
-            android:exported="false />
+            android:exported="false" />
         <activity 
-            android:name=".view.MyNotificationsView" 
+            android:name=".view.MyNotificationsView"
             android:exported="false" />
         <meta-data
             android:name="preloaded_fonts"
