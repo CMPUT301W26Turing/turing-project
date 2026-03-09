@@ -66,17 +66,26 @@ public class EventDetailsView extends AppCompatActivity {
                 }
 
                 if (isOnWaitlist) {
-                    eventViewModel.leaveWaitlist(loadedUser, eventId);
-                    isOnWaitlist = false;
-                    Toast.makeText(this, "You have left the waitlist", Toast.LENGTH_SHORT).show();
+                    eventViewModel.leaveWaitlist(loadedUser, eventId, success -> {
+                        if (success) {
+                            isOnWaitlist = false;
+                            Toast.makeText(this, "You have left the waitlist", Toast.LENGTH_SHORT).show();
+                            updateWaitlistButton(waitlistButton);
+                        } else {
+                            Toast.makeText(this, "Failed to leave waitlist, try again", Toast.LENGTH_SHORT).show();
+                        }
+                    });
                 } else {
-                    eventViewModel.joinWaitlist(loadedUser, eventId);
-                    isOnWaitlist = true;
-                    Toast.makeText(this, "You have joined the waitlist", Toast.LENGTH_SHORT).show();
+                    eventViewModel.joinWaitlist(loadedUser, eventId, success -> {
+                        if (success) {
+                            isOnWaitlist = true;
+                            Toast.makeText(this, "You have joined the waitlist", Toast.LENGTH_SHORT).show();
+                            updateWaitlistButton(waitlistButton);
+                        } else {
+                            Toast.makeText(this, "Failed to join waitlist, try again", Toast.LENGTH_SHORT).show();
+                        }
+                    });
                 }
-
-                updateWaitlistButton(waitlistButton);
-
             });
         });
     }
