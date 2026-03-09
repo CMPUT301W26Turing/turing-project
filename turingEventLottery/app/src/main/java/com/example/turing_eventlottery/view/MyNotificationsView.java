@@ -73,10 +73,10 @@ public class MyNotificationsView extends AppCompatActivity {
                 }
             }
 
-            @Override
-            public void onFailure(Exception e) {
-                Toast.makeText(MyNotificationsView.this, "Error loading user profile", Toast.LENGTH_SHORT).show();
-            }
+//            @Override
+//            public void onFailure(Exception e) {
+//                Toast.makeText(MyNotificationsView.this, "Error loading user profile", Toast.LENGTH_SHORT).show();
+//            }
         });
     }
 }

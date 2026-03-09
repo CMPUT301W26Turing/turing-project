@@ -345,11 +345,11 @@
                             app:layout_constraintTop_toTopOf="parent" />
 
                         <TextView
-                            android:id="@+id/filterText"
+                            android:id="@+id/sortText"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:drawablePadding="4dp"
-                            android:text="Filter"
+                            android:text="Sort"
                             android:textColor="@color/primaryBlue"
                             android:textSize="12sp"
                             app:drawableStartCompat="@drawable/outline_filter_list_24"
@@ -419,7 +419,6 @@
                 android:layout_marginStart="8dp"
                 android:layout_weight="2"
                 android:backgroundTint="@color/primaryBlue"
-                android:fontFamily="@font/font_family"
                 android:text="Run Lottery (0)"
                 android:textColor="@color/primaryBackground"
                 android:textSize="14sp"
