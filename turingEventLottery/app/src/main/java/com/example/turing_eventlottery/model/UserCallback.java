@@ -19,11 +19,4 @@ public interface UserCallback {
      * @param user the retrieved User object
      */
     void onSuccess(User user);
-
-    /**
-     * Called when an error occurs while retrieving the user data.
-     *
-     * @param e the exception describing the failure
-     */
-    void onFailure(Exception e);
 }
