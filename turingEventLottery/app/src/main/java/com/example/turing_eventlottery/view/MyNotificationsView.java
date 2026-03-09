@@ -73,6 +73,7 @@ public class MyNotificationsView extends AppCompatActivity {
                 }
             }
 
+
             // TODO: Fix this
             //@Override
             //public void onFailure(Exception e) {
