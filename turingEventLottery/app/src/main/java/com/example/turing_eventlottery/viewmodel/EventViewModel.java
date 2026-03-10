@@ -5,10 +5,11 @@ import com.example.turing_eventlottery.model.EventCallback;
 import com.example.turing_eventlottery.model.EventRepository;
 import com.example.turing_eventlottery.model.User;
 
+import java.util.Date;
 import java.util.List;
 
 public class EventViewModel {
-    private final EventRepository eventRepository;
+    private EventRepository eventRepository;
 
     public EventViewModel() {
         this.eventRepository = new EventRepository();
@@ -28,6 +29,19 @@ public class EventViewModel {
 
     public void getEventById(String eventId, EventCallback<Event> callback) {
         eventRepository.getEventById(eventId, callback);
+    }
+
+    public void checkRegistrationStatus(String eventId, EventCallback<Boolean> callback) {
+        eventRepository.getEventRegPeriod(eventId, period -> {
+            if (period == null) return;
+
+            Date now = new Date();
+            Date regStart = period.first;
+            Date regEnd = period.second;
+
+            boolean isOpen = now.after(regStart) && now.before(regEnd);
+            callback.onCallback(isOpen);
+        });
     }
 
     public void joinWaitlist(User user, String eventId, EventCallback<Boolean> callback) {
