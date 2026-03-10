@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.view.View;
 import android.view.Window;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
@@ -40,6 +41,7 @@ public class ManageEventView extends AppCompatActivity {
     private NotificationRepository notificationRepository;
     
     private TextView eventName, eventDateTime, capacityValue, spotsRemaining, sortText;
+    private TextView emptyStateText, listTitle;
     private LinearProgressIndicator capacityProgress;
     private MaterialSwitch geoSwitch;
     private TabLayout statusTabs;
@@ -82,6 +84,8 @@ public class ManageEventView extends AppCompatActivity {
         drawSingleButton = findViewById(R.id.drawSingleButton);
         exportButton = findViewById(R.id.exportButton);
         sortText = findViewById(R.id.sortText);
+        emptyStateText = findViewById(R.id.emptyStateText);
+        listTitle = findViewById(R.id.listTitle);
 
         if (exportButton != null) {
             exportButton.setOnClickListener(v -> {
@@ -185,19 +189,39 @@ public class ManageEventView extends AppCompatActivity {
 
     private void updateListForTab(int position) {
         List<Map<String, Object>> dataToDisplay;
+        String emptyMsg;
+        String title;
+        
         switch (position) {
             case 1:
                 dataToDisplay = invitedList;
+                emptyMsg = "No entrants invited";
+                title = "INVITED LIST";
                 break;
             case 2:
                 dataToDisplay = enrolledList;
+                emptyMsg = "No entrants enrolled";
+                title = "ENROLLED LIST";
                 break;
             case 0:
             default:
                 dataToDisplay = waitingList;
+                emptyMsg = "No entrants in the waitlist";
+                title = "WAITING LIST";
                 break;
         }
+        
+        listTitle.setText(title);
         entrantsAdapter.updateEntrants(new ArrayList<>(dataToDisplay));
+        
+        if (dataToDisplay.isEmpty()) {
+            emptyStateText.setText(emptyMsg);
+            emptyStateText.setVisibility(View.VISIBLE);
+            entrantsRecyclerView.setVisibility(View.GONE);
+        } else {
+            emptyStateText.setVisibility(View.GONE);
+            entrantsRecyclerView.setVisibility(View.VISIBLE);
+        }
     }
 
     private void showSortMenu() {

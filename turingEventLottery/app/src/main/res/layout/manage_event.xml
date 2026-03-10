@@ -83,7 +83,6 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Event Header Card -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -194,7 +193,6 @@
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Geolocation & Export Section -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -282,7 +280,6 @@
                 app:icon="@drawable/baseline_download_24"
                 app:iconGravity="textStart" />
 
-            <!-- Filters -->
             <com.google.android.material.tabs.TabLayout
                 android:id="@+id/statusTabs"
                 android:layout_width="match_parent"
@@ -313,7 +310,6 @@
                     android:text="Enrolled 0" />
             </com.google.android.material.tabs.TabLayout>
 
-            <!-- Waiting List Section -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -334,6 +330,7 @@
                         android:padding="16dp">
 
                         <TextView
+                            android:id="@+id/listTitle"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="WAITING LIST"
@@ -359,13 +356,29 @@
                             app:layout_constraintTop_toTopOf="parent" />
                     </androidx.constraintlayout.widget.ConstraintLayout>
 
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/entrantsRecyclerView"
+                    <FrameLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:nestedScrollingEnabled="false"
-                        tools:itemCount="3"
-                        tools:listitem="@layout/item_waiting_entrant" />
+                        android:layout_height="wrap_content">
+
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/entrantsRecyclerView"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:nestedScrollingEnabled="false"
+                            tools:itemCount="3"
+                            tools:listitem="@layout/item_waiting_entrant" />
+
+                        <TextView
+                            android:id="@+id/emptyStateText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:padding="32dp"
+                            android:text="No entrants in the waitlist"
+                            android:textColor="@color/headerSubtext"
+                            android:textSize="14sp"
+                            android:visibility="gone" />
+                    </FrameLayout>
 
                     <TextView
                         android:id="@+id/viewAllLink"
@@ -383,7 +396,6 @@
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <!-- Bottom Actions -->
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
