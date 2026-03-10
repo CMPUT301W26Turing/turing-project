@@ -36,6 +36,7 @@
         android:id="@+id/eventDetails"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        app:layout_constrainedHeight="true"
         app:layout_constraintTop_toBottomOf="@id/eventDetailsTitle"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -101,5 +102,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
     

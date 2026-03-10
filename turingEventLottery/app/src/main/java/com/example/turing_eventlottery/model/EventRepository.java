@@ -2,17 +2,22 @@ package com.example.turing_eventlottery.model;
 
 import com.google.firebase.Timestamp;
 import android.util.Log;
+import android.util.Pair;
 
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class EventRepository {
@@ -87,6 +92,30 @@ public class EventRepository {
                 callback.onCallback(null);
             }
         });
+    }
+
+    public void getEventRegPeriod(String eventId, EventCallback<Pair<Date, Date>> callback) {
+        eventsCollection.document(eventId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    try {
+                        String regStartStr = documentSnapshot.getString("regStart");
+                        String regEndStr = documentSnapshot.getString("regEnd");
+
+                        if (regStartStr == null || regEndStr == null) {
+                            callback.onCallback(null);
+                            return;
+                        }
+
+                        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy, HH:mm", Locale.getDefault());
+                        Date regStart = sdf.parse(regStartStr);
+                        Date regEnd = sdf.parse(regEndStr);
+
+                        callback.onCallback(new Pair<>(regStart, regEnd));
+                    } catch (Exception e) {
+                        callback.onCallback(null);
+                    }
+                })
+                .addOnFailureListener(e -> callback.onCallback(null));
     }
 
     public void addUserToWaitList(String eventId, User user, EventCallback<Boolean> callback) {
