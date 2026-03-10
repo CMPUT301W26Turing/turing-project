@@ -50,4 +50,11 @@ public class NotificationRepository {
                     }
                 });
     }
+
+    public void updateNotificationStatus(String notificationId, String status, EventCallback<Boolean> callback) {
+        notificationsCollection.document(notificationId)
+                .update("status", status)
+                .addOnSuccessListener(v -> callback.onCallback(true))
+                .addOnFailureListener(e -> callback.onCallback(false));
+    }
 }
