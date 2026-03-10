@@ -20,9 +20,11 @@ public class EventRepository {
     private static final String COLLECTION_NAME = "events";
 
     private final CollectionReference eventsCollection;
+    private final UserRepository userRepository;
 
     public EventRepository() {
         eventsCollection = FirebaseFirestore.getInstance().collection(COLLECTION_NAME);
+        userRepository = new UserRepository();
     }
 
     public void addEvent(Event event, EventCallback<Boolean> callback) {
@@ -106,9 +108,9 @@ public class EventRepository {
                 .addOnFailureListener(e -> callback.onCallback(false));
     }
 
-    public void removeUserFromWaitlist(String eventId, String userId, EventCallback<Boolean> callback) {
+    public void removeUserFromWaitlist(String eventId, User user, EventCallback<Boolean> callback) {
         eventsCollection.document(eventId).collection("waitlist")
-                .document(userId)
+                .document(user.getUserId())
                 .delete()
                 .addOnSuccessListener(v -> callback.onCallback(true))
                 .addOnFailureListener(e -> callback.onCallback(false));
@@ -140,13 +142,19 @@ public class EventRepository {
     }
 
     public void registerParticipant(String eventId, String userId, EventCallback<Boolean> callback) {
-        // Remove from waitlist collection and add to participants array in event doc
-        removeUserFromWaitlist(eventId, userId, success -> {
-            if (success) {
-                eventsCollection.document(eventId)
-                        .update("participants", FieldValue.arrayUnion(userId))
-                        .addOnSuccessListener(v -> callback.onCallback(true))
-                        .addOnFailureListener(e -> callback.onCallback(false));
+        userRepository.getUser(userId, user -> {
+            if (user != null) {
+                // Remove from waitlist collection and add to participants array in event doc
+                removeUserFromWaitlist(eventId, user, success -> {
+                    if (success) {
+                        eventsCollection.document(eventId)
+                                .update("participants", FieldValue.arrayUnion(userId))
+                                .addOnSuccessListener(v -> callback.onCallback(true))
+                                .addOnFailureListener(e -> callback.onCallback(false));
+                    } else {
+                        callback.onCallback(false);
+                    }
+                });
             } else {
                 callback.onCallback(false);
             }

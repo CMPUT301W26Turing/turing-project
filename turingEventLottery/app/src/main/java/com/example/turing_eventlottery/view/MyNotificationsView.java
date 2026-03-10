@@ -16,6 +16,7 @@ import com.example.turing_eventlottery.model.Notification;
 import com.example.turing_eventlottery.model.NotificationRepository;
 import com.example.turing_eventlottery.model.User;
 import com.example.turing_eventlottery.model.UserCallback;
+import com.example.turing_eventlottery.model.UserRepository;
 import com.example.turing_eventlottery.viewmodel.UserViewModel;
 
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ public class MyNotificationsView extends AppCompatActivity implements Notificati
 
     private NotificationRepository notificationRepository;
     private EventRepository eventRepository;
+    private UserRepository userRepository;
     private NotificationAdapter adapter;
     private RecyclerView recyclerView;
     private TextView noNotificationsText;
@@ -38,6 +40,7 @@ public class MyNotificationsView extends AppCompatActivity implements Notificati
 
         notificationRepository = new NotificationRepository();
         eventRepository = new EventRepository();
+        userRepository = new UserRepository();
         userViewModel = new UserViewModel(this);
 
         initViews();
@@ -95,16 +98,24 @@ public class MyNotificationsView extends AppCompatActivity implements Notificati
 
     @Override
     public void onDecline(Notification notification) {
-        // Remove from waitlist and set status to Declined
-        eventRepository.removeUserFromWaitlist(notification.getEventId(), notification.getUserId(), success -> {
-            if (success) {
-                notificationRepository.updateNotificationStatus(notification.getId(), "Declined", result -> {
-                    Toast.makeText(this, "Invitation Declined", Toast.LENGTH_SHORT).show();
-                    triggerNewLotteryDraw(notification.getEventId());
-                    loadNotifications();
-                });
-            } else {
-                Toast.makeText(this, "Failed to decline invitation", Toast.LENGTH_SHORT).show();
+        userRepository.getUser(notification.getUserId(), new UserCallback() {
+            @Override
+            public void onSuccess(User user) {
+                if (user != null) {
+                    eventRepository.removeUserFromWaitlist(notification.getEventId(), user, success -> {
+                        if (success) {
+                            notificationRepository.updateNotificationStatus(notification.getId(), "Declined", result -> {
+                                Toast.makeText(MyNotificationsView.this, "Invitation Declined", Toast.LENGTH_SHORT).show();
+                                triggerNewLotteryDraw(notification.getEventId());
+                                loadNotifications();
+                            });
+                        } else {
+                            Toast.makeText(MyNotificationsView.this, "Failed to decline invitation", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                } else {
+                    Toast.makeText(MyNotificationsView.this, "User not found", Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
