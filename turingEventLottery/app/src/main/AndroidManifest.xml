@@ -44,7 +44,10 @@
             android:name=".view.ManageEventView"
             android:exported="false" />
         <activity 
-            android:name=".view.MyNotificationsView" 
+            android:name=".view.MyNotificationsView"
+            android:exported="false" />
+        <activity
+            android:name=".view.SendNotificationView"
             android:exported="false" />
         <meta-data
             android:name="preloaded_fonts"

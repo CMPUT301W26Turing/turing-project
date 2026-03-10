@@ -64,10 +64,10 @@ public class EntrantDashboardView extends AppCompatActivity {
             Intent intent = new Intent(EntrantDashboardView.this, BrowseEventsView.class);
             startActivity(intent);
         });
-//        myNotifications.setOnClickListener(v -> {
-//            Intent intent = new Intent(this, MyNotifications.class);
-//            startActivity(intent);
-//        });
+        myNotifications.setOnClickListener(v -> {
+            Intent intent = new Intent(EntrantDashboardView.this, MyNotificationsView.class);
+            startActivity(intent);
+        });
 //        myHistory.setOnClickListener(v -> {
 //            Intent intent = new Intent(this, MyHistory.class);
 //            startActivity(intent);

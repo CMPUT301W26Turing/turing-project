@@ -7,6 +7,7 @@ import android.util.Pair;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -39,12 +40,14 @@ public class EventRepository {
     private static final String COLLECTION_NAME = "events";
 
     private final CollectionReference eventsCollection;
+    private final UserRepository userRepository;
 
     /**
      * Constructs a new EventRepository with a reference to the Firestore events collection
      */
     public EventRepository() {
         eventsCollection = FirebaseFirestore.getInstance().collection(COLLECTION_NAME);
+        userRepository = new UserRepository();
     }
 
     /**
@@ -67,7 +70,7 @@ public class EventRepository {
     }
 
     /**
-     * Gets all events fromn the database.
+     * Gets all events from the database.
      *
      * @param callback callback returning a list of events, or null if an error occurs
      */
@@ -180,6 +183,7 @@ public class EventRepository {
         Map<String, Object> waitlistEntry = new HashMap<>();
         waitlistEntry.put("username", user.getUserName());
         waitlistEntry.put("timestamp", Timestamp.now());
+        waitlistEntry.put("status", "Waiting");
 
         eventRef.collection("waitlist")
                 .document(user.getUserId())
@@ -197,12 +201,83 @@ public class EventRepository {
      *                 {@code false} otherwise
      */
     public void removeUserFromWaitlist(String eventId, User user, EventCallback<Boolean> callback) {
-        CollectionReference waitlistRef = eventsCollection.document(eventId).collection("waitlist");
-
-        waitlistRef.document(user.getUserId())
+        eventsCollection.document(eventId).collection("waitlist")
+                .document(user.getUserId())
                 .delete()
                 .addOnSuccessListener(v -> callback.onCallback(true))
                 .addOnFailureListener(e -> callback.onCallback(false));
+    }
+
+    /**
+     * Gets the IDs of all users currently on the waitlist for a specific event.
+     * Only users whose waitlist status is "Waiting" will be returned.
+     *
+     * @param eventId The unique ID of the event whose waitlist is being retrieved
+     * @param callback callback that returns a list of user IDs on the waitlist.
+     *                 Returns null if the query fails
+     */
+    public void getWaitlistUsers(String eventId, EventCallback<List<String>> callback) {
+        eventsCollection.document(eventId).collection("waitlist")
+                .whereEqualTo("status", "Waiting")
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        List<String> userIds = new ArrayList<>();
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            userIds.add(document.getId());
+                        }
+                        callback.onCallback(userIds);
+                    } else {
+                        callback.onCallback(null);
+                    }
+                });
+    }
+
+    /**
+     * Updates the waitlist status of a specific user for an event.
+     *
+     * @param eventId The unique ID of the event
+     * @param userId The unique ID of the user whose status is being updated
+     * @param status The new status to assign to the user
+     * @param callback callback that returns true if the update was successful,
+     *                 or false if the update failed
+     */
+    public void updateWaitlistStatus(String eventId, String userId, String status, EventCallback<Boolean> callback) {
+        eventsCollection.document(eventId).collection("waitlist")
+                .document(userId)
+                .update("status", status)
+                .addOnSuccessListener(v -> callback.onCallback(true))
+                .addOnFailureListener(e -> callback.onCallback(false));
+    }
+
+    /**
+     * Registers a user as a participant in an event.
+     * The user is first removed from the event waitlist and then added
+     * to the event's participants list.
+     *
+     * @param eventId The unique ID of the event
+     * @param userId The unique ID of the user being registered
+     * @param callback callback that returns true if the user was successfully
+     *                 registered as a participant, or false if failed
+     */
+    public void registerParticipant(String eventId, String userId, EventCallback<Boolean> callback) {
+        userRepository.getUser(userId, user -> {
+            if (user != null) {
+                // Remove from waitlist collection and add to participants array in event doc
+                removeUserFromWaitlist(eventId, user, success -> {
+                    if (success) {
+                        eventsCollection.document(eventId)
+                                .update("participants", FieldValue.arrayUnion(userId))
+                                .addOnSuccessListener(v -> callback.onCallback(true))
+                                .addOnFailureListener(e -> callback.onCallback(false));
+                    } else {
+                        callback.onCallback(false);
+                    }
+                });
+            } else {
+                callback.onCallback(false);
+            }
+        });
     }
 
     /**
