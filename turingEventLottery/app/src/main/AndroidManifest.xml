@@ -44,7 +44,7 @@
             android:name=".view.ManageEventView"
             android:exported="false" />
         <activity 
-            android:name=".view.MyNotificationsView" 
+            android:name=".view.MyNotificationsView"
             android:exported="false" />
         <activity
             android:name=".view.SendNotificationView"
