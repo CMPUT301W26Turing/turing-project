@@ -1,7 +1,21 @@
 package com.example.turing_eventlottery.model;
 
+import com.example.turing_eventlottery.viewmodel.EventViewModel;
 import com.google.firebase.firestore.Exclude;
 
+/**
+ * Represents an event in the system.
+ *  <p>
+ *      An event contains all the information needed for display and registration.
+ *      Registration times are stored as a String in the format "MM/dd/yyyy, HH:mm"
+ *  </p>
+ *
+ * @author Matthew Adams
+ * @author Miro
+ * @version 1.1
+ * @since 1.0
+ * @see EventViewModel
+ */
 public class Event {
     private String id;
     private String organizerId;
@@ -17,8 +31,30 @@ public class Event {
     private int waitlistCap;
     private boolean geolocationRequired;
 
+    /**
+     * A default constructor required for Firebase Firestore.
+     * Firestone uses this constructor when reconstruction Event objects
+     * from the database.
+     */
     public Event() {}
 
+    /**
+     * Constructs an Event with all fields.
+     *
+     * @param id unique event ID
+     * @param organizerId ID of the organizer
+     * @param name event name
+     * @param category event category
+     * @param location event location
+     * @param date event date
+     * @param posterUrl events poster image
+     * @param description event description
+     * @param regStart event registration start
+     * @param regEnd event registration end
+     * @param winnersToDraw event winners
+     * @param waitlistCap event waitlist limit
+     * @param geolocationRequired event region where to accept entrants
+     */
     public Event(String id, String organizerId, String name, String category,
                  String location, String date, String posterUrl,
                  String description, String regStart, String regEnd,

@@ -57,17 +57,12 @@ public class User {
      * not found in the database.
      *
      * @param userId the userID
-     * @return new user
+     * @return User a guest User object
      */
     public static User createGuest(String userId) {
         return new User(userId, "Guest", null, null, false, false);
     }
 
-    /**
-     * Gets the unique ID of the user
-     *
-     * @return the user ID
-     */
     public String getUserId() {
         return userId;
     }
@@ -96,29 +91,14 @@ public class User {
         this.userPhoneNumber = userPhoneNumber;
     }
 
-    /**
-     * Checks if the user is an admin
-     *
-     * @return true if the user is an admin, otherwise returns false
-     */
     public boolean isAdmin() {
         return isAdmin;
     }
 
-    /**
-     * Checks if the user is banned
-     *
-     * @return true if the user is banned, otherwise returns false
-     */
     public boolean isBanned() {
         return isBanned;
     }
 
-    /**
-     * Sets the banned status for the user
-     *
-     * @param banned true to ban the user, false to unban
-     */
     public void setBanned(boolean banned) {
         isBanned = banned;
     }

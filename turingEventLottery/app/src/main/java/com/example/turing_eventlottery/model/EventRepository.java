@@ -19,16 +19,40 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+/**
+ * Repository class for interacting with Event data within Firebase Firestore Database.
+ * <p>
+ *     This class handles CRUD operations for events; adding events, getting events,
+ *     managing waitlists, and fetching registration periods.
+ * </p>
+ *
+ * @author Matthew Adams
+ * @author Miro
+ * @version 1.1
+ * @since 1.0
+ * @see Event
+ * @see User
+ * @see EventCallback
+ */
 public class EventRepository {
     private static final String TAG = "EventRepository";
     private static final String COLLECTION_NAME = "events";
 
     private final CollectionReference eventsCollection;
 
+    /**
+     * Constructs a new EventRepository with a reference to the Firestore events collection
+     */
     public EventRepository() {
         eventsCollection = FirebaseFirestore.getInstance().collection(COLLECTION_NAME);
     }
 
+    /**
+     * Adds a new event to the database
+     *
+     * @param event the Event to add
+     * @param callback callback returning true if successful, false otherwise
+     */
     public void addEvent(Event event, EventCallback<Boolean> callback) {
         eventsCollection.add(event)
                 .addOnSuccessListener(documentReference -> {
@@ -42,6 +66,11 @@ public class EventRepository {
                 });
     }
 
+    /**
+     * Gets all events fromn the database.
+     *
+     * @param callback callback returning a list of events, or null if an error occurs
+     */
     public void getEvents(EventCallback<List<Event>> callback) {
         eventsCollection.get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
@@ -59,6 +88,12 @@ public class EventRepository {
         });
     }
 
+    /**
+     * Retrieves all events created by a specific organizer.
+     *
+     * @param organizerId the ID of the organizer
+     * @param callback callback returning a list of events, or null if an error occurs
+     */
     public void getEventsByOrganizer(String organizerId, EventCallback<List<Event>> callback) {
         eventsCollection.whereEqualTo("organizerId", organizerId).get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
@@ -76,6 +111,12 @@ public class EventRepository {
         });
     }
 
+    /**
+     * Gets a single event by its ID.
+     *
+     * @param eventId the event ID
+     * @param callback callback returning the Event, or null if not found or error occurs
+     */
     public void getEventById(String eventId, EventCallback<Event> callback) {
         eventsCollection.document(eventId).get().addOnCompleteListener(task -> {
             if (task.isSuccessful() && task.getResult() != null) {
@@ -91,6 +132,13 @@ public class EventRepository {
         });
     }
 
+    /**
+     * Gets the registration period (start and end dates) for an event
+     *
+     * @param eventId the event ID
+     * @param callback callback returning a {@link Pair} of {@link Date} objects for
+     *                 start and end periods or {@code null} if an error occurs
+     */
     public void getEventRegPeriod(String eventId, EventCallback<Pair<Date, Date>> callback) {
         eventsCollection.document(eventId).get()
                 .addOnSuccessListener(documentSnapshot -> {
@@ -115,6 +163,13 @@ public class EventRepository {
                 .addOnFailureListener(e -> callback.onCallback(null));
     }
 
+    /**
+     * Adds a user to the waitlist for an event.
+     *
+     * @param eventId the event ID
+     * @param user the user to add
+     * @param callback callback returning {@code true} if successful, {@code false} otherwise
+     */
     public void addUserToWaitList(String eventId, User user, EventCallback<Boolean> callback) {
         if ("Guest".equals(user.getUserName())) {
             callback.onCallback(false);
@@ -133,6 +188,14 @@ public class EventRepository {
                 .addOnFailureListener(e -> callback.onCallback(false));
     }
 
+    /**
+     * Removes a user from the waitlist of an event.
+     *
+     * @param eventId the event ID
+     * @param user the user to remove
+     * @param callback callback returning {@code true} if the user is on the waitlist,
+     *                 {@code false} otherwise
+     */
     public void removeUserFromWaitlist(String eventId, User user, EventCallback<Boolean> callback) {
         CollectionReference waitlistRef = eventsCollection.document(eventId).collection("waitlist");
 
@@ -142,6 +205,14 @@ public class EventRepository {
                 .addOnFailureListener(e -> callback.onCallback(false));
     }
 
+    /**
+     * Checks if a user is on the event's waitlist.
+     *
+     * @param eventId the event ID
+     * @param user the user to check
+     * @param callback callback returning {@code true} if the user is on the waitlist,
+     *                 {@code false} otherwise.
+     */
     public void checkUserOnWaitlist(String eventId, User user, EventCallback<Boolean> callback) {
         eventsCollection
                 .document(eventId)
@@ -153,6 +224,12 @@ public class EventRepository {
                 });
     }
 
+    /**
+     * Gets the number of users on the waitlist for an event.
+     *
+     * @param eventId the event ID
+     * @param callback callback returning the waitlist count.
+     */
     public void getWaitlistCount(String eventId, EventCallback<Integer> callback) {
         eventsCollection
                 .document(eventId)
@@ -164,6 +241,12 @@ public class EventRepository {
                 });
     }
 
+    /**
+     * Gets the number of participants for an event.
+     *
+     * @param eventId the event ID
+     * @param callback callback returning the participants count
+     */
     public void getParticipantsCount(String eventId, EventCallback<Integer> callback) {
         eventsCollection
                 .document(eventId)
@@ -175,6 +258,12 @@ public class EventRepository {
                 });
     }
 
+    /**
+     * Gets the waitlist entrants in descending order of timestamp
+     *
+     * @param eventId the event ID
+     * @param callback callback returning a list of waitlist entries, or {@code null} if an error occurs
+     */
     public void getWaitlistEntrants(String eventId, EventCallback<List<Map<String, Object>>> callback) {
         eventsCollection
                 .document(eventId)
