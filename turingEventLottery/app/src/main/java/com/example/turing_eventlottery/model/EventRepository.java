@@ -266,8 +266,15 @@ public class EventRepository {
                 // Remove from waitlist collection and add to participants array in event doc
                 removeUserFromWaitlist(eventId, user, success -> {
                     if (success) {
+                        Map<String, Object> data = new HashMap<>();
+                        data.put("username", user.getUserName());
+                        data.put("timestamp", Timestamp.now());
+                        data.put("status", "Enrolled");
+
                         eventsCollection.document(eventId)
-                                .update("participants", FieldValue.arrayUnion(userId))
+                                .collection("participants")
+                                .document(userId)
+                                .set(data)
                                 .addOnSuccessListener(v -> callback.onCallback(true))
                                 .addOnFailureListener(e -> callback.onCallback(false));
                     } else {
@@ -356,6 +363,33 @@ public class EventRepository {
                 })
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Error getting waitlist entrants", e);
+                    callback.onCallback(null);
+                });
+    }
+
+    /**
+     * Gets the participants in descending order of timestamp
+     *
+     * @param eventId the event ID
+     * @param callback callback returning a list of participants, or null if an error occurs
+     */
+    public void getParticipants(String eventId, EventCallback<List<Map<String, Object>>> callback) {
+        eventsCollection
+                .document(eventId)
+                .collection("participants")
+                .orderBy("timestamp", Query.Direction.DESCENDING)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<Map<String, Object>> participants = new ArrayList<>();
+                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                        Map<String, Object> data = document.getData();
+                        data.put("userId", document.getId());
+                        participants.add(data);
+                    }
+                    callback.onCallback(participants);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error getting participants", e);
                     callback.onCallback(null);
                 });
     }
