@@ -60,7 +60,9 @@ public class WaitingEntrantsAdapter extends RecyclerView.Adapter<WaitingEntrants
             holder.entrantDetails.setText("Waiting");
         }
 
-        holder.statusText.setText("Pending");
+        String status = (String) entrant.get("status");
+        if (status == null) status = "Waiting";
+        holder.statusText.setText(status);
     }
 
     @Override

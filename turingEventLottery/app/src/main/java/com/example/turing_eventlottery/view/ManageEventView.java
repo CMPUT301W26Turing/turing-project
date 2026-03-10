@@ -46,7 +46,10 @@ public class ManageEventView extends AppCompatActivity {
     private RecyclerView entrantsRecyclerView;
     private MaterialButton runLotteryButton, drawSingleButton;
     private WaitingEntrantsAdapter entrantsAdapter;
-    private List<Map<String, Object>> waitlistData = new ArrayList<>();
+    
+    private List<Map<String, Object>> waitingList = new ArrayList<>();
+    private List<Map<String, Object>> invitedList = new ArrayList<>();
+    private List<Map<String, Object>> enrolledList = new ArrayList<>();
 
     private ImageView exportButton;
 
@@ -97,6 +100,19 @@ public class ManageEventView extends AppCompatActivity {
         entrantsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         entrantsAdapter = new WaitingEntrantsAdapter(new ArrayList<>());
         entrantsRecyclerView.setAdapter(entrantsAdapter);
+
+        statusTabs.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                updateListForTab(tab.getPosition());
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {}
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {}
+        });
     }
 
     private void loadEventDetails() {
@@ -105,7 +121,7 @@ public class ManageEventView extends AppCompatActivity {
         eventRepository.getEventById(eventId, event -> {
             if (event != null) {
                 displayEvent(event);
-                loadWaitlistEntrants();
+                loadAllParticipants();
             } else {
                 Toast.makeText(this, "Error loading event", Toast.LENGTH_SHORT).show();
             }
@@ -115,40 +131,73 @@ public class ManageEventView extends AppCompatActivity {
     private void displayEvent(Event event) {
         eventName.setText(event.getName());
         eventDateTime.setText(event.getDate());
-
-        int cap = event.getWaitlistCap();
-        
-        eventRepository.getWaitlistCount(event.getId(), count -> {
-            int currentWaitlist = count != null ? count : 0;
-            capacityValue.setText(currentWaitlist + "/" + cap);
-            spotsRemaining.setText((cap - currentWaitlist) + " spots remaining");
-
-            if (cap > 0) {
-                capacityProgress.setProgress((currentWaitlist * 100) / cap);
-            }
-            statusTabs.getTabAt(0).setText("Waiting " + currentWaitlist);
-        });
-        
-        eventRepository.getParticipantsCount(event.getId(), count -> {
-            int enrolled = count != null ? count : 0;
-            statusTabs.getTabAt(2).setText("Enrolled " + enrolled);
-        });
-
         geoSwitch.setChecked(event.isGeolocationRequired());
         runLotteryButton.setText("Run Lottery (" + event.getWinnersToDraw() + ")");
     }
 
-    private void loadWaitlistEntrants() {
+    private void loadAllParticipants() {
         if (eventId == null) return;
-        
+
         eventRepository.getWaitlistEntrants(eventId, entrants -> {
+            waitingList.clear();
+            invitedList.clear();
             if (entrants != null) {
-                this.waitlistData = entrants;
-                entrantsAdapter.updateEntrants(new ArrayList<>(waitlistData));
-            } else {
-                Toast.makeText(this, "Failed to load entrants", Toast.LENGTH_SHORT).show();
+                for (Map<String, Object> entrant : entrants) {
+                    String status = (String) entrant.get("status");
+                    if ("Invited".equals(status)) {
+                        invitedList.add(entrant);
+                    } else {
+                        waitingList.add(entrant);
+                    }
+                }
+            }
+
+            eventRepository.getParticipants(eventId, participants -> {
+                enrolledList.clear();
+                if (participants != null) {
+                    enrolledList.addAll(participants);
+                }
+                
+                updateUIWithData();
+            });
+        });
+    }
+
+    private void updateUIWithData() {
+        statusTabs.getTabAt(0).setText("Waiting " + waitingList.size());
+        statusTabs.getTabAt(1).setText("Invited " + invitedList.size());
+        statusTabs.getTabAt(2).setText("Enrolled " + enrolledList.size());
+
+        eventRepository.getEventById(eventId, event -> {
+            if (event != null) {
+                int cap = event.getWaitlistCap();
+                int totalWaitlist = waitingList.size() + invitedList.size();
+                capacityValue.setText(totalWaitlist + "/" + cap);
+                spotsRemaining.setText(Math.max(0, cap - totalWaitlist) + " spots remaining");
+                if (cap > 0) {
+                    capacityProgress.setProgress(Math.min(100, (totalWaitlist * 100) / cap));
+                }
             }
         });
+
+        updateListForTab(statusTabs.getSelectedTabPosition());
+    }
+
+    private void updateListForTab(int position) {
+        List<Map<String, Object>> dataToDisplay;
+        switch (position) {
+            case 1:
+                dataToDisplay = invitedList;
+                break;
+            case 2:
+                dataToDisplay = enrolledList;
+                break;
+            case 0:
+            default:
+                dataToDisplay = waitingList;
+                break;
+        }
+        entrantsAdapter.updateEntrants(new ArrayList<>(dataToDisplay));
     }
 
     private void showSortMenu() {
@@ -158,20 +207,28 @@ public class ManageEventView extends AppCompatActivity {
         
         popup.setOnMenuItemClickListener(item -> {
             if (item.getTitle().equals("Name (A-Z)")) {
-                sortWaitlist(true);
+                sortCurrentList(true);
             } else {
-                sortWaitlist(false);
+                sortCurrentList(false);
             }
             return true;
         });
         popup.show();
     }
 
-    private void sortWaitlist(boolean byName) {
-        if (waitlistData == null || waitlistData.isEmpty()) return;
+    private void sortCurrentList(boolean byName) {
+        int position = statusTabs.getSelectedTabPosition();
+        List<Map<String, Object>> listToSort;
+        switch (position) {
+            case 1: listToSort = invitedList; break;
+            case 2: listToSort = enrolledList; break;
+            default: listToSort = waitingList; break;
+        }
+
+        if (listToSort == null || listToSort.isEmpty()) return;
 
         if (byName) {
-            Collections.sort(waitlistData, (a, b) -> {
+            Collections.sort(listToSort, (a, b) -> {
                 String nameA = (String) a.get("username");
                 String nameB = (String) b.get("username");
                 if (nameA == null) nameA = "";
@@ -179,53 +236,51 @@ public class ManageEventView extends AppCompatActivity {
                 return nameA.compareToIgnoreCase(nameB);
             });
         } else {
-            Collections.sort(waitlistData, (a, b) -> {
+            Collections.sort(listToSort, (a, b) -> {
                 Timestamp tsA = (Timestamp) a.get("timestamp");
                 Timestamp tsB = (Timestamp) b.get("timestamp");
                 if (tsA == null || tsB == null) return 0;
                 return tsB.compareTo(tsA); // Descending
             });
         }
-        entrantsAdapter.updateEntrants(new ArrayList<>(waitlistData));
+        entrantsAdapter.updateEntrants(new ArrayList<>(listToSort));
     }
 
     private void runLottery() {
         eventRepository.getEventById(eventId, event -> {
             if (event == null) return;
-            eventRepository.getWaitlistUsers(eventId, waitingUserIds -> {
-                if (waitingUserIds == null || waitingUserIds.isEmpty()) {
-                    Toast.makeText(this, "No users in waiting list", Toast.LENGTH_SHORT).show();
-                    return;
-                }
+            if (waitingList.isEmpty()) {
+                Toast.makeText(this, "No users in waiting list", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
-                int numToDraw = Math.min(event.getWinnersToDraw(), waitingUserIds.size());
-                Collections.shuffle(waitingUserIds);
-                List<String> winners = waitingUserIds.subList(0, numToDraw);
+            int numToDraw = Math.min(event.getWinnersToDraw(), waitingList.size());
+            List<Map<String, Object>> pool = new ArrayList<>(waitingList);
+            Collections.shuffle(pool);
+            List<Map<String, Object>> winners = pool.subList(0, numToDraw);
 
-                for (String userId : winners) {
-                    notifyWinner(userId, event);
-                }
-                Toast.makeText(this, "Lottery completed. " + numToDraw + " entrants invited.", Toast.LENGTH_SHORT).show();
-                loadEventDetails();
-            });
+            for (Map<String, Object> winner : winners) {
+                String userId = (String) winner.get("userId");
+                notifyWinner(userId, event);
+            }
+            Toast.makeText(this, "Lottery completed. " + numToDraw + " entrants invited.", Toast.LENGTH_SHORT).show();
+            loadAllParticipants();
         });
     }
 
     private void drawSingle() {
         eventRepository.getEventById(eventId, event -> {
             if (event == null) return;
-            eventRepository.getWaitlistUsers(eventId, waitingUserIds -> {
-                if (waitingUserIds == null || waitingUserIds.isEmpty()) {
-                    Toast.makeText(this, "No users in waiting list", Toast.LENGTH_SHORT).show();
-                    return;
-                }
+            if (waitingList.isEmpty()) {
+                Toast.makeText(this, "No users in waiting list", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
-                Collections.shuffle(waitingUserIds);
-                String winnerId = waitingUserIds.get(0);
-                notifyWinner(winnerId, event);
-                Toast.makeText(this, "One entrant invited.", Toast.LENGTH_SHORT).show();
-                loadEventDetails();
-            });
+            Collections.shuffle(waitingList);
+            String winnerId = (String) waitingList.get(0).get("userId");
+            notifyWinner(winnerId, event);
+            Toast.makeText(this, "One entrant invited.", Toast.LENGTH_SHORT).show();
+            loadAllParticipants();
         });
     }
 
