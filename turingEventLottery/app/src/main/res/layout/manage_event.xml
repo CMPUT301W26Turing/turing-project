@@ -288,7 +288,7 @@
                 android:background="@android:color/transparent"
                 app:tabBackground="@drawable/tab_selector"
                 app:tabIndicatorHeight="0dp"
-                app:tabMode="fixed"
+                app:tabMode="scrollable"
                 app:tabRippleColor="@null"
                 app:tabSelectedTextColor="@color/white"
                 app:tabTextAppearance="@style/TabTextAppearance"
@@ -308,6 +308,11 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Enrolled 0" />
+
+                <com.google.android.material.tabs.TabItem
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Cancelled 0" />
             </com.google.android.material.tabs.TabLayout>
 
             <com.google.android.material.card.MaterialCardView

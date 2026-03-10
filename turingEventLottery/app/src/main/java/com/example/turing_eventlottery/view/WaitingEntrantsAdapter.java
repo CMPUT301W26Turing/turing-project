@@ -3,6 +3,8 @@ package com.example.turing_eventlottery.view;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -20,9 +22,18 @@ import java.util.Map;
 public class WaitingEntrantsAdapter extends RecyclerView.Adapter<WaitingEntrantsAdapter.EntrantViewHolder> {
 
     private List<Map<String, Object>> entrants;
+    private OnEntrantActionListener actionListener;
+
+    public interface OnEntrantActionListener {
+        void onCancelInvitation(String userId);
+    }
 
     public WaitingEntrantsAdapter(List<Map<String, Object>> entrants) {
         this.entrants = entrants;
+    }
+
+    public void setOnEntrantActionListener(OnEntrantActionListener listener) {
+        this.actionListener = listener;
     }
 
     @NonNull
@@ -36,6 +47,7 @@ public class WaitingEntrantsAdapter extends RecyclerView.Adapter<WaitingEntrants
     public void onBindViewHolder(@NonNull EntrantViewHolder holder, int position) {
         Map<String, Object> entrant = entrants.get(position);
         String username = (String) entrant.get("username");
+        String userId = (String) entrant.get("userId");
         if (username == null) username = "Unknown User";
         
         holder.entrantName.setText(username);
@@ -63,6 +75,21 @@ public class WaitingEntrantsAdapter extends RecyclerView.Adapter<WaitingEntrants
         String status = (String) entrant.get("status");
         if (status == null) status = "Waiting";
         holder.statusText.setText(status);
+
+        holder.moreButton.setOnClickListener(v -> {
+            PopupMenu popup = new PopupMenu(v.getContext(), v);
+            popup.getMenu().add("Cancel Invitation");
+            popup.setOnMenuItemClickListener(item -> {
+                if (item.getTitle().equals("Cancel Invitation")) {
+                    if (actionListener != null && userId != null) {
+                        actionListener.onCancelInvitation(userId);
+                    }
+                    return true;
+                }
+                return false;
+            });
+            popup.show();
+        });
     }
 
     @Override
@@ -77,6 +104,7 @@ public class WaitingEntrantsAdapter extends RecyclerView.Adapter<WaitingEntrants
 
     static class EntrantViewHolder extends RecyclerView.ViewHolder {
         TextView entrantName, entrantDetails, statusText, avatarText;
+        ImageView moreButton;
 
         public EntrantViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -84,6 +112,7 @@ public class WaitingEntrantsAdapter extends RecyclerView.Adapter<WaitingEntrants
             entrantDetails = itemView.findViewById(R.id.entrantDetails);
             statusText = itemView.findViewById(R.id.statusText);
             avatarText = itemView.findViewById(R.id.avatarText);
+            moreButton = itemView.findViewById(R.id.moreButton);
         }
     }
 }
