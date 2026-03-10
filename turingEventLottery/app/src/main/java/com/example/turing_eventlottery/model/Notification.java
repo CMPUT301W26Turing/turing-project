@@ -24,6 +24,15 @@ public class Notification {
         this.timestamp = System.currentTimeMillis();
     }
 
+    public Notification(String userId, String eventId, String eventName, String eventDate, String status) {
+        this.userId = userId;
+        this.eventId = eventId;
+        this.eventName = eventName;
+        this.eventDate = eventDate;
+        this.status = status;
+        this.timestamp = System.currentTimeMillis();
+    }
+
     @Exclude
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
