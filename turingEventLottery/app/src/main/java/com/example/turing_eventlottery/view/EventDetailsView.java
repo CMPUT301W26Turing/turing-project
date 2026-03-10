@@ -4,6 +4,7 @@ import static androidx.databinding.DataBindingUtil.setContentView;
 
 import android.content.res.ColorStateList;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -51,6 +52,14 @@ public class EventDetailsView extends AppCompatActivity {
 
         if (eventId != null) {
             eventViewModel.getEventById(eventId, this::displayEvent);
+
+            eventViewModel.checkRegistrationStatus(eventId, isOpen -> {
+                if (isOpen) {
+                    waitlistButton.setEnabled(true);
+                } else {
+                    waitlistButton.setEnabled(false);
+                }
+            });
         }
 
         userViewModel.loadUser(loadedUser -> {
@@ -61,7 +70,9 @@ public class EventDetailsView extends AppCompatActivity {
 
             waitlistButton.setOnClickListener(v -> {
                 if ("Guest".equals(loadedUser.getUserName())) {
-                    Toast.makeText(this, "You must create an account first, go to My Profile", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this,
+                            "You must create an account first, go to My Profile",
+                            Toast.LENGTH_SHORT).show();
                     return;
                 }
 
@@ -69,20 +80,28 @@ public class EventDetailsView extends AppCompatActivity {
                     eventViewModel.leaveWaitlist(loadedUser, eventId, success -> {
                         if (success) {
                             isOnWaitlist = false;
-                            Toast.makeText(this, "You have left the waitlist", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this,
+                                    "You have left the waitlist",
+                                    Toast.LENGTH_SHORT).show();
                             updateWaitlistButton(waitlistButton);
                         } else {
-                            Toast.makeText(this, "Failed to leave waitlist, try again", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this,
+                                    "Failed to leave waitlist, try again",
+                                    Toast.LENGTH_SHORT).show();
                         }
                     });
                 } else {
                     eventViewModel.joinWaitlist(loadedUser, eventId, success -> {
                         if (success) {
                             isOnWaitlist = true;
-                            Toast.makeText(this, "You have joined the waitlist", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this,
+                                    "You have joined the waitlist",
+                                    Toast.LENGTH_SHORT).show();
                             updateWaitlistButton(waitlistButton);
                         } else {
-                            Toast.makeText(this, "Failed to join waitlist, try again", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this,
+                                    "Failed to join waitlist, try again",
+                                    Toast.LENGTH_SHORT).show();
                         }
                     });
                 }
