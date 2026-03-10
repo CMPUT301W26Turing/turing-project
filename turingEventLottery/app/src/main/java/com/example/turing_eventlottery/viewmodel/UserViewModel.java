@@ -18,7 +18,7 @@ import com.example.turing_eventlottery.model.UserCallback;
  * </p>
  *
  * @author Matthew Adams
- * @version 1.0
+ * @version 1.1
  * @since 1.0
  * @see User
  * @see UserRepository
@@ -65,6 +65,13 @@ public class UserViewModel {
         });
     }
 
+    /**
+     * Edits the personal information fields of the current user
+     *
+     * @param name the user's full name
+     * @param email the user's email
+     * @param phone
+     */
     public void updateUserProfile(String name, String email, String phone) {
         user.setUserName(name);
         user.setUserEmail(email);
