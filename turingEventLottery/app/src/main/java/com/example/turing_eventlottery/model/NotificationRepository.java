@@ -31,6 +31,16 @@ public class NotificationRepository {
                 });
     }
 
+    public void removeNotification(Notification notification) {
+        notificationsCollection.document(notification.getId()).delete()
+                .addOnSuccessListener(v -> {
+                    Log.d(TAG, "Notification removed with ID: " + notification.getId());
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error removing notification", e);
+                });
+    }
+
     public void getNotificationsByUserId(String userId, EventCallback<List<Notification>> callback) {
         notificationsCollection.whereEqualTo("userId", userId)
                 .orderBy("timestamp", Query.Direction.DESCENDING)
