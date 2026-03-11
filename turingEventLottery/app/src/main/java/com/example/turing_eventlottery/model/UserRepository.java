@@ -1,5 +1,8 @@
 package com.example.turing_eventlottery.model;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.provider.Settings;
 import android.util.Log;
 
 import com.google.firebase.firestore.CollectionReference;
@@ -72,4 +75,60 @@ public class UserRepository {
                 .addOnSuccessListener(v -> Log.d(TAG, "User successfully written to database"))
                 .addOnFailureListener(e -> Log.e(TAG, "Error writing user to database", e));
     }
+
+    /**
+     * Logs in user using device ID.
+     * Creates new user if not exists, or returns existing user.
+     *
+     * @param context Android context
+     * @param callback callback to return result
+     */
+    public void loginWithDeviceId(Context context, UserCallback callback) {
+        String deviceId = getDeviceId(context);
+
+        // Try to find user with this device ID
+        usersCollection.whereEqualTo("deviceId", deviceId)
+                .limit(1)
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    if (!querySnapshot.isEmpty()) {
+                        // User exists - return first match
+                        User existingUser = querySnapshot.getDocuments().get(0).toObject(User.class);
+                        callback.onSuccess(existingUser);
+                    } else {
+                        // Create new user with device ID
+                        String newUserId = java.util.UUID.randomUUID().toString();
+                        User newUser = new User(newUserId, null, false, false);
+                        newUser.setDeviceId(deviceId);
+
+                        addOrUpdateUser(newUser);
+                        callback.onSuccess(newUser);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Device login error", e);
+                    // Fallback: create guest user
+                    callback.onSuccess(new User(java.util.UUID.randomUUID().toString(), null, false, false));
+                });
+    }
+
+    /**
+     * Helper: Gets or creates a unique device ID
+     */
+    private String getDeviceId(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences("device_prefs", Context.MODE_PRIVATE);
+        String deviceId = prefs.getString("device_id", null);
+
+        if (deviceId == null) {
+            deviceId = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+            // Fallback if ANDROID_ID is null
+            if (deviceId == null) {
+                deviceId = java.util.UUID.randomUUID().toString();
+            }
+            prefs.edit().putString("device_id", deviceId).apply();
+        }
+        return deviceId;
+    }
+
+
 }

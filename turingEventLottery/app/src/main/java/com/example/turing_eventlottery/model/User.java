@@ -22,6 +22,8 @@ public class User {
     private boolean isAdmin = false;
     private boolean isBanned = false;
 
+    private String deviceId;
+
     /**
      * A default constructor required for Firebase Firestore.
      * Firestone uses this constructor when reconstructing
@@ -108,5 +110,14 @@ public class User {
      */
     public void setBanned(boolean banned) {
         isBanned = banned;
+    }
+
+
+    public String getDeviceId() {
+        return deviceId;
+    }
+
+    public void setDeviceId(String deviceId) {
+        this.deviceId = deviceId;
     }
 }
