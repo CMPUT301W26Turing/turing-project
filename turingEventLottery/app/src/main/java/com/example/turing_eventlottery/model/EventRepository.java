@@ -80,4 +80,16 @@ public class EventRepository {
             }
         });
     }
+
+    public void deleteEvent(String eventId, EventCallback<Boolean> callback) {
+        eventsCollection.document(eventId).delete()
+                .addOnSuccessListener(aVoid -> {
+                    Log.d(TAG, "Event successfully deleted!");
+                    callback.onCallback(true);
+                })
+                .addOnFailureListener(e -> {
+                    Log.w(TAG, "Error deleting event", e);
+                    callback.onCallback(false);
+                });
+    }
 }

@@ -26,7 +26,13 @@
             android:name=".view.BrowseEventsView"
             android:exported="false" />
         <activity
+            android:name=".view.BrowseProfilesView"
+            android:exported="false" />
+        <activity
             android:name=".view.OrganizerDashboardView"
+            android:exported="false" />
+        <activity
+            android:name=".view.AdminDashboardView"
             android:exported="false" />
         <activity
             android:name=".view.CreateEventView"
@@ -36,6 +42,9 @@
             android:exported="false" />
         <activity
             android:name=".view.EventDetailsView"
+            android:exported="false" />
+        <activity
+            android:name=".view.ProfileDetailsView"
             android:exported="false" />
         <activity android:name=".view.ManageEventView" />
         <meta-data

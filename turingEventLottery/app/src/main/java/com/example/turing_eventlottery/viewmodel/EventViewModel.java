@@ -5,7 +5,6 @@ import com.example.turing_eventlottery.model.EventRepository;
 import com.example.turing_eventlottery.model.EventCallback;
 
 import java.util.List;
-import java.util.function.Consumer;
 
 public class EventViewModel {
     private EventRepository eventRepository;
@@ -20,5 +19,9 @@ public class EventViewModel {
 
     public void getEventById(String eventId, EventCallback<Event> callback) {
         eventRepository.getEventById(eventId, callback);
+    }
+
+    public void deleteEvent(String eventId, EventCallback<Boolean> callback) {
+        eventRepository.deleteEvent(eventId, callback);
     }
 }

@@ -3,25 +3,17 @@ package com.example.turing_eventlottery.viewmodel;
 import android.content.Context;
 import android.provider.Settings;
 
+import com.example.turing_eventlottery.model.EventCallback;
 import com.example.turing_eventlottery.model.User;
 import com.example.turing_eventlottery.model.UserRepository;
 import com.example.turing_eventlottery.model.UserCallback;
+
+import java.util.List;
 
 /**
  * ViewModel responsible for managing user-related data
  * for the application views. This class acts as the intermediary between
  * the View layer and the User model.
- *
- * <p>
- *     It provides methods to retrieve the device ID
- *     and update user information.
- * </p>
- *
- * @author Matthew Adams
- * @version 1.0
- * @since 1.0
- * @see User
- * @see UserRepository
  */
 public class UserViewModel {
     private User user;
@@ -54,12 +46,31 @@ public class UserViewModel {
     /**
      * Loads the current user that is associated
      * with the device.
-     *
-     * @return the user ID of the current user
      */
     public void loadUser(UserCallback callback) {
         String deviceId = getDeviceId();
         userRepository.getUser(deviceId, callback);
+    }
+
+    /**
+     * Loads a specific user by ID.
+     */
+    public void loadUserById(String userId, UserCallback callback) {
+        userRepository.getUser(userId, callback);
+    }
+
+    /**
+     * Retrieves all users in the system.
+     */
+    public void getAllUsers(EventCallback<List<User>> callback) {
+        userRepository.getAllUsers(callback);
+    }
+
+    /**
+     * Deletes a user by ID.
+     */
+    public void deleteUser(String userId, EventCallback<Boolean> callback) {
+        userRepository.deleteUser(userId, callback);
     }
 
     /**
@@ -68,7 +79,7 @@ public class UserViewModel {
      * @param contactInfo the new contact information
      */
     public void updateContactInfo(String contactInfo) {
-        String deviceId = getDeviceId();
         user.setContactInfo(contactInfo);
+        // Note: You might want to persist this change using userRepository.addOrUpdateUser(user)
     }
 }
