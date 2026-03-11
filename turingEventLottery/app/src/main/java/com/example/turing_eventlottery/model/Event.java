@@ -3,6 +3,8 @@ package com.example.turing_eventlottery.model;
 import com.google.firebase.firestore.Exclude;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Event {
     private String id;
@@ -20,6 +22,7 @@ public class Event {
     private boolean geolocationRequired;
     private ArrayList<String> waitlist;
     private ArrayList<String> participants;
+    private Map<String, String> invitations; // userId -> status
 
     public Event() {}
 
@@ -43,6 +46,7 @@ public class Event {
         this.geolocationRequired = geolocationRequired;
         this.waitlist = waitlist;
         this.participants = participants;
+        this.invitations = new HashMap<>();
     }
 
     @Exclude
@@ -94,4 +98,20 @@ public class Event {
     public void setParticipants(ArrayList<String> participants) { this.participants = participants; }
     public void addToParticipants(String userId) { participants.add(userId); }
     public void removeFromParticipants(String userId) { participants.remove(userId); }
+
+    public Map<String, String> getInvitations() {
+        return invitations;
+    }
+
+    public void setInvitations(Map<String, String> invitations) {
+        this.invitations = invitations;
+    }
+
+    // Helper method to update invitation status
+    public void updateInvitationStatus(String userId, String status) {
+        if (invitations == null) {
+            invitations = new HashMap<>();
+        }
+        invitations.put(userId, status);
+    }
 }

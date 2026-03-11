@@ -80,4 +80,57 @@ public class EventRepository {
             }
         });
     }
+
+    /**
+     * Accept an event invitation for a user
+     */
+    public void acceptInvitation(String userId, String eventId, EventCallback<Boolean> callback) {
+        eventsCollection.document(eventId)
+                .get()
+                .addOnSuccessListener(document -> {
+                    if (document.exists()) {
+                        // Add user to participants list
+                        eventsCollection.document(eventId)
+                                .update("participants",
+                                        com.google.firebase.firestore.FieldValue.arrayUnion(userId))
+                                .addOnSuccessListener(v -> {
+                                    // Update invitation status to accepted
+                                    updateInvitationStatus(eventId, userId, "accepted");
+                                    callback.onCallback(true);
+                                })
+                                .addOnFailureListener(e -> {
+                                    Log.e(TAG, "Error accepting invitation", e);
+                                    callback.onCallback(false);
+                                });
+                    } else {
+                        Log.e(TAG, "Event not found: " + eventId);
+                        callback.onCallback(false);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error getting event", e);
+                    callback.onCallback(false);
+                });
+    }
+
+    /**
+     * Decline an event invitation for a user
+     */
+    public void declineInvitation(String userId, String eventId, EventCallback<Boolean> callback) {
+        // Update invitation status to declined
+        updateInvitationStatus(eventId, userId, "declined");
+        callback.onCallback(true);
+    }
+
+    /**
+     * Helper: Update invitation status for a user
+     */
+    private void updateInvitationStatus(String eventId, String userId, String status) {
+        eventsCollection.document(eventId)
+                .update("invitations." + userId, status)
+                .addOnSuccessListener(v ->
+                        Log.d(TAG, "Invitation status updated for user: " + userId))
+                .addOnFailureListener(e ->
+                        Log.e(TAG, "Error updating invitation status", e));
+    }
 }
