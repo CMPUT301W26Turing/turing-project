@@ -112,4 +112,16 @@ public class UserViewModel {
 
         userRepository.addOrUpdateUser(user);
     }
+
+    /**
+     * Updates the contact information of the current user
+     *
+     * @param email the user's email
+     * @param phone the user's phone number
+     */
+    public void updateContactInfo(String email, String phone) {
+        user.setUserEmail(email);
+        user.setUserPhoneNumber(phone);
+        userRepository.addOrUpdateUser(user);
+    }
 }

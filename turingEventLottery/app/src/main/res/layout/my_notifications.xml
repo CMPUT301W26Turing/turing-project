@@ -33,15 +33,32 @@
                     app:tint="@color/headerText" />
 
                 <TextView
+                    android:id="@+id/notificationsHeader"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
                     android:fontFamily="@font/poppins_semibold"
-                    android:text="My Notifications"
+                    android:text="Notifications"
                     android:textColor="@color/headerText"
-                    android:textSize="18sp"
+                    android:textSize="20sp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toEndOf="@id/backButton"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/markAllRead"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="16dp"
+                    android:drawablePadding="4dp"
+                    android:fontFamily="@font/poppins_semibold"
+                    android:text="Mark all read"
+                    android:textColor="@color/primaryBlue"
+                    android:textSize="12sp"
+                    app:drawableStartCompat="@drawable/baseline_check_circle_24"
+                    app:drawableTint="@color/primaryBlue"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
@@ -53,8 +70,9 @@
         android:id="@+id/notificationsRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:paddingTop="8dp"
         android:clipToPadding="false"
+        android:paddingTop="8dp"
+        android:paddingBottom="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/appBarLayout"
         tools:listitem="@layout/item_notification" />
@@ -63,7 +81,7 @@
         android:id="@+id/noNotificationsText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="No notifications yet"
+        android:text="No more notifications"
         android:textColor="@color/headerSubtext"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
