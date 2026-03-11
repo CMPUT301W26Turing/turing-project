@@ -13,6 +13,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -39,7 +40,7 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
     private String eventId;
     private EventRepository eventRepository;
     private NotificationRepository notificationRepository;
-    
+
     private TextView eventName, eventDateTime, capacityValue, spotsRemaining, sortText;
     private TextView emptyStateText, listTitle;
     private LinearProgressIndicator capacityProgress;
@@ -48,11 +49,10 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
     private RecyclerView entrantsRecyclerView;
     private MaterialButton runLotteryButton, drawSingleButton;
     private WaitingEntrantsAdapter entrantsAdapter;
-    
+
     private List<Map<String, Object>> waitingList = new ArrayList<>();
     private List<Map<String, Object>> invitedList = new ArrayList<>();
     private List<Map<String, Object>> enrolledList = new ArrayList<>();
-    private List<Map<String, Object>> cancelledList = new ArrayList<>();
 
     private ImageView exportButton;
 
@@ -72,7 +72,7 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
 
     private void initViews() {
         findViewById(R.id.backButton).setOnClickListener(v -> finish());
-        
+
         eventName = findViewById(R.id.eventName);
         eventDateTime = findViewById(R.id.eventDateTime);
         capacityValue = findViewById(R.id.capacityValue);
@@ -147,14 +147,11 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
         eventRepository.getWaitlistEntrants(eventId, entrants -> {
             waitingList.clear();
             invitedList.clear();
-            cancelledList.clear();
             if (entrants != null) {
                 for (Map<String, Object> entrant : entrants) {
                     String status = (String) entrant.get("status");
                     if ("Invited".equals(status)) {
                         invitedList.add(entrant);
-                    } else if ("Cancelled".equals(status)) {
-                        cancelledList.add(entrant);
                     } else {
                         waitingList.add(entrant);
                     }
@@ -166,7 +163,7 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
                 if (participants != null) {
                     enrolledList.addAll(participants);
                 }
-                
+
                 updateUIWithData();
             });
         });
@@ -176,7 +173,6 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
         statusTabs.getTabAt(0).setText("Waiting " + waitingList.size());
         statusTabs.getTabAt(1).setText("Invited " + invitedList.size());
         statusTabs.getTabAt(2).setText("Enrolled " + enrolledList.size());
-        statusTabs.getTabAt(3).setText("Cancelled " + cancelledList.size());
 
         eventRepository.getEventById(eventId, event -> {
             if (event != null) {
@@ -197,7 +193,7 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
         List<Map<String, Object>> dataToDisplay;
         String emptyMsg;
         String title;
-        
+
         switch (position) {
             case 1:
                 dataToDisplay = invitedList;
@@ -209,11 +205,6 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
                 emptyMsg = "No entrants enrolled";
                 title = "ENROLLED LIST";
                 break;
-            case 3:
-                dataToDisplay = cancelledList;
-                emptyMsg = "No entrants cancelled";
-                title = "CANCELLED LIST";
-                break;
             case 0:
             default:
                 dataToDisplay = waitingList;
@@ -221,10 +212,10 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
                 title = "WAITING LIST";
                 break;
         }
-        
+
         listTitle.setText(title);
         entrantsAdapter.updateEntrants(new ArrayList<>(dataToDisplay));
-        
+
         if (dataToDisplay.isEmpty()) {
             emptyStateText.setText(emptyMsg);
             emptyStateText.setVisibility(View.VISIBLE);
@@ -239,7 +230,7 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
         PopupMenu popup = new PopupMenu(this, sortText);
         popup.getMenu().add("Name (A-Z)");
         popup.getMenu().add("Date Applied (Newest first)");
-        
+
         popup.setOnMenuItemClickListener(item -> {
             if (item.getTitle().equals("Name (A-Z)")) {
                 sortCurrentList(true);
@@ -257,7 +248,6 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
         switch (position) {
             case 1: listToSort = invitedList; break;
             case 2: listToSort = enrolledList; break;
-            case 3: listToSort = cancelledList; break;
             default: listToSort = waitingList; break;
         }
 
@@ -287,11 +277,42 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
         eventRepository.updateWaitlistStatus(eventId, userId, "Cancelled", success -> {
             if (success) {
                 Toast.makeText(this, "Invitation cancelled", Toast.LENGTH_SHORT).show();
+
+                NotificationRepository notificationRepository = getNotificationRepositoryFromUserId(userId);
+
+                notificationRepository.getNotificationsByUserId(userId, notifications -> {
+                    if (notifications != null && !notifications.isEmpty()) {
+                        for (Notification notification : notifications)
+                            if (notification.getEventId().equals(eventId) && notification.getStatus().equals("Invited"))
+                                notificationRepository.removeNotification(notification);
+                    }
+                });
+
                 loadAllParticipants();
             } else {
                 Toast.makeText(this, "Failed to cancel invitation", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    @NonNull
+    private NotificationRepository getNotificationRepositoryFromUserId(String userId) {
+        EventRepository eventRepository = new EventRepository();
+        NotificationRepository notificationRepository = new NotificationRepository();
+
+        eventRepository.getEventById(eventId, event -> {
+            if (event == null) return;
+            String eventName = event.getName();
+            String eventDateTime = event.getDate();
+            notificationRepository.addNotification(new Notification(
+                    userId,
+                    eventId,
+                    eventName,
+                    eventDateTime,
+                    "Cancelled"
+            ));
+        });
+        return notificationRepository;
     }
 
     private void runLottery() {
