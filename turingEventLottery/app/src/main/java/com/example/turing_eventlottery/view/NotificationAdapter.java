@@ -110,7 +110,6 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             holder.subtitle.setText("Status Update");
             
             int neutralColor = ContextCompat.getColor(context, R.color.headerSubtext);
-            int neutralBg = ColorUtils.adjustAlpha(neutralColor, 0.1f); // Helper or use predefined color
             
             holder.statusBadge.setTextColor(neutralColor);
             holder.iconContainer.setCardBackgroundColor(context.getResources().getColor(R.color.secondaryBackground));
@@ -154,17 +153,6 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             declineButton = itemView.findViewById(R.id.declineButton);
             notificationIcon = itemView.findViewById(R.id.notificationIcon);
             iconContainer = itemView.findViewById(R.id.iconContainer);
-        }
-    }
-
-    // Helper class for color adjustments if needed, or just use predefined colors
-    private static class ColorUtils {
-        public static int adjustAlpha(int color, float factor) {
-            int alpha = Math.round(android.graphics.Color.alpha(color) * factor);
-            int red = android.graphics.Color.red(color);
-            int green = android.graphics.Color.green(color);
-            int blue = android.graphics.Color.blue(color);
-            return android.graphics.Color.argb(alpha, red, green, blue);
         }
     }
 }
