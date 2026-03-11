@@ -12,13 +12,16 @@ import com.example.turing_eventlottery.viewmodel.UserViewModel;
  * </p>
  *
  * @author Matthew Adams
- * @version 1.0
+ * @version 1.1
  * @since 1.0
  * @see UserViewModel
  */
 public class User {
     private String userId;
-    private String contactInfo;
+    private String userName;
+    private String userEmail;
+    private String userPhoneNumber;
+
     private boolean isAdmin = false;
     private boolean isBanned = false;
 
@@ -34,13 +37,17 @@ public class User {
      * with contact information.
      *
      * @param userId the unique identifier of the user
-     * @param contactInfo the user's contact information
+     * @param userName the user's full name
+     * @param userEmail the user's email
+     * @param userPhoneNumber the user's phone number
      * @param isAdmin true if admin
      * @param isBanned true if the user is banned
      */
-    public User(String userId, String contactInfo, boolean isAdmin, boolean isBanned) {
+    public User(String userId, String userName, String userEmail, String userPhoneNumber, boolean isAdmin, boolean isBanned) {
         this.userId = userId;
-        this.contactInfo = contactInfo;
+        this.userName = userName;
+        this.userEmail = userEmail;
+        this.userPhoneNumber = userPhoneNumber;
         this.isAdmin = isAdmin;
         this.isBanned = isBanned;
     }
@@ -50,62 +57,56 @@ public class User {
      * not found in the database.
      *
      * @param userId the userID
-     * @return new user
+     * @return User a guest User object
      */
-    public User createGuest(String userId) {
-        return new User(userId, null, false, false);
+    public static User createGuest(String userId) {
+        return new User(userId, "Guest", null, null, false, false);
     }
 
-    /**
-     * Gets the unique ID of the user
-     *
-     * @return the user ID
-     */
     public String getUserId() {
         return userId;
     }
 
-    /**
-     * Gets the contact information of the user
-     *
-     * @return the user's contact information
-     */
-    public String getContactInfo() {
-        return contactInfo;
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
-    /**
-     * Checks if the user is an admin
-     *
-     * @return true if the user is an admin, otherwise returns false
-     */
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getUserEmail() {
+        return userEmail;
+    }
+
+    public void setUserEmail(String userEmail) {
+        this.userEmail = userEmail;
+    }
+
+    public String getUserPhoneNumber() {
+        return userPhoneNumber;
+    }
+
+    public void setUserPhoneNumber(String userPhoneNumber) {
+        this.userPhoneNumber = userPhoneNumber;
+    }
+
     public boolean isAdmin() {
         return isAdmin;
     }
 
-    /**
-     * Checks if the user is banned
-     *
-     * @return true if the user is banned, otherwise returns false
-     */
+    public void setAdmin(boolean admin) {
+        isAdmin = admin;
+    }
+
     public boolean isBanned() {
         return isBanned;
     }
 
-    /**
-     * Sets the contact information for the user
-     *
-     * @param contactInfo the new contact information
-     */
-    public void setContactInfo(String contactInfo) {
-        this.contactInfo = contactInfo;
-    }
-
-    /**
-     * Sets the banned status for the user
-     *
-     * @param banned true to ban the user, false to unban
-     */
     public void setBanned(boolean banned) {
         isBanned = banned;
     }

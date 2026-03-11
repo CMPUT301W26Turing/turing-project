@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.turing_eventlottery.R;
 import com.example.turing_eventlottery.model.User;
 import com.example.turing_eventlottery.model.UserCallback;
+import com.example.turing_eventlottery.model.UserRepository;
 import com.example.turing_eventlottery.viewmodel.UserViewModel;
 import com.google.android.material.card.MaterialCardView;
 
@@ -47,15 +48,17 @@ public class GreetingView extends AppCompatActivity {
                     if (user != null && user.isAdmin()) {
                         Intent intent = new Intent(GreetingView.this, AdminDashboardView.class);
                         startActivity(intent);
+                    } else if (user != null && "Guest".equals(user.getUserName())) {
+                        // User not in Firestore yet — auto-create as admin
+                        String id = userViewModel.getDeviceId();
+                        User adminUser = new User(id, "Admin", null, null, true, false);
+                        new UserRepository().addOrUpdateUser(adminUser);
+                        Toast.makeText(GreetingView.this, "Admin user created. Tap again to enter.", Toast.LENGTH_SHORT).show();
                     } else {
                         Toast.makeText(GreetingView.this, "Access Denied: Not an Administrator", Toast.LENGTH_SHORT).show();
                     }
                 }
 
-                @Override
-                public void onFailure(Exception e) {
-                    Toast.makeText(GreetingView.this, "Error verifying administrator status", Toast.LENGTH_SHORT).show();
-                }
             });
         });
     }

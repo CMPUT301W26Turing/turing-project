@@ -2,6 +2,7 @@ package com.example.turing_eventlottery.model;
 
 import android.util.Log;
 
+import com.example.turing_eventlottery.model.EventCallback;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -12,72 +13,98 @@ import java.util.List;
 /**
  * Repository class responsible for handling all user-related
  * database operations through Firebase Firestore.
+ *
+ * <p>
+ *     This class retrieves users from the database and updates or
+ *     creates user records. Guest users are handled locally and are
+ *     never stored in the database.
+ * </p>
+ *
+ * @author Matthew Adams
+ * @version 1.0
+ * @since 1.0
+ * @see User
+ * @see UserCallback
  */
 public class UserRepository {
     private static final String TAG = "UserRepository";
     private static final String COLLECTION_NAME = "users";
     private final CollectionReference usersCollection;
 
+    /**
+     * Creates a new UserRepository and initializes the
+     * Firestone users collection reference.
+     */
     public UserRepository() {
         usersCollection = FirebaseFirestore.getInstance().collection(COLLECTION_NAME);
     }
 
     /**
      * Retrieves a user from the database.
-     * Development Backdoor: Force all loaded users to be administrators for testing.
+     * If the user does not exist, or an error occurs,
+     * a default guest user is returned
+     *
+     * @param userId the ID of the user to retrieve
+     * @param callback callback used to return the result asynchronously
      */
     public void getUser(String userId, UserCallback callback) {
         usersCollection.document(userId).get()
                 .addOnSuccessListener(document -> {
-                    User user;
                     if (document.exists()) {
-                        user = document.toObject(User.class);
+                        User user = document.toObject(User.class);
+                        callback.onSuccess(user);
                     } else {
-                        // User not in database, create default object
-                        user = new User(userId, null, false, false);
+                        // User not in database, treat as guest
+                        callback.onSuccess(User.createGuest(userId));
                     }
-
-                    // --- Development Backdoor: Force admin privileges ---
-                    // Remove this line before production release
-                    User adminUser = new User(user.getUserId(), user.getContactInfo(), true, user.isBanned());
-                    // ---------------------------------------------------
-
-                    callback.onSuccess(adminUser);
                 })
+                // On failure, treat as guest
                 .addOnFailureListener(e -> {
-                    // Return an admin-forced object even on failure
-                    callback.onSuccess(new User(userId, null, true, false));
+                    callback.onSuccess(User.createGuest(userId));
                 });
     }
 
-    public void getAllUsers(EventCallback<List<User>> callback) {
-        usersCollection.get().addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                List<User> users = new ArrayList<>();
-                for (QueryDocumentSnapshot document : task.getResult()) {
-                    User user = document.toObject(User.class);
-                    users.add(user);
-                }
-                callback.onCallback(users);
-            } else {
-                Log.e(TAG, "Error getting all users", task.getException());
-                callback.onCallback(null);
-            }
-        });
-    }
-
-    public void deleteUser(String userId, EventCallback<Boolean> callback) {
-        usersCollection.document(userId).delete()
-                .addOnSuccessListener(aVoid -> {
-                    Log.d(TAG, "User successfully deleted!");
-                    callback.onCallback(true);
+    /**
+     * Retrieves all users from the database.
+     *
+     * @param callback callback used to return the result asynchronously
+     */
+    public void getAllUsers(UsersCallback callback) {
+        usersCollection.get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<User> users = new ArrayList<>();
+                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                        User user = document.toObject(User.class);
+                        users.add(user);
+                    }
+                    callback.onSuccess(users);
                 })
                 .addOnFailureListener(e -> {
-                    Log.w(TAG, "Error deleting user", e);
+                    Log.e(TAG, "Error getting all users", e);
+                    callback.onSuccess(new ArrayList<>());
+                });
+    }
+
+    /**
+     * Deletes a user from the database.
+     *
+     * @param userId the ID of the user to delete
+     * @param callback callback returning true if successful, false otherwise
+     */
+    public void deleteUser(String userId, EventCallback<Boolean> callback) {
+        usersCollection.document(userId).delete()
+                .addOnSuccessListener(v -> callback.onCallback(true))
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error deleting user", e);
                     callback.onCallback(false);
                 });
     }
 
+    /**
+     * Adds a new user to the database or updates an existing user.
+     *
+     * @param user the user to add or update
+     */
     public void addOrUpdateUser(User user) {
         usersCollection.document(user.getUserId())
                 .set(user)

@@ -11,6 +11,16 @@ package com.example.turing_eventlottery.model;
  * @since 1.0
  * @see User
  */
+
+/*  This interface was created with the help of Developer Android API Reference and from Stack Overflow
+    API Reference: https://developer.android.com/games/services/cpp/api/group/callbacks
+
+    Author: Eduardo Figueiredo https://stackoverflow.com/questions/65492137/why-to-use-callback-functions-when-i-can-simply-call-them
+    Title: Why to use callback functions when I can simply call them?
+    Answer: T.J. Crowder https://stackoverflow.com/revisions/c65727c4-bcd3-4360-b4b6-ccfc81904608/view-source
+    Date: 2020-12-29
+    License:    CC-BY-SA    4.0     (International)
+ */
 public interface UserCallback {
 
     /**
@@ -19,11 +29,4 @@ public interface UserCallback {
      * @param user the retrieved User object
      */
     void onSuccess(User user);
-
-    /**
-     * Called when an error occurs while retrieving the user data.
-     *
-     * @param e the exception describing the failure
-     */
-    void onFailure(Exception e);
 }

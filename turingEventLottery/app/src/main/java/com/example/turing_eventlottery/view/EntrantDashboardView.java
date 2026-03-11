@@ -39,7 +39,7 @@ public class EntrantDashboardView extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.user_dashboard);
+        setContentView(R.layout.entrant_dashboard);
 
         UserViewModel userViewModel = new UserViewModel(this);
 
@@ -47,11 +47,6 @@ public class EntrantDashboardView extends AppCompatActivity {
             @Override
             public void onSuccess(User user) {
                 // Update UI here
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-                // Some logcat method to trace error, need to do more research
             }
         });
 
@@ -62,24 +57,24 @@ public class EntrantDashboardView extends AppCompatActivity {
         MaterialCardView myProfile = findViewById(R.id.myProfile);
 
 //        joinByQrCode.setOnClickListener(v -> {
-//            Intent intent = new Intent(this, JoinByQrCode.class);
+//            Intent intent = new Intent(EntrantDashboardView.this, JoinByQrCode.class);
 //            startActivity(intent);
 //        });
         browseEvents.setOnClickListener(v -> {
             Intent intent = new Intent(EntrantDashboardView.this, BrowseEventsView.class);
             startActivity(intent);
         });
-//        myNotifications.setOnClickListener(v -> {
-//            Intent intent = new Intent(this, MyNotifications.class);
-//            startActivity(intent);
-//        });
+        myNotifications.setOnClickListener(v -> {
+            Intent intent = new Intent(EntrantDashboardView.this, MyNotificationsView.class);
+            startActivity(intent);
+        });
 //        myHistory.setOnClickListener(v -> {
 //            Intent intent = new Intent(this, MyHistory.class);
 //            startActivity(intent);
 //        });
-//        myProfile.setOnClickListener(v -> {
-//            Intent intent = new Intent(this, MyProfile.class);
-//            startActivity(intent);
-//        });
+        myProfile.setOnClickListener(v -> {
+            Intent intent = new Intent(EntrantDashboardView.this, MyProfileView.class);
+            startActivity(intent);
+        });
     }
 }

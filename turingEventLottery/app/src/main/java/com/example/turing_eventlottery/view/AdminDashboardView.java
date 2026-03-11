@@ -29,16 +29,11 @@ public class AdminDashboardView extends AppCompatActivity {
         userViewModel.loadUser(new UserCallback() {
             @Override
             public void onSuccess(User user) {
-                if (user != null && user.getContactInfo() != null) {
-                    welcomeText.setText("Welcome back, " + user.getContactInfo());
+                if (user != null && user.getUserName() != null) {
+                    welcomeText.setText("Welcome back, " + user.getUserName());
                 } else {
                     welcomeText.setText("Welcome back, Admin");
                 }
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-                welcomeText.setText("Welcome back, Admin");
             }
         });
 
@@ -51,7 +46,5 @@ public class AdminDashboardView extends AppCompatActivity {
             Intent intent = new Intent(AdminDashboardView.this, BrowseProfilesView.class);
             startActivity(intent);
         });
-
-        // Other buttons like Browse Images can be implemented similarly
     }
 }

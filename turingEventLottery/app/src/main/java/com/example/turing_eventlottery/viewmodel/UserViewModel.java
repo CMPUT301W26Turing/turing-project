@@ -7,6 +7,7 @@ import com.example.turing_eventlottery.model.EventCallback;
 import com.example.turing_eventlottery.model.User;
 import com.example.turing_eventlottery.model.UserRepository;
 import com.example.turing_eventlottery.model.UserCallback;
+import com.example.turing_eventlottery.model.UsersCallback;
 
 import java.util.List;
 
@@ -14,6 +15,17 @@ import java.util.List;
  * ViewModel responsible for managing user-related data
  * for the application views. This class acts as the intermediary between
  * the View layer and the User model.
+ *
+ * <p>
+ *     It provides methods to retrieve the device ID
+ *     and update user information.
+ * </p>
+ *
+ * @author Matthew Adams
+ * @version 1.1
+ * @since 1.0
+ * @see User
+ * @see UserRepository
  */
 public class UserViewModel {
     private User user;
@@ -46,40 +58,58 @@ public class UserViewModel {
     /**
      * Loads the current user that is associated
      * with the device.
+     *
+     * @param callback callback used to return the result asynchronously
      */
     public void loadUser(UserCallback callback) {
         String deviceId = getDeviceId();
-        userRepository.getUser(deviceId, callback);
+        userRepository.getUser(deviceId, loadedUser -> {
+            user = loadedUser;
+            callback.onSuccess(loadedUser);
+        });
     }
 
     /**
-     * Loads a specific user by ID.
+     * Retrieves all users from the database.
+     *
+     * @param callback callback used to return the result asynchronously
+     */
+    public void getAllUsers(UsersCallback callback) {
+        userRepository.getAllUsers(callback);
+    }
+
+    /**
+     * Loads a user by their ID (for admin viewing other profiles).
+     *
+     * @param userId the ID of the user to load
+     * @param callback callback used to return the result asynchronously
      */
     public void loadUserById(String userId, UserCallback callback) {
         userRepository.getUser(userId, callback);
     }
 
     /**
-     * Retrieves all users in the system.
-     */
-    public void getAllUsers(EventCallback<List<User>> callback) {
-        userRepository.getAllUsers(callback);
-    }
-
-    /**
-     * Deletes a user by ID.
+     * Deletes a user from the database.
+     *
+     * @param userId the ID of the user to delete
+     * @param callback callback returning true if successful, false otherwise
      */
     public void deleteUser(String userId, EventCallback<Boolean> callback) {
         userRepository.deleteUser(userId, callback);
     }
 
     /**
-     * Updates the contact information for the current user.
+     * Edits the personal information fields of the current user
      *
-     * @param contactInfo the new contact information
+     * @param name the user's full name
+     * @param email the user's email
+     * @param phone the user's phone number
      */
-    public void updateContactInfo(String contactInfo) {
-        user.setContactInfo(contactInfo);
-        // Note: You might want to persist this change using userRepository.addOrUpdateUser(user)
+    public void updateUserProfile(String name, String email, String phone) {
+        user.setUserName(name);
+        user.setUserEmail(email);
+        user.setUserPhoneNumber(phone);
+
+        userRepository.addOrUpdateUser(user);
     }
 }

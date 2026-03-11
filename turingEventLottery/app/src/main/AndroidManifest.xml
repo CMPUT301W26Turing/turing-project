@@ -26,13 +26,7 @@
             android:name=".view.BrowseEventsView"
             android:exported="false" />
         <activity
-            android:name=".view.BrowseProfilesView"
-            android:exported="false" />
-        <activity
             android:name=".view.OrganizerDashboardView"
-            android:exported="false" />
-        <activity
-            android:name=".view.AdminDashboardView"
             android:exported="false" />
         <activity
             android:name=".view.CreateEventView"
@@ -44,9 +38,26 @@
             android:name=".view.EventDetailsView"
             android:exported="false" />
         <activity
+            android:name=".view.MyProfileView"
+            android:exported="false" />
+        <activity 
+            android:name=".view.ManageEventView"
+            android:exported="false" />
+        <activity 
+            android:name=".view.MyNotificationsView"
+            android:exported="false" />
+        <activity
+            android:name=".view.SendNotificationView"
+            android:exported="false" />
+        <activity
+            android:name=".view.AdminDashboardView"
+            android:exported="false" />
+        <activity
+            android:name=".view.BrowseProfilesView"
+            android:exported="false" />
+        <activity
             android:name=".view.ProfileDetailsView"
             android:exported="false" />
-        <activity android:name=".view.ManageEventView" />
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />

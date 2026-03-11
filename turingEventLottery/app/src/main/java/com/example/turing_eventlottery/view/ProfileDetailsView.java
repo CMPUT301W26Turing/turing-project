@@ -47,14 +47,9 @@ public class ProfileDetailsView extends AppCompatActivity {
             public void onSuccess(User user) {
                 if (user != null) {
                     userIdText.setText(user.getUserId());
-                    contactInfoText.setText(user.getContactInfo() != null ? user.getContactInfo() : "No Contact Info");
+                    contactInfoText.setText(user.getUserEmail() != null ? user.getUserEmail() : "No Contact Info");
                     adminStatusText.setText(String.valueOf(user.isAdmin()));
                 }
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-                Toast.makeText(ProfileDetailsView.this, "Failed to load profile", Toast.LENGTH_SHORT).show();
             }
         });
     }

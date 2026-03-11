@@ -3,7 +3,6 @@ package com.example.turing_eventlottery.view;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -56,12 +55,15 @@ public class BrowseProfilesView extends AppCompatActivity {
             MaterialCardView card = (MaterialCardView) inflater.inflate(R.layout.browse_events_card, profilesContainer, false);
             
             // Reusing browse_events_card but mapping fields to user data
-            // In a real project, we should create browse_profiles_card.xml
             TextView nameText = card.findViewById(R.id.eventName);
             TextView infoText = card.findViewById(R.id.locationText);
             TextView subInfoText = card.findViewById(R.id.dateTimeText);
             
-            nameText.setText(user.getContactInfo() != null ? user.getContactInfo() : "No Contact Info");
+            String displayName = user.getUserName();
+            if (displayName == null || displayName.isEmpty()) {
+                displayName = "Anonymous User";
+            }
+            nameText.setText(displayName);
             infoText.setText("ID: " + user.getUserId());
             subInfoText.setText(user.isAdmin() ? "Role: Admin" : "Role: Entrant");
             
