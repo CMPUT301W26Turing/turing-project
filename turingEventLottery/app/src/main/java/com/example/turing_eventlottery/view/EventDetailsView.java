@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.bumptech.glide.Glide;
 import com.example.turing_eventlottery.R;
 import com.example.turing_eventlottery.model.Event;
+import com.example.turing_eventlottery.model.EventCallback;
 import com.example.turing_eventlottery.model.User;
 import com.example.turing_eventlottery.viewmodel.EventViewModel;
 import com.example.turing_eventlottery.viewmodel.UserViewModel;
@@ -27,6 +28,7 @@ public class EventDetailsView extends AppCompatActivity {
     private TextView nameView;
     private TextView locationView;
     private TextView dateTimeView;
+    private TextView demandCountView;
     private TextView descriptionView;
     private MaterialButton deleteEventButton;
     private MaterialButton waitlistButton;
@@ -44,6 +46,7 @@ public class EventDetailsView extends AppCompatActivity {
         nameView = findViewById(R.id.eventName);
         locationView = findViewById(R.id.eventLocation);
         dateTimeView = findViewById(R.id.eventDateTime);
+        demandCountView = findViewById(R.id.demandTotal);
         descriptionView = findViewById(R.id.eventDescription);
         deleteEventButton = findViewById(R.id.deleteEventButton);
         waitlistButton = findViewById(R.id.waitlistButton);
@@ -130,13 +133,16 @@ public class EventDetailsView extends AppCompatActivity {
         if (event == null) return;
         nameView.setText(event.getName());
         locationView.setText(event.getLocation());
-        dateTimeView.setText(event.getDate());
+        dateTimeView.setText(eventViewModel.formatEventDate(event.getDate()));
+        eventViewModel.getWaitlistCount(event.getId(), count ->
+                demandCountView.setText(String.valueOf(count)));
         descriptionView.setText(event.getDescription());
 
         String posterUrl = event.getPosterUrl();
         if (posterUrl != null && !posterUrl.isEmpty()) {
             Glide.with(this).load(posterUrl).into(posterView);
         }
+
     }
 
     private void updateWaitlistButton() {
