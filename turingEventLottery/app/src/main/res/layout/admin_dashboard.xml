@@ -5,21 +5,18 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-
-    <ScrollView
+    <androidx.core.widget.NestedScrollView
         android:id="@+id/scrollView2"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingBottom="80dp"
+        android:paddingBottom="64dp"
         android:clipToPadding="false"
-        tools:layout_editor_absoluteX="1dp"
-        tools:layout_editor_absoluteY="1dp">
-
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:fillViewport="true">
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
-
             <TextView
                 android:id="@+id/textView2"
                 android:layout_width="match_parent"
@@ -34,7 +31,6 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
-
             <TextView
                 android:id="@+id/textView4"
                 android:layout_width="match_parent"
@@ -50,142 +46,6 @@
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/textView2" />
-            <LinearLayout
-                android:id="@+id/topCardLayout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textView4">
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/totalEventsCard"
-                    android:layout_width="160dp"
-                    android:layout_height="120dp"
-                    android:layout_marginStart="20dp"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginEnd="16dp"
-                    android:backgroundTint="@color/primaryBackground"
-                    android:clickable="true"
-                    android:focusable="true"
-                    app:cardBackgroundColor="@color/primaryBackground"
-                    app:cardCornerRadius="20sp"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/textView4">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:padding="16dp">
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:fontFamily="@font/poppins_semibold"
-                                android:text="Total Events"
-                                android:textColor="@color/primaryBlue"
-                                android:textSize="14sp"
-                                android:textStyle="bold" />
-
-                            <TextView
-                                android:id="@+id/totalLotteriesNumber"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="12"
-                                android:textColor="@color/headerText"
-                                android:textSize="26sp" />
-
-                        </LinearLayout>
-
-                        <FrameLayout
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:layout_marginEnd="10dp"
-                            android:background="@drawable/dark_blue_icon_background"
-                            android:padding="8dp">
-
-                            <ImageView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:src="@drawable/baseline_confirmation_number_24"
-                                app:tint="@color/primaryBackground" />
-                        </FrameLayout>
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/pendingCard"
-                    android:layout_width="160dp"
-                    android:layout_height="120dp"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginEnd="16dp"
-                    android:backgroundTint="@color/primaryBackground"
-                    android:clickable="true"
-                    android:focusable="true"
-                    app:cardBackgroundColor="@color/primaryBackground"
-                    app:cardCornerRadius="20sp"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/textView4">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:padding="16dp">
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:fontFamily="@font/poppins_semibold"
-                                android:text="Pending"
-                                android:textColor="@color/orangeIconTint"
-                                android:textSize="14sp"
-                                android:textStyle="bold" />
-
-                            <TextView
-                                android:id="@+id/activeLotteriesNumber"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="8"
-                                android:textColor="@color/headerText"
-                                android:textSize="26sp" />
-
-                        </LinearLayout>
-
-                        <FrameLayout
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:layout_marginEnd="10dp"
-                            android:background="@drawable/dark_orange_icon_background"
-                            android:padding="8dp">
-
-                            <ImageView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:src="@drawable/baseline_warning_24"
-                                app:tint="@color/primaryBackground" />
-                        </FrameLayout>
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-            </LinearLayout>
-
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/myEventsButton"
                 android:layout_width="match_parent"
@@ -201,23 +61,19 @@
                 app:cardBackgroundColor="@color/primaryBackground"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/topCardLayout">
-
-
+                app:layout_constraintTop_toBottomOf="@id/manageOrganizersButton">
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:padding="16dp">
-
                     <FrameLayout
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:layout_marginEnd="10dp"
                         android:background="@drawable/blue_icon_background"
                         android:padding="8dp">
-
                         <ImageView
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
@@ -225,13 +81,11 @@
                             app:tint="@color/primaryBlue"
                             app:srcCompat="@drawable/outline_calendar_month_24" />
                     </FrameLayout>
-
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:orientation="vertical">
-
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -239,15 +93,12 @@
                             android:textColor="@color/headerText"
                             android:textSize="18sp"
                             android:textStyle="bold" />
-
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Manage lotteries and schedules"
                             android:textColor="@color/headerSubtext" />
-
                     </LinearLayout>
-
                     <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -255,7 +106,6 @@
                         app:tint="@color/headerSubtext" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
-
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/analyticsButton"
                 android:layout_width="match_parent"
@@ -271,23 +121,19 @@
                 app:cardBackgroundColor="@color/primaryBackground"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/myEventsButton">
-
-
+                app:layout_constraintTop_toBottomOf="@+id/textView4">
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:padding="16dp">
-
                     <FrameLayout
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:layout_marginEnd="10dp"
                         android:background="@drawable/green_icon_background"
                         android:padding="8dp">
-
                         <ImageView
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
@@ -295,13 +141,11 @@
                             app:tint="@color/greenIconTint"
                             app:srcCompat="@drawable/outline_analytics_24" />
                     </FrameLayout>
-
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:orientation="vertical">
-
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -309,15 +153,12 @@
                             android:textColor="@color/headerText"
                             android:textSize="18sp"
                             android:textStyle="bold" />
-
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="View engagement and ticket sales"
                             android:textColor="@color/headerSubtext" />
-
                     </LinearLayout>
-
                     <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -325,7 +166,66 @@
                         app:tint="@color/headerSubtext" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
-
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/manageOrganizersButton"
+                android:layout_width="match_parent"
+                android:layout_height="90dp"
+                android:layout_marginStart="24dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="24dp"
+                android:backgroundTint="@color/primaryBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:checkable="false"
+                app:checkedIconVisible="false"
+                app:cardBackgroundColor="@color/primaryBackground"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/analyticsButton">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="16dp">
+                    <FrameLayout
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_marginEnd="10dp"
+                        android:background="@drawable/orange_icon_background"
+                        android:padding="8dp">
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_gravity="center_vertical"
+                            app:tint="@color/orangeIconTint"
+                            app:srcCompat="@drawable/baseline_cancel_24" />
+                    </FrameLayout>
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Manage Organizers"
+                            android:textColor="@color/headerText"
+                            android:textSize="18sp"
+                            android:textStyle="bold" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Remove violating organizers"
+                            android:textColor="@color/headerSubtext" />
+                    </LinearLayout>
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/outline_arrow_forward_ios_24"
+                        app:tint="@color/headerSubtext" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/sendNotificationButton"
                 android:layout_width="match_parent"
@@ -341,23 +241,19 @@
                 app:cardBackgroundColor="@color/primaryBackground"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/analyticsButton">
-
-
+                app:layout_constraintTop_toBottomOf="@id/myEventsButton">
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:padding="16dp">
-
                     <FrameLayout
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:layout_marginEnd="10dp"
                         android:background="@drawable/orange_icon_background"
                         android:padding="8dp">
-
                         <ImageView
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
@@ -365,13 +261,11 @@
                             app:tint="@color/orangeIconTint"
                             app:srcCompat="@drawable/outline_campaign_24" />
                     </FrameLayout>
-
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:orientation="vertical">
-
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -379,15 +273,12 @@
                             android:textColor="@color/headerText"
                             android:textSize="18sp"
                             android:textStyle="bold" />
-
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Message your event participants"
                             android:textColor="@color/headerSubtext" />
-
                     </LinearLayout>
-
                     <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -396,12 +287,13 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
             <com.google.android.material.card.MaterialCardView
-                android:id="@+id/systemLogsButton"
+                android:id="@+id/notificationLogsButton"
                 android:layout_width="match_parent"
                 android:layout_height="90dp"
                 android:layout_marginStart="24dp"
                 android:layout_marginTop="16dp"
                 android:layout_marginEnd="24dp"
+                android:layout_marginBottom="16dp"
                 android:backgroundTint="@color/primaryBackground"
                 android:clickable="true"
                 android:focusable="true"
@@ -411,52 +303,43 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/sendNotificationButton">
-
-
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:padding="16dp">
-
                     <FrameLayout
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:layout_marginEnd="10dp"
-                        android:background="@drawable/orange_icon_background"
+                        android:background="@drawable/blue_icon_background"
                         android:padding="8dp">
-
                         <ImageView
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:layout_gravity="center_vertical"
-                            app:tint="@color/orangeIconTint"
-                            app:srcCompat="@drawable/outline_campaign_24" />
+                            app:tint="@color/primaryBlue"
+                            app:srcCompat="@drawable/baseline_mail_24" />
                     </FrameLayout>
-
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:orientation="vertical">
-
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="System Logs"
+                            android:text="Notification Logs"
                             android:textColor="@color/headerText"
                             android:textSize="18sp"
                             android:textStyle="bold" />
-
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Message your event participants"
+                            android:text="Review communication activity"
                             android:textColor="@color/headerSubtext" />
-
                     </LinearLayout>
-
                     <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -465,45 +348,23 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
         </androidx.constraintlayout.widget.ConstraintLayout>
-    </ScrollView>
-
+    </androidx.core.widget.NestedScrollView>
     <com.google.android.material.bottomappbar.BottomAppBar
         android:id="@+id/bottomAppBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        app:fabCradleMargin="8dp"
         app:hideOnScroll="true"
-        app:fabAlignmentMode="center"
-        app:fabCradleRoundedCornerRadius="28dp"
-        app:fabCradleVerticalOffset="10dp"
         app:backgroundTint="@android:color/white">
-
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/bottomNav"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:backgroundTint="@android:color/transparent"
-            app:menu="@menu/organizer_nav_menu"
+            app:menu="@menu/admin_nav_menu"
             app:labelVisibilityMode="labeled"
             app:itemIconTint="@color/bottom_nav_color"
             app:itemTextColor="@color/bottom_nav_color"
             app:itemActiveIndicatorStyle="@style/NavIndicator"/>
     </com.google.android.material.bottomappbar.BottomAppBar>
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabCreate"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:contentDescription="Create"
-        android:layout_marginBottom="32dp"
-        android:translationZ="10dp"
-        android:elevation="10dp"
-        android:outlineAmbientShadowColor="@color/primaryBlue"
-        android:outlineSpotShadowColor="@color/primaryBlue"
-        app:srcCompat="@drawable/baseline_add_24"
-        app:layout_anchor="@id/bottomAppBar"
-        app:layout_anchorGravity="center"
-        app:tint="@android:color/white"
-        app:backgroundTint="@color/primaryBlue"/>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

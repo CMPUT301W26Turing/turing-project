@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    android:clickable="true"
+    android:focusable="true"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp">
+
+        <!-- Icon -->
+        <FrameLayout
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/blue_icon_background"
+            android:padding="8dp">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/baseline_person_24"
+                app:tint="@color/primaryBlue"
+                android:scaleType="centerInside" />
+        </FrameLayout>
+
+        <!-- Content -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="16dp">
+
+            <TextView
+                android:id="@+id/organizerCardName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Organizer Name"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/headerText"
+                android:fontFamily="@font/poppins_semibold" />
+
+            <TextView
+                android:id="@+id/organizerCardEmail"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="organizer@example.com"
+                android:textSize="13sp"
+                android:textColor="@color/darkGray"
+                android:layout_marginTop="4dp" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="8dp">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/organizerCardStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="28dp"
+                    android:text="Active"
+                    app:chipBackgroundColor="@color/primaryBlue"
+                    android:textColor="@color/white"
+                    android:enabled="false"
+                    android:textSize="11sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Arrow Icon -->
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/outline_arrow_forward_ios_24"
+            app:tint="@color/darkGray"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="12dp" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>
