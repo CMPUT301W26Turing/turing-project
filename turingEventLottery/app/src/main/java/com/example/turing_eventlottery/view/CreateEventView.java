@@ -172,7 +172,11 @@ public class CreateEventView extends AppCompatActivity {
         newEvent.setOrganizerId(userViewModel.getDeviceId());
         
         try {
-            newEvent.setWinnersToDraw(winnersStr.isEmpty() ? 0 : Integer.parseInt(winnersStr));
+            if (winnersStr.isEmpty() || Integer.parseInt(winnersStr) <= 0) {
+                Toast.makeText(this, "Invalid number of winners", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            newEvent.setWinnersToDraw(Integer.parseInt(winnersStr));
             newEvent.setWaitlistCap(capStr.isEmpty() ? 0 : Integer.parseInt(capStr));
         } catch (NumberFormatException e) {
             Toast.makeText(this, "Invalid number format", Toast.LENGTH_SHORT).show();

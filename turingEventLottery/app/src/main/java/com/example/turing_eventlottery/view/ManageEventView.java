@@ -183,10 +183,17 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
             if (event != null) {
                 int cap = event.getWaitlistCap();
                 int totalWaitlist = waitingList.size() + invitedList.size();
-                capacityValue.setText(totalWaitlist + "/" + cap);
-                spotsRemaining.setText(Math.max(0, cap - totalWaitlist) + " spots remaining");
-                if (cap > 0) {
-                    capacityProgress.setProgress(Math.min(100, (totalWaitlist * 100) / cap));
+
+                if (cap != 0) {
+                    capacityValue.setText(totalWaitlist + "/" + cap);
+                    spotsRemaining.setText(Math.max(0, cap - totalWaitlist) + " spots remaining");
+                    if (cap > 0) {
+                        capacityProgress.setProgress(Math.min(100, (totalWaitlist * 100) / cap));
+                    }
+                } else {
+                    capacityValue.setText(totalWaitlist);
+                    capacityProgress.setProgress(0);
+                    spotsRemaining.setText("N/A");
                 }
             }
         });

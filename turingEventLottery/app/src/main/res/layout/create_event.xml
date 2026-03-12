@@ -535,7 +535,7 @@
                                 android:layout_marginStart="8dp"
                                 android:background="@android:color/transparent"
                                 android:fontFamily="@font/poppins_semibold"
-                                android:hint="100"
+                                android:hint="No Limit"
                                 android:inputType="number"
                                 android:textColor="@color/headerText"
                                 android:textSize="18sp" />
