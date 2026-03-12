@@ -33,6 +33,10 @@ public class EventViewModel {
         eventRepository.getEventById(eventId, callback);
     }
 
+    public void deleteEvent(String eventId, EventCallback<Boolean> callback) {
+        eventRepository.deleteEvent(eventId, callback);
+    }
+
     public void checkRegistrationStatus(String eventId, EventCallback<Boolean> callback) {
         eventRepository.getEventRegPeriod(eventId, period -> {
             if (period == null) return;

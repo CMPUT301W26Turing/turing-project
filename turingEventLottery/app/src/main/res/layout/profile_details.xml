@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="@color/primaryBackground">
+
+    <TextView
+        android:id="@+id/profileDetailsTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Profile Details"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="@color/headerText"
+        android:layout_marginBottom="32dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="User ID"
+        android:textColor="@color/headerSubtext"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/profileUserId"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="N/A"
+        android:textSize="18sp"
+        android:textColor="@color/headerText"
+        android:layout_marginBottom="16dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Contact Info"
+        android:textColor="@color/headerSubtext"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/profileContactInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="N/A"
+        android:textSize="18sp"
+        android:textColor="@color/headerText"
+        android:layout_marginBottom="16dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Admin Status"
+        android:textColor="@color/headerSubtext"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/profileAdminStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="False"
+        android:textSize="18sp"
+        android:textColor="@color/headerText"
+        android:layout_marginBottom="16dp" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <Button
+        android:id="@+id/deleteProfileButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Delete Profile"
+        android:backgroundTint="@color/design_default_color_error"
+        android:textColor="@color/white"
+        android:padding="12dp" />
+
+</LinearLayout>

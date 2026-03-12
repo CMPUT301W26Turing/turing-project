@@ -2,8 +2,13 @@ package com.example.turing_eventlottery.model;
 
 import android.util.Log;
 
+import com.example.turing_eventlottery.model.EventCallback;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Repository class responsible for handling all user-related
@@ -31,7 +36,7 @@ public class UserRepository {
      * Firestone users collection reference.
      */
     public UserRepository() {
-        usersCollection = FirebaseFirestore.getInstance().collection("users");
+        usersCollection = FirebaseFirestore.getInstance().collection(COLLECTION_NAME);
     }
 
     /**
@@ -60,13 +65,47 @@ public class UserRepository {
     }
 
     /**
+     * Retrieves all users from the database.
+     *
+     * @param callback callback used to return the result asynchronously
+     */
+    public void getAllUsers(UsersCallback callback) {
+        usersCollection.get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<User> users = new ArrayList<>();
+                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                        User user = document.toObject(User.class);
+                        users.add(user);
+                    }
+                    callback.onSuccess(users);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error getting all users", e);
+                    callback.onSuccess(new ArrayList<>());
+                });
+    }
+
+    /**
+     * Deletes a user from the database.
+     *
+     * @param userId the ID of the user to delete
+     * @param callback callback returning true if successful, false otherwise
+     */
+    public void deleteUser(String userId, EventCallback<Boolean> callback) {
+        usersCollection.document(userId).delete()
+                .addOnSuccessListener(v -> callback.onCallback(true))
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error deleting user", e);
+                    callback.onCallback(false);
+                });
+    }
+
+    /**
      * Adds a new user to the database or updates an existing user.
-     * Guest users are not stored in the database.
      *
      * @param user the user to add or update
      */
     public void addOrUpdateUser(User user) {
-
         usersCollection.document(user.getUserId())
                 .set(user)
                 .addOnSuccessListener(v -> Log.d(TAG, "User successfully written to database"))

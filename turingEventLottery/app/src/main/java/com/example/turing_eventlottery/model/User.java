@@ -67,6 +67,10 @@ public class User {
         return userId;
     }
 
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
     public String getUserName() {
         return userName;
     }
@@ -93,6 +97,10 @@ public class User {
 
     public boolean isAdmin() {
         return isAdmin;
+    }
+
+    public void setAdmin(boolean admin) {
+        isAdmin = admin;
     }
 
     public boolean isBanned() {

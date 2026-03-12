@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git fetch:*)",
+      "Bash(git reset:*)",
+      "Bash(git checkout:*)",
+      "Bash(git merge:*)",
+      "Bash(git add:*)",
+      "Bash(grep -E \"\\\\.\\(java|xml\\)$\")",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(gh auth:*)",
+      "Bash(git restore:*)",
+      "Bash(git rebase:*)",
+      "Bash(git pull:*)",
+      "Bash(/Users/zhaoyangdong/Desktop/turing-project/turingEventLottery/app/src/main/res/drawable/empty_indicator.xml:*)",
+      "Bash(git stash:*)",
+      "Bash(GIT_EDITOR=\"sed -i ''1s/^pick/reword/''\" git rebase -i e5e701a)",
+      "Bash(/tmp/edit_commit.sh:*)",
+      "Bash(chmod +x /tmp/edit_commit.sh)",
+      "Bash(git filter-branch:*)"
+    ]
+  }
+}
