@@ -2,6 +2,7 @@ package com.example.turing_eventlottery.view;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -28,6 +29,7 @@ import com.google.android.material.card.MaterialCardView;
  */
 
 public class EntrantDashboardView extends AppCompatActivity {
+    private TextView greetingMessage;
 
     /**
      * Initializes the dashboard UI and sets up navigation
@@ -46,7 +48,8 @@ public class EntrantDashboardView extends AppCompatActivity {
         userViewModel.loadUser(new UserCallback() {
             @Override
             public void onSuccess(User user) {
-                // Update UI here
+                greetingMessage = findViewById(R.id.greetingMessage);
+                greetingMessage.setText("Hello, " + user.getUserName().split(" ")[0]);
             }
         });
 
