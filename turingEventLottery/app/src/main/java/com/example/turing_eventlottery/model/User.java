@@ -23,6 +23,7 @@ public class User {
     private String userPhoneNumber;
 
     private boolean isAdmin = false;
+    private boolean isOrganizer = false;
     private boolean isBanned = false;
 
     /**
@@ -41,14 +42,16 @@ public class User {
      * @param userEmail the user's email
      * @param userPhoneNumber the user's phone number
      * @param isAdmin true if admin
+     * @param isOrganizer true if organizer
      * @param isBanned true if the user is banned
      */
-    public User(String userId, String userName, String userEmail, String userPhoneNumber, boolean isAdmin, boolean isBanned) {
+    public User(String userId, String userName, String userEmail, String userPhoneNumber, boolean isAdmin, boolean isOrganizer, boolean isBanned) {
         this.userId = userId;
         this.userName = userName;
         this.userEmail = userEmail;
         this.userPhoneNumber = userPhoneNumber;
         this.isAdmin = isAdmin;
+        this.isOrganizer = isOrganizer;
         this.isBanned = isBanned;
     }
 
@@ -60,11 +63,15 @@ public class User {
      * @return User a guest User object
      */
     public static User createGuest(String userId) {
-        return new User(userId, "Guest", null, null, false, false);
+        return new User(userId, "Guest", null, null, false, false, false);
     }
 
     public String getUserId() {
         return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     public String getUserName() {
@@ -93,6 +100,18 @@ public class User {
 
     public boolean isAdmin() {
         return isAdmin;
+    }
+
+    public void setAdmin(boolean admin) {
+        isAdmin = admin;
+    }
+
+    public boolean isOrganizer() {
+        return isOrganizer;
+    }
+
+    public void setOrganizer(boolean organizer) {
+        isOrganizer = organizer;
     }
 
     public boolean isBanned() {
