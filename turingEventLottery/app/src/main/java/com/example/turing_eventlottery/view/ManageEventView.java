@@ -324,6 +324,14 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
             }
 
             int numToDraw = Math.min(event.getWinnersToDraw(), waitingList.size());
+
+            int numEnrolled = enrolledList.size();
+
+            if (numToDraw - numEnrolled <= 0) {
+                Toast.makeText(this, "No more spots for event", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             List<Map<String, Object>> pool = new ArrayList<>(waitingList);
             Collections.shuffle(pool);
             List<Map<String, Object>> winners = pool.subList(0, numToDraw);
