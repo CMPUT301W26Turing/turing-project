@@ -35,6 +35,7 @@ public class EventDetailsView extends AppCompatActivity {
 
     private boolean isOnWaitlist;
     private String eventId;
+    private boolean fromAdmin;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +57,7 @@ public class EventDetailsView extends AppCompatActivity {
         userViewModel = new UserViewModel(this);
 
         eventId = getIntent().getStringExtra("EVENT_ID");
+        fromAdmin = getIntent().getBooleanExtra("fromAdmin", false);
 
         backButton.setOnClickListener(v -> finish());
 
@@ -68,7 +70,7 @@ public class EventDetailsView extends AppCompatActivity {
         }
 
         userViewModel.loadUser(loadedUser -> {
-            if (loadedUser.isAdmin()) {
+            if (loadedUser.isAdmin() && fromAdmin) {
                 deleteEventButton.setVisibility(View.VISIBLE);
                 deleteEventButton.setOnClickListener(v -> showDeleteConfirmation());
             }

@@ -39,11 +39,13 @@ public class AdminDashboardView extends AppCompatActivity {
 
         browseEventsButton.setOnClickListener(v -> {
             Intent intent = new Intent(AdminDashboardView.this, BrowseEventsView.class);
+            intent.putExtra("fromAdmin", true);
             startActivity(intent);
         });
 
         browseProfilesButton.setOnClickListener(v -> {
             Intent intent = new Intent(AdminDashboardView.this, BrowseProfilesView.class);
+            intent.putExtra("fromAdmin", true);
             startActivity(intent);
         });
     }

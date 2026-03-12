@@ -20,6 +20,7 @@ public class BrowseProfilesView extends AppCompatActivity {
     private LinearLayout profilesContainer;
     private TextView profilesCountText;
     private UserViewModel userViewModel;
+    private boolean fromAdmin;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +31,7 @@ public class BrowseProfilesView extends AppCompatActivity {
         profilesContainer = findViewById(R.id.profilesContainer);
         profilesCountText = findViewById(R.id.profilesCountText);
         userViewModel = new UserViewModel(this);
+        fromAdmin = getIntent().getBooleanExtra("fromAdmin", false);
     }
 
     @Override
@@ -70,6 +72,9 @@ public class BrowseProfilesView extends AppCompatActivity {
             card.setOnClickListener(v -> {
                 Intent intent = new Intent(this, ProfileDetailsView.class);
                 intent.putExtra("USER_ID", user.getUserId());
+                if (fromAdmin) {
+                    intent.putExtra("fromAdmin", true);
+                }
                 startActivity(intent);
             });
 

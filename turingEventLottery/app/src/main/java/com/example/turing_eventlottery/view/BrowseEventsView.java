@@ -23,6 +23,7 @@ public class BrowseEventsView extends AppCompatActivity {
     private TextView resultsText;
     private TextView upcomingLotteries;
     private EventViewModel eventViewModel;
+    private boolean fromAdmin;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +35,7 @@ public class BrowseEventsView extends AppCompatActivity {
         resultsText = findViewById(R.id.resultsText);
         upcomingLotteries = findViewById(R.id.upcomingText);
         eventViewModel = new EventViewModel();
+        fromAdmin = getIntent().getBooleanExtra("fromAdmin", false);
     }
 
     @Override
@@ -83,6 +85,9 @@ public class BrowseEventsView extends AppCompatActivity {
    private void openEventDetails(String eventId) {
         Intent intent = new Intent(this, EventDetailsView.class);
         intent.putExtra("EVENT_ID", eventId);
+        if (fromAdmin) {
+            intent.putExtra("fromAdmin", true);
+        }
         startActivity(intent);
    }
 }

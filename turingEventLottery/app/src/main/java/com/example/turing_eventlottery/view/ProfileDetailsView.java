@@ -19,6 +19,7 @@ public class ProfileDetailsView extends AppCompatActivity {
     private TextView userIdText, contactInfoText, adminStatusText;
     private Button deleteProfileButton;
     private String targetUserId;
+    private boolean fromAdmin;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,12 +34,17 @@ public class ProfileDetailsView extends AppCompatActivity {
 
         userViewModel = new UserViewModel(this);
         targetUserId = getIntent().getStringExtra("USER_ID");
+        fromAdmin = getIntent().getBooleanExtra("fromAdmin", false);
 
         if (targetUserId != null) {
             loadUserProfile();
         }
 
-        deleteProfileButton.setOnClickListener(v -> showDeleteConfirmation());
+        if (fromAdmin) {
+            deleteProfileButton.setOnClickListener(v -> showDeleteConfirmation());
+        } else {
+            deleteProfileButton.setVisibility(android.view.View.GONE);
+        }
     }
 
     private void loadUserProfile() {
