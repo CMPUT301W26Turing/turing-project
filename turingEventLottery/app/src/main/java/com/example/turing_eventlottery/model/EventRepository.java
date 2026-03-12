@@ -3,12 +3,15 @@ package com.example.turing_eventlottery.model;
 import com.google.firebase.Timestamp;
 import android.util.Log;
 import android.util.Pair;
+import android.net.Uri;
 
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -17,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Repository class for interacting with Event data within Firebase Firestore Database.
@@ -38,13 +42,16 @@ public class EventRepository {
     private static final String COLLECTION_NAME = "events";
 
     private final CollectionReference eventsCollection;
+    private final StorageReference storageReference;
     private final UserRepository userRepository;
 
     /**
      * Constructs a new EventRepository with a reference to the Firestore events collection
+     * and Firebase Storage for images.
      */
     public EventRepository() {
         eventsCollection = FirebaseFirestore.getInstance().collection(COLLECTION_NAME);
+        storageReference = FirebaseStorage.getInstance().getReference().child("event_posters");
         userRepository = new UserRepository();
     }
 
@@ -64,6 +71,26 @@ public class EventRepository {
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Error adding event", e);
                     callback.onCallback(false);
+                });
+    }
+
+    /**
+     * Uploads an event poster image to Firebase Storage.
+     *
+     * @param imageUri the URI of the image to upload
+     * @param callback callback returning the download URL if successful, or null if failed
+     */
+    public void uploadEventPoster(Uri imageUri, EventCallback<String> callback) {
+        String fileName = UUID.randomUUID().toString();
+        StorageReference fileRef = storageReference.child(fileName);
+
+        fileRef.putFile(imageUri)
+                .addOnSuccessListener(taskSnapshot -> fileRef.getDownloadUrl()
+                        .addOnSuccessListener(uri -> callback.onCallback(uri.toString()))
+                        .addOnFailureListener(e -> callback.onCallback(null)))
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error uploading image", e);
+                    callback.onCallback(null);
                 });
     }
 

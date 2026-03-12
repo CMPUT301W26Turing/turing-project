@@ -11,7 +11,9 @@ import com.example.turing_eventlottery.R;
 import com.example.turing_eventlottery.model.User;
 import com.example.turing_eventlottery.model.UserCallback;
 import com.example.turing_eventlottery.viewmodel.UserViewModel;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 /**
  * Activity representing the main dashboard for a user.
@@ -30,6 +32,7 @@ import com.google.android.material.card.MaterialCardView;
 
 public class EntrantDashboardView extends AppCompatActivity {
     private TextView greetingMessage;
+    private TextView profileInitialsText;
 
     /**
      * Initializes the dashboard UI and sets up navigation
@@ -45,13 +48,33 @@ public class EntrantDashboardView extends AppCompatActivity {
 
         UserViewModel userViewModel = new UserViewModel(this);
 
+        greetingMessage = findViewById(R.id.greetingMessage);
+        profileInitialsText = findViewById(R.id.profileInitialsText);
+
         userViewModel.loadUser(new UserCallback() {
             @Override
             public void onSuccess(User user) {
-                greetingMessage = findViewById(R.id.greetingMessage);
-                greetingMessage.setText("Hello, " + user.getUserName().split(" ")[0]);
+                if (user != null) {
+                    String username = user.getUserName();
+                    if (username != null && !username.isEmpty()) {
+                        greetingMessage.setText("Hello, " + username.split(" ")[0]);
+
+                        // this code sets the initials of the profile icon on the top left
+                        String initials = "";
+                        String[] parts = username.split(" ");
+                        if (parts.length > 0 && !parts[0].isEmpty()) {
+                            initials += parts[0].substring(0, 1).toUpperCase();
+                            if (parts.length > 1 && !parts[1].isEmpty()) {
+                                initials += parts[1].substring(0, 1).toUpperCase();
+                            }
+                        }
+                        profileInitialsText.setText(initials);
+                    }
+                }
             }
         });
+
+        setupNavigation();
 
         MaterialCardView joinByQrCode = findViewById(R.id.joinByQrCode);
         MaterialCardView browseEvents = findViewById(R.id.browseEvents);
@@ -78,6 +101,34 @@ public class EntrantDashboardView extends AppCompatActivity {
         myProfile.setOnClickListener(v -> {
             Intent intent = new Intent(EntrantDashboardView.this, MyProfileView.class);
             startActivity(intent);
+        });
+    }
+
+    private void setupNavigation() {
+        BottomNavigationView bottomNav = findViewById(R.id.bottomNav);
+        FloatingActionButton fabCreate = findViewById(R.id.fabCreate);
+
+        bottomNav.setSelectedItemId(R.id.nav_home);
+
+        bottomNav.setOnItemSelectedListener(item -> {
+            int itemId = item.getItemId();
+            if (itemId == R.id.nav_home) {
+                return true;
+            } else if (itemId == R.id.nav_events) {
+                startActivity(new Intent(this, BrowseEventsView.class));
+                return true;
+            } else if (itemId == R.id.nav_alerts) {
+                startActivity(new Intent(this, MyNotificationsView.class));
+                return true;
+            } else if (itemId == R.id.nav_profile) {
+                startActivity(new Intent(this, MyProfileView.class));
+                return true;
+            }
+            return false;
+        });
+
+        fabCreate.setOnClickListener(v -> {
+            startActivity(new Intent(this, CreateEventView.class));
         });
     }
 }

@@ -1,7 +1,7 @@
 package com.example.turing_eventlottery.view;
 
+import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -11,9 +11,10 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.turing_eventlottery.R;
 import com.example.turing_eventlottery.model.User;
-import com.example.turing_eventlottery.model.UserCallback;
 import com.example.turing_eventlottery.viewmodel.UserViewModel;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 public class MyProfileView extends AppCompatActivity {
     private EditText fullNameText;
@@ -50,17 +51,52 @@ public class MyProfileView extends AppCompatActivity {
             String email = emailText.getText().toString().trim();
             String phone = phoneText.getText().toString().trim();
 
-                    if (!email.contains("@") || !email.endsWith(".com")) {
-                        Toast.makeText(this, "Please enter a valid email address. ", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
+            if (!email.contains("@") || !email.endsWith(".com")) {
+                Toast.makeText(this, "Please enter a valid email address.", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
-                    if (phone.isEmpty()) {
-                        phone = null;
-                    }
+            if (phone.isEmpty()) {
+                phone = null;
+            }
 
-                    userViewModel.updateUserProfile(name, email, phone);
-                    Toast.makeText(this, "Profile Updated!", Toast.LENGTH_SHORT).show();
-            });
+            userViewModel.updateUserProfile(name, email, phone);
+            Toast.makeText(this, "Profile Updated!", Toast.LENGTH_SHORT).show();
+        });
+
+        findViewById(R.id.backButton).setOnClickListener(v -> finish());
+        setupNavigation();
+    }
+
+    private void setupNavigation() {
+        BottomNavigationView bottomNav = findViewById(R.id.bottomNav);
+        FloatingActionButton fabCreate = findViewById(R.id.fabCreate);
+
+        bottomNav.setSelectedItemId(R.id.nav_profile);
+
+        bottomNav.setOnItemSelectedListener(item -> {
+            int itemId = item.getItemId();
+            if (itemId == R.id.nav_home) {
+                startActivity(new Intent(this, EntrantDashboardView.class));
+                finish();
+                return true;
+            } else if (itemId == R.id.nav_events) {
+                startActivity(new Intent(this, BrowseEventsView.class));
+                finish();
+                return true;
+            } else if (itemId == R.id.nav_alerts) {
+                startActivity(new Intent(this, MyNotificationsView.class));
+                finish();
+                return true;
+            } else if (itemId == R.id.nav_profile) {
+                return true;
+            }
+            return false;
+        });
+
+        fabCreate.setOnClickListener(v -> {
+            Intent intent = new Intent(this, CreateEventView.class);
+            startActivity(intent);
+        });
     }
 }

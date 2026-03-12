@@ -1,5 +1,6 @@
 package com.example.turing_eventlottery.view;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
@@ -18,6 +19,8 @@ import com.example.turing_eventlottery.model.User;
 import com.example.turing_eventlottery.model.UserCallback;
 import com.example.turing_eventlottery.model.UserRepository;
 import com.example.turing_eventlottery.viewmodel.UserViewModel;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,6 +48,7 @@ public class MyNotificationsView extends AppCompatActivity implements Notificati
 
         initViews();
         loadNotifications();
+        setupNavigation();
     }
 
     private void initViews() {
@@ -58,11 +62,52 @@ public class MyNotificationsView extends AppCompatActivity implements Notificati
         recyclerView.setAdapter(adapter);
     }
 
+    private void setupNavigation() {
+        BottomNavigationView bottomNav = findViewById(R.id.bottomNav);
+        FloatingActionButton fabCreate = findViewById(R.id.fabCreate);
+
+        bottomNav.setSelectedItemId(R.id.nav_alerts);
+
+        bottomNav.setOnItemSelectedListener(item -> {
+            int itemId = item.getItemId();
+            if (itemId == R.id.nav_home) {
+                startActivity(new Intent(this, EntrantDashboardView.class));
+                finish();
+                return true;
+            } else if (itemId == R.id.nav_events) {
+                startActivity(new Intent(this, BrowseEventsView.class));
+                finish();
+                return true;
+            } else if (itemId == R.id.nav_alerts) {
+                return true;
+            } else if (itemId == R.id.nav_profile) {
+                startActivity(new Intent(this, MyProfileView.class));
+                finish();
+                return true;
+            }
+            return false;
+        });
+
+        fabCreate.setOnClickListener(v -> {
+            Intent intent = new Intent(this, CreateEventView.class);
+            startActivity(intent);
+        });
+    }
+
     private void loadNotifications() {
         userViewModel.loadUser(new UserCallback() {
             @Override
             public void onSuccess(User user) {
                 if (user != null) {
+                    View sendNotificationBtn = findViewById(R.id.sendNotificationButton);
+                    if (user.isOrganizer()) {
+                        sendNotificationBtn.setVisibility(View.VISIBLE);
+                        sendNotificationBtn.setOnClickListener(v -> {
+                            Intent intent = new Intent(MyNotificationsView.this, SendNotificationView.class);
+                            startActivity(intent);
+                        });
+                    }
+
                     notificationRepository.getNotificationsByUserId(user.getUserId(), notifications -> {
                         if (notifications != null) {
                             if (notifications.isEmpty()) {

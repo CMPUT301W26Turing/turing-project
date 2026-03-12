@@ -183,10 +183,17 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
             if (event != null) {
                 int cap = event.getWaitlistCap();
                 int totalWaitlist = waitingList.size() + invitedList.size();
-                capacityValue.setText(totalWaitlist + "/" + cap);
-                spotsRemaining.setText(Math.max(0, cap - totalWaitlist) + " spots remaining");
-                if (cap > 0) {
-                    capacityProgress.setProgress(Math.min(100, (totalWaitlist * 100) / cap));
+
+                if (cap != 0) {
+                    capacityValue.setText(totalWaitlist + "/" + cap);
+                    spotsRemaining.setText(Math.max(0, cap - totalWaitlist) + " spots remaining");
+                    if (cap > 0) {
+                        capacityProgress.setProgress(Math.min(100, (totalWaitlist * 100) / cap));
+                    }
+                } else {
+                    capacityValue.setText(totalWaitlist);
+                    capacityProgress.setProgress(0);
+                    spotsRemaining.setText("N/A");
                 }
             }
         });
@@ -336,6 +343,14 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
             }
 
             int numToDraw = Math.min(event.getWinnersToDraw(), waitingList.size());
+
+            int numEnrolled = enrolledList.size();
+
+            if (numToDraw - numEnrolled <= 0) {
+                Toast.makeText(this, "No more spots for event", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             List<Map<String, Object>> pool = new ArrayList<>(waitingList);
             Collections.shuffle(pool);
             List<Map<String, Object>> winners = pool.subList(0, numToDraw);
