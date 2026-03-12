@@ -463,19 +463,20 @@
     <com.google.android.material.bottomappbar.BottomAppBar
         android:id="@+id/bottomAppBar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="64dp"
         android:layout_gravity="bottom"
         app:fabAlignmentMode="center"
         app:fabCradleMargin="8dp"
         app:fabCradleRoundedCornerRadius="28dp"
         app:fabCradleVerticalOffset="10dp"
         app:hideOnScroll="true"
-        app:backgroundTint="@android:color/white">
+        app:backgroundTint="@android:color/white"
+        app:elevation="8dp">
 
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/bottomNav"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             app:backgroundTint="@android:color/transparent"
             app:itemActiveIndicatorStyle="@style/NavIndicator"
             app:itemIconTint="@color/bottom_nav_color"
