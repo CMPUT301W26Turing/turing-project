@@ -10,7 +10,7 @@
         android:id="@+id/scrollView2"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingBottom="140dp"
+        android:paddingBottom="80dp"
         android:clipToPadding="false"
         tools:layout_editor_absoluteX="1dp"
         tools:layout_editor_absoluteY="1dp">
@@ -460,39 +460,26 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
 
-    <com.google.android.material.bottomappbar.BottomAppBar
-        android:id="@+id/bottomAppBar"
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNav"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
+        android:layout_height="64dp"
         android:layout_gravity="bottom"
-        app:backgroundTint="@android:color/white"
-        app:fabAlignmentMode="center"
-        app:fabCradleMargin="8dp"
-        app:fabCradleRoundedCornerRadius="28dp"
-        app:fabCradleVerticalOffset="6dp"
-        app:hideOnScroll="false"
-        app:elevation="8dp">
-
-        <com.google.android.material.bottomnavigation.BottomNavigationView
-            android:id="@+id/bottomNav"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:backgroundTint="@android:color/transparent"
-            app:itemActiveIndicatorStyle="@style/NavIndicator"
-            app:itemIconTint="@color/bottom_nav_color"
-            app:itemTextColor="@color/bottom_nav_color"
-            app:labelVisibilityMode="labeled"
-            app:menu="@menu/organizer_nav_menu" />
-    </com.google.android.material.bottomappbar.BottomAppBar>
+        android:background="@android:color/white"
+        app:itemActiveIndicatorStyle="@style/NavIndicator"
+        app:itemIconTint="@color/bottom_nav_color"
+        app:itemTextColor="@color/bottom_nav_color"
+        app:labelVisibilityMode="labeled"
+        app:menu="@menu/organizer_nav_menu" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabCreate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_margin="16dp"
         android:contentDescription="Create"
+        android:layout_gravity="bottom|center_horizontal"
         app:backgroundTint="@color/primaryBlue"
-        app:layout_anchor="@id/bottomAppBar"
-        app:layout_anchorGravity="center|top"
         app:srcCompat="@drawable/baseline_add_24"
         app:tint="@android:color/white" />
 
