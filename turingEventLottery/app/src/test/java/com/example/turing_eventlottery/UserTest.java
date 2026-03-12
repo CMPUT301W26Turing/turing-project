@@ -14,56 +14,85 @@ public class UserTest {
     private User guestUser;
     private User adminUser;
     private User bannedUser;
-    private User setBannedUser;
+    private User regularUser;
 
     /**
     @Before
     public void setUp() {
-        // Guest user
-        guestUser = new User("guest", null, false, false);
+        guestUser = User.createGuest("guest123");
+        adminUser = new User("admin123", "Admin User", "admin@example.com", null, true, false);
+        bannedUser = new User("user01", "Banned User", "user01@example.com", "780-555-0001", false, true);
+        regularUser = new User("user02", "Regular User", "user02@example.com", "780-555-0002", false, false);
+    }
 
-        // Admin user
-        adminUser = new User("admin123", null, true, false);
-
-        // Banned user
-        bannedUser = new User("user01", "user01@example.com", false, true);
-
-        // setBannedUser
-        setBannedUser = new User("user02", "user02@example.com", false, false);
+    @Test
+    public void testGuestUser() {
+        assertEquals("guest123", guestUser.getUserId());
+        assertEquals("Guest", guestUser.getUserName());
+        assertNull(guestUser.getUserEmail());
+        assertNull(guestUser.getUserPhoneNumber());
+        assertFalse(guestUser.isAdmin());
+        assertFalse(guestUser.isBanned());
     }
 
     @Test
     public void testAdminUserFlags() {
         assertTrue(adminUser.isAdmin());
         assertFalse(adminUser.isBanned());
-        assertNull(adminUser.getContactInfo());
+        assertEquals("admin@example.com", adminUser.getUserEmail());
+        assertNull(adminUser.getUserPhoneNumber());
     }
 
     @Test
-    public void testBannedUserFlagsAndContact() {
+    public void testBannedUserFlags() {
         assertTrue(bannedUser.isBanned());
-        assertEquals("user01@example.com", bannedUser.getContactInfo());
         assertFalse(bannedUser.isAdmin());
-    }
-
-    @Test
-    public void testSetContactInfo() {
-        bannedUser.setContactInfo("new01@example.com");
-        assertEquals("new01@example.com", bannedUser.getContactInfo());
+        assertEquals("user01@example.com", bannedUser.getUserEmail());
+        assertEquals("780-555-0001", bannedUser.getUserPhoneNumber());
     }
 
     @Test
     public void testSetBanned() {
-        setBannedUser.setBanned(true);
-        assertTrue(setBannedUser.isBanned());
+        regularUser.setBanned(true);
+        assertTrue(regularUser.isBanned());
+    }
+
+    @Test
+    public void testSetAdmin() {
+        regularUser.setAdmin(true);
+        assertTrue(regularUser.isAdmin());
+    }
+
+    @Test
+    public void testSetUserName() {
+        regularUser.setUserName("Updated Name");
+        assertEquals("Updated Name", regularUser.getUserName());
+    }
+
+    @Test
+    public void testSetUserEmail() {
+        regularUser.setUserEmail("new@example.com");
+        assertEquals("new@example.com", regularUser.getUserEmail());
+    }
+
+    @Test
+    public void testSetUserPhoneNumber() {
+        regularUser.setUserPhoneNumber("780-555-9999");
+        assertEquals("780-555-9999", regularUser.getUserPhoneNumber());
     }
 
     @Test
     public void testUserId() {
-        assertEquals("guest", guestUser.getUserId());
+        assertEquals("guest123", guestUser.getUserId());
         assertEquals("admin123", adminUser.getUserId());
         assertEquals("user01", bannedUser.getUserId());
-        assertEquals("user02", setBannedUser.getUserId());
+        assertEquals("user02", regularUser.getUserId());
+    }
+
+    @Test
+    public void testSetUserId() {
+        regularUser.setUserId("newId");
+        assertEquals("newId", regularUser.getUserId());
     }
     */
 }

@@ -53,6 +53,7 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
     private List<Map<String, Object>> waitingList = new ArrayList<>();
     private List<Map<String, Object>> invitedList = new ArrayList<>();
     private List<Map<String, Object>> enrolledList = new ArrayList<>();
+    private List<Map<String, Object>> cancelledList = new ArrayList<>();
 
     private ImageView exportButton;
 
@@ -147,11 +148,14 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
         eventRepository.getWaitlistEntrants(eventId, entrants -> {
             waitingList.clear();
             invitedList.clear();
+            cancelledList.clear();
             if (entrants != null) {
                 for (Map<String, Object> entrant : entrants) {
                     String status = (String) entrant.get("status");
                     if ("Invited".equals(status)) {
                         invitedList.add(entrant);
+                    } else if ("Cancelled".equals(status)) {
+                        cancelledList.add(entrant);
                     } else {
                         waitingList.add(entrant);
                     }
@@ -173,6 +177,7 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
         statusTabs.getTabAt(0).setText("Waiting " + waitingList.size());
         statusTabs.getTabAt(1).setText("Invited " + invitedList.size());
         statusTabs.getTabAt(2).setText("Enrolled " + enrolledList.size());
+        statusTabs.getTabAt(3).setText("Cancelled " + cancelledList.size());
 
         eventRepository.getEventById(eventId, event -> {
             if (event != null) {
@@ -204,6 +209,11 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
                 dataToDisplay = enrolledList;
                 emptyMsg = "No entrants enrolled";
                 title = "ENROLLED LIST";
+                break;
+            case 3:
+                dataToDisplay = cancelledList;
+                emptyMsg = "No entrants cancelled";
+                title = "CANCELLED LIST";
                 break;
             case 0:
             default:
@@ -248,6 +258,7 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
         switch (position) {
             case 1: listToSort = invitedList; break;
             case 2: listToSort = enrolledList; break;
+            case 3: listToSort = cancelledList; break;
             default: listToSort = waitingList; break;
         }
 
@@ -314,6 +325,7 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
         });
         return notificationRepository;
     }
+
 
     private void runLottery() {
         eventRepository.getEventById(eventId, event -> {

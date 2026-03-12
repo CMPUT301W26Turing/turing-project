@@ -5,8 +5,10 @@ import com.example.turing_eventlottery.model.EventCallback;
 import com.example.turing_eventlottery.model.EventRepository;
 import com.example.turing_eventlottery.model.User;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class EventViewModel {
     private EventRepository eventRepository;
@@ -29,6 +31,10 @@ public class EventViewModel {
 
     public void getEventById(String eventId, EventCallback<Event> callback) {
         eventRepository.getEventById(eventId, callback);
+    }
+
+    public void deleteEvent(String eventId, EventCallback<Boolean> callback) {
+        eventRepository.deleteEvent(eventId, callback);
     }
 
     public void checkRegistrationStatus(String eventId, EventCallback<Boolean> callback) {
@@ -81,5 +87,25 @@ public class EventViewModel {
             return;
         }
         eventRepository.checkUserOnWaitlist(eventId, user, callback);
+    }
+
+    public String formatEventDate(String dateStr) {
+        if (dateStr == null) return "";
+
+        try {
+            SimpleDateFormat inputDate = new SimpleDateFormat("MM/dd/yyyy, HH:mm", Locale.getDefault());
+            SimpleDateFormat outputDate = new SimpleDateFormat("MMM d, yyyy • h:mm a", Locale.getDefault());
+
+            Date date = inputDate.parse(dateStr);
+            return outputDate.format(date);
+        } catch (Exception e) {
+            return dateStr;
+        }
+    }
+
+    public void getWaitlistCount(String eventId, EventCallback<Integer> callback) {
+        eventRepository.getWaitlistCount(eventId, count -> {
+            callback.onCallback(count);
+        });
     }
 }

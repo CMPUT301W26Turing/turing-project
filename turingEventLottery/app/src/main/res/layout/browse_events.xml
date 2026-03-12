@@ -24,6 +24,14 @@
             android:background="@color/secondaryBackground"
             android:padding="12dp">
 
+            <ImageView
+                android:id="@+id/backButton"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginEnd="8dp"
+                android:src="@drawable/outline_arrow_back_ios_new_24"
+                android:contentDescription="Back" />
+
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"

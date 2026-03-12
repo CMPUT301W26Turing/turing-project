@@ -6,8 +6,6 @@ import android.util.Pair;
 
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -133,6 +131,21 @@ public class EventRepository {
                 callback.onCallback(null);
             }
         });
+    }
+
+    /**
+     * Deletes an event from the database.
+     *
+     * @param eventId the ID of the event to delete
+     * @param callback callback returning true if successful, false otherwise
+     */
+    public void deleteEvent(String eventId, EventCallback<Boolean> callback) {
+        eventsCollection.document(eventId).delete()
+                .addOnSuccessListener(v -> callback.onCallback(true))
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error deleting event", e);
+                    callback.onCallback(false);
+                });
     }
 
     /**
