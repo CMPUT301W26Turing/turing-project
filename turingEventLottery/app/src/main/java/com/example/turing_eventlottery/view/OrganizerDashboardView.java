@@ -9,6 +9,8 @@ import android.widget.TextView;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.widget.Toast;
+
 import com.example.turing_eventlottery.R;
 import com.example.turing_eventlottery.model.EventRepository;
 import com.example.turing_eventlottery.viewmodel.UserViewModel;
@@ -63,6 +65,15 @@ public class OrganizerDashboardView extends AppCompatActivity {
 
         eventRepository = new EventRepository();
         userViewModel = new UserViewModel(this);
+
+        // Check if organizer is banned
+        userViewModel.loadUser(user -> {
+            if (user != null && user.isBanned()) {
+                Toast.makeText(this, "Your organizer account has been suspended", Toast.LENGTH_LONG).show();
+                finish();
+                return;
+            }
+        });
 
         eventRepository.getEventsByOrganizer(userViewModel.getDeviceId(), events -> {
             if (events != null) {

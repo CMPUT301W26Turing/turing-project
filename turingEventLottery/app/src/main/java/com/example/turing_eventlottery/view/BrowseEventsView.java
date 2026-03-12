@@ -22,6 +22,8 @@ public class BrowseEventsView extends AppCompatActivity {
     private LinearLayout eventsContainer;
     private TextView resultsText;
     private TextView upcomingLotteries;
+    private EventViewModel eventViewModel;
+    private boolean fromAdmin;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,9 +34,16 @@ public class BrowseEventsView extends AppCompatActivity {
         eventsContainer = findViewById(R.id.eventsContainer);
         resultsText = findViewById(R.id.resultsText);
         upcomingLotteries = findViewById(R.id.upcomingText);
-        EventViewModel eventViewModel = new EventViewModel();
-        eventViewModel.getEvents(this::displayEvents);
+        eventViewModel = new EventViewModel();
+        fromAdmin = getIntent().getBooleanExtra("fromAdmin", false);
 
+        findViewById(R.id.backButton).setOnClickListener(v -> finish());
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        eventViewModel.getEvents(this::displayEvents);
     }
 
     private void displayEvents(List<Event> events) {
@@ -78,6 +87,9 @@ public class BrowseEventsView extends AppCompatActivity {
    private void openEventDetails(String eventId) {
         Intent intent = new Intent(this, EventDetailsView.class);
         intent.putExtra("EVENT_ID", eventId);
+        if (fromAdmin) {
+            intent.putExtra("fromAdmin", true);
+        }
         startActivity(intent);
    }
 }
