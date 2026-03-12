@@ -14,6 +14,13 @@ import com.example.turing_eventlottery.viewmodel.UserViewModel;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.card.MaterialCardView;
 
+/**
+ * View class for the Admin Dashboard screen.
+ * <p>
+ *     Displays admin options separating UI from the other users.
+ *     Includes bottom navigation for quick switching between screens.
+ * </p>
+ */
 public class AdminDashboardView extends AppCompatActivity {
 
     @Override
@@ -22,14 +29,17 @@ public class AdminDashboardView extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.admin_dashboard);
 
+        // UI Elements
         TextView welcomeText = findViewById(R.id.textView4);
         MaterialCardView browseEventsButton = findViewById(R.id.myEventsButton);
         MaterialCardView browseProfilesButton = findViewById(R.id.analyticsButton);
 
+        // Load the admin user information asynchronously
         UserViewModel userViewModel = new UserViewModel(this);
         userViewModel.loadUser(new UserCallback() {
             @Override
             public void onSuccess(User user) {
+                // Update welcome text once user data is loaded
                 if (user != null && user.getUserName() != null) {
                     welcomeText.setText("Welcome back, " + user.getUserName());
                 } else {
@@ -38,6 +48,7 @@ public class AdminDashboardView extends AppCompatActivity {
             }
         });
 
+        // Button click listernes to navigate to different admin features
         browseEventsButton.setOnClickListener(v -> {
             Intent intent = new Intent(AdminDashboardView.this, BrowseEventsView.class);
             intent.putExtra("fromAdmin", true);
@@ -62,18 +73,22 @@ public class AdminDashboardView extends AppCompatActivity {
             startActivity(intent);
         });
 
-        // Bottom Navigation Bar
+        // Bottom Navigation Bar handling
         BottomNavigationView bottomNav = findViewById(R.id.bottomNav);
         bottomNav.setSelectedItemId(R.id.nav_home);
         bottomNav.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
+
+            // Navigate to User Dashboard (home) and clear previous tasks
             if (itemId == R.id.nav_home) {
                 Intent intent = new Intent(AdminDashboardView.this, UserDashboardView.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
                 finish();
                 return true;
-            } else if (itemId == R.id.nav_profile) {
+            }
+            // Navigate to My Profile screen
+            else if (itemId == R.id.nav_profile) {
                 Intent intent = new Intent(AdminDashboardView.this, MyProfileView.class);
                 startActivity(intent);
                 return true;

@@ -7,6 +7,10 @@ import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 
+/*
+Class is not currently implemented for part 3 of the project. This class aims to create and distribute
+the QR code that, when scanned, take the entrant straight to the details page.
+ */
 public class QRCodeModel {
     public static Bitmap generateQRCode(String text, int width, int height) throws WriterException {
         MultiFormatWriter writer = new MultiFormatWriter();

@@ -35,6 +35,18 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Activity for managing a single event.
+ * <p>
+ *     Allows organizers to view event details, see waitlist and status,
+ *     run lotteries or invite single users, sort entrants by name, or registration date, and
+ *     export QR code for entrant registration.
+ * </p>
+ */
+/*
+Currently this view class handles business logic, but the ViewModel should handle that instead. Will be fixed for part 4.
+Also accesses repositories directly, will be fixed for part 4.
+ */
 public class ManageEventView extends AppCompatActivity implements WaitingEntrantsAdapter.OnEntrantActionListener {
 
     private String eventId;

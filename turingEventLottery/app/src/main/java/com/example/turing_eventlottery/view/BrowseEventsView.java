@@ -30,6 +30,14 @@ import com.google.android.material.tabs.TabLayout;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * View class for browsing and managing events.
+ * <p>
+ *     Displays a browse view for all available events and a manage view for
+ *     organizer-created events. Supports filtering via spinners and tab navigation.
+ *     Includes bottom navigation and a floating action button for creating new events.
+ * </p>
+ */
 public class BrowseEventsView extends AppCompatActivity {
     private View browseContainer;
     private LinearLayout eventsContainer;
@@ -160,6 +168,7 @@ public class BrowseEventsView extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        // Reload data depending on selected tab
         TabLayout tabs = findViewById(R.id.dashboardTabs);
         if (tabs.getSelectedTabPosition() == 0) {
             loadAllEvents();
@@ -169,6 +178,7 @@ public class BrowseEventsView extends AppCompatActivity {
     }
 
     private void loadAllEvents() {
+        // Async call to get all events; displayEvents handles rendering
         eventViewModel.getEvents(this::displayEvents);
     }
 
@@ -194,8 +204,9 @@ public class BrowseEventsView extends AppCompatActivity {
                     .inflate(R.layout.browse_events_card, eventsContainer, false);
 
             String posterUrl = event.getPosterUrl();
-
             ImageView posterView = card.findViewById(R.id.eventPoster);
+
+            // If no poster URL, show placeholder background
             if (posterUrl == null || posterUrl.isEmpty()) {
                 posterView.setBackgroundColor(getColor(R.color.secondaryClickableCardsAndSpinners));
                 posterView.setImageDrawable(null);
@@ -207,6 +218,7 @@ public class BrowseEventsView extends AppCompatActivity {
             ((TextView) card.findViewById(R.id.eventName)).setText(event.getName());
             ((TextView) card.findViewById(R.id.dateTimeText)).setText(event.getDate());
 
+            // Click card to open event details
             card.setOnClickListener(v -> openEventDetails(event.getId()));
             eventsContainer.addView(card);
         }
