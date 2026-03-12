@@ -68,7 +68,7 @@ public class AdminDashboardView extends AppCompatActivity {
         bottomNav.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
             if (itemId == R.id.nav_home) {
-                Intent intent = new Intent(AdminDashboardView.this, GreetingView.class);
+                Intent intent = new Intent(AdminDashboardView.this, EntrantDashboardView.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
                 finish();
