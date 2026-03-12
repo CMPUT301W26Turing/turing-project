@@ -2,15 +2,23 @@ package com.example.turing_eventlottery.view;
 
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
 
+import com.bumptech.glide.Glide;
 import com.example.turing_eventlottery.R;
 import com.example.turing_eventlottery.model.Event;
 import com.example.turing_eventlottery.model.EventRepository;
@@ -30,6 +38,9 @@ public class CreateEventView extends AppCompatActivity {
     private TextInputEditText regEndInput;
 
     private MaterialCardView uploadPosterCard;
+    private ImageView eventPosterPreview;
+    private LinearLayout uploadPlaceholder;
+    
     private TextInputEditText eventNameInput;
     private TextInputEditText eventDescriptionInput;
     private TextInputEditText eventCategoryInput;
@@ -41,6 +52,21 @@ public class CreateEventView extends AppCompatActivity {
 
     private EventRepository eventRepository;
     private UserViewModel userViewModel;
+    private Uri selectedImageUri;
+
+    private final ActivityResultLauncher<Intent> imagePickerLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    selectedImageUri = result.getData().getData();
+                    if (selectedImageUri != null) {
+                        uploadPlaceholder.setVisibility(View.GONE);
+                        eventPosterPreview.setVisibility(View.VISIBLE);
+                        Glide.with(this).load(selectedImageUri).into(eventPosterPreview);
+                    }
+                }
+            }
+    );
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,7 +85,11 @@ public class CreateEventView extends AppCompatActivity {
         eventDateInput = findViewById(R.id.eventDateInput);
         regStartInput = findViewById(R.id.regStartInput);
         regEndInput = findViewById(R.id.regEndInput);
+        
         uploadPosterCard = findViewById(R.id.uploadPosterCard);
+        eventPosterPreview = findViewById(R.id.eventPosterPreview);
+        uploadPlaceholder = findViewById(R.id.uploadPlaceholder);
+        
         eventNameInput = findViewById(R.id.eventNameInput);
         eventDescriptionInput = findViewById(R.id.eventDescriptionInput);
         eventCategoryInput = findViewById(R.id.eventCategoryInput);
@@ -73,6 +103,11 @@ public class CreateEventView extends AppCompatActivity {
         setupDateTimePicker(eventDateInput);
         setupDateTimePicker(regStartInput);
         setupDateTimePicker(regEndInput);
+        
+        uploadPosterCard.setOnClickListener(v -> {
+            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            imagePickerLauncher.launch(intent);
+        });
 
         userViewModel.loadUser(user -> {
             if (user != null && user.isBanned()) {
@@ -105,6 +140,26 @@ public class CreateEventView extends AppCompatActivity {
             return;
         }
 
+        if (selectedImageUri != null) {
+            publishButton.setEnabled(false);
+            publishButton.setText("Uploading...");
+            eventRepository.uploadEventPoster(selectedImageUri, url -> {
+                if (url != null) {
+                    completeSaveEvent(name, description, category, location, dateStr, regStart, regEnd, winnersStr, capStr, url);
+                } else {
+                    publishButton.setEnabled(true);
+                    publishButton.setText("Publish Event");
+                    Toast.makeText(this, "Failed to upload poster", Toast.LENGTH_SHORT).show();
+                }
+            });
+        } else {
+            completeSaveEvent(name, description, category, location, dateStr, regStart, regEnd, winnersStr, capStr, null);
+        }
+    }
+
+    private void completeSaveEvent(String name, String description, String category, String location, 
+                                   String dateStr, String regStart, String regEnd, String winnersStr, 
+                                   String capStr, String posterUrl) {
         Event newEvent = new Event();
         newEvent.setName(name);
         newEvent.setDescription(description);
@@ -113,6 +168,7 @@ public class CreateEventView extends AppCompatActivity {
         newEvent.setDate(dateStr);
         newEvent.setRegStart(regStart);
         newEvent.setRegEnd(regEnd);
+        newEvent.setPosterUrl(posterUrl);
         newEvent.setOrganizerId(userViewModel.getDeviceId());
         
         try {
@@ -128,11 +184,12 @@ public class CreateEventView extends AppCompatActivity {
         eventRepository.addEvent(newEvent, success -> {
             if (success) {
                 userViewModel.setOrganizerStatus(result -> {
-                    // Continue regardless of result - event is already created
                     Toast.makeText(CreateEventView.this, "Event published successfully!", Toast.LENGTH_SHORT).show();
                     finish();
                 });
             } else {
+                publishButton.setEnabled(true);
+                publishButton.setText("Publish Event");
                 Toast.makeText(CreateEventView.this, "Failed to publish event", Toast.LENGTH_SHORT).show();
             }
         });
