@@ -12,7 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TuringEventLottery">
         <activity
-            android:name=".view.EntrantDashboardView"
+            android:name=".view.UserDashboardView"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

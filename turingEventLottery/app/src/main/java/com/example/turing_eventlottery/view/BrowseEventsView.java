@@ -102,7 +102,7 @@ public class BrowseEventsView extends AppCompatActivity {
         bottomNav.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
             if (itemId == R.id.nav_home) {
-                startActivity(new Intent(this, EntrantDashboardView.class));
+                startActivity(new Intent(this, UserDashboardView.class));
                 finish();
                 return true;
             } else if (itemId == R.id.nav_events) {

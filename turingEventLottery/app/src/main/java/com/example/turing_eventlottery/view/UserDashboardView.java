@@ -30,7 +30,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
  * @see UserViewModel
  */
 
-public class EntrantDashboardView extends AppCompatActivity {
+public class UserDashboardView extends AppCompatActivity {
     private TextView greetingMessage;
     private TextView profileInitialsText;
 
@@ -87,11 +87,11 @@ public class EntrantDashboardView extends AppCompatActivity {
 //            startActivity(intent);
 //        });
         browseEvents.setOnClickListener(v -> {
-            Intent intent = new Intent(EntrantDashboardView.this, BrowseEventsView.class);
+            Intent intent = new Intent(UserDashboardView.this, BrowseEventsView.class);
             startActivity(intent);
         });
         myNotifications.setOnClickListener(v -> {
-            Intent intent = new Intent(EntrantDashboardView.this, MyNotificationsView.class);
+            Intent intent = new Intent(UserDashboardView.this, MyNotificationsView.class);
             startActivity(intent);
         });
 //        myHistory.setOnClickListener(v -> {
@@ -99,7 +99,7 @@ public class EntrantDashboardView extends AppCompatActivity {
 //            startActivity(intent);
 //        });
         myProfile.setOnClickListener(v -> {
-            Intent intent = new Intent(EntrantDashboardView.this, MyProfileView.class);
+            Intent intent = new Intent(UserDashboardView.this, MyProfileView.class);
             startActivity(intent);
         });
     }
