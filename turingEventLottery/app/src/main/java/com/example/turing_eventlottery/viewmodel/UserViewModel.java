@@ -124,4 +124,34 @@ public class UserViewModel {
         user.setUserPhoneNumber(phone);
         userRepository.addOrUpdateUser(user);
     }
+
+    /**
+     * Retrieves all organizers from the database.
+     *
+     * @param callback callback used to return the result asynchronously
+     */
+    public void getAllOrganizers(UsersCallback callback) {
+        userRepository.getAllOrganizers(callback);
+    }
+
+    /**
+     * Sets the current user as an organizer.
+     *
+     * @param callback callback returning true if successful, false otherwise
+     */
+    public void setOrganizerStatus(EventCallback<Boolean> callback) {
+        String deviceId = getDeviceId();
+        userRepository.setOrganizerStatus(deviceId, callback);
+    }
+
+    /**
+     * Removes (bans) an organizer account from the system.
+     * The organizer will no longer be able to create or manage events.
+     *
+     * @param organizerId the ID of the organizer to remove
+     * @param callback callback returning true if successful, false otherwise
+     */
+    public void removeOrganizer(String organizerId, EventCallback<Boolean> callback) {
+        userRepository.removeOrganizer(organizerId, callback);
+    }
 }

@@ -36,6 +36,8 @@ public class BrowseEventsView extends AppCompatActivity {
         upcomingLotteries = findViewById(R.id.upcomingText);
         eventViewModel = new EventViewModel();
         fromAdmin = getIntent().getBooleanExtra("fromAdmin", false);
+
+        findViewById(R.id.backButton).setOnClickListener(v -> finish());
     }
 
     @Override

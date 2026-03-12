@@ -11,6 +11,7 @@ import com.example.turing_eventlottery.R;
 import com.example.turing_eventlottery.model.User;
 import com.example.turing_eventlottery.model.UserCallback;
 import com.example.turing_eventlottery.viewmodel.UserViewModel;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.card.MaterialCardView;
 
 public class AdminDashboardView extends AppCompatActivity {
@@ -47,6 +48,37 @@ public class AdminDashboardView extends AppCompatActivity {
             Intent intent = new Intent(AdminDashboardView.this, BrowseProfilesView.class);
             intent.putExtra("fromAdmin", true);
             startActivity(intent);
+        });
+
+        MaterialCardView manageOrganizersButton = findViewById(R.id.manageOrganizersButton);
+        manageOrganizersButton.setOnClickListener(v -> {
+            Intent intent = new Intent(AdminDashboardView.this, BrowseOrganizersView.class);
+            startActivity(intent);
+        });
+
+        MaterialCardView notificationLogsButton = findViewById(R.id.notificationLogsButton);
+        notificationLogsButton.setOnClickListener(v -> {
+            Intent intent = new Intent(AdminDashboardView.this, BrowseNotificationLogsView.class);
+            startActivity(intent);
+        });
+
+        // Bottom Navigation Bar
+        BottomNavigationView bottomNav = findViewById(R.id.bottomNav);
+        bottomNav.setSelectedItemId(R.id.nav_home);
+        bottomNav.setOnItemSelectedListener(item -> {
+            int itemId = item.getItemId();
+            if (itemId == R.id.nav_home) {
+                Intent intent = new Intent(AdminDashboardView.this, GreetingView.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+                finish();
+                return true;
+            } else if (itemId == R.id.nav_profile) {
+                Intent intent = new Intent(AdminDashboardView.this, MyProfileView.class);
+                startActivity(intent);
+                return true;
+            }
+            return false;
         });
     }
 }

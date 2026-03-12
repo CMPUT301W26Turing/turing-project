@@ -1,6 +1,7 @@
 package com.example.turing_eventlottery.model;
 
 import com.google.firebase.firestore.Exclude;
+import java.util.List;
 
 public class Notification {
     private String id;
@@ -11,6 +12,9 @@ public class Notification {
     private String message;
     private String status;
     private long timestamp;
+    private String organizerId;
+    private List<String> recipients;
+    private boolean isSystemLog;
 
     public Notification() {}
 
@@ -30,6 +34,22 @@ public class Notification {
         this.eventName = eventName;
         this.eventDate = eventDate;
         this.status = status;
+        this.timestamp = System.currentTimeMillis();
+    }
+
+    /**
+     * Constructor for creating system notification logs (admin audit trail)
+     * Used when organizers send notifications to entrants
+     */
+    public Notification(String organizerId, String eventId, String eventName, String eventDate,
+                       String message, List<String> recipients) {
+        this.organizerId = organizerId;
+        this.eventId = eventId;
+        this.eventName = eventName;
+        this.eventDate = eventDate;
+        this.message = message;
+        this.recipients = recipients;
+        this.isSystemLog = true;
         this.timestamp = System.currentTimeMillis();
     }
 
@@ -57,4 +77,13 @@ public class Notification {
 
     public long getTimestamp() { return timestamp; }
     public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
+
+    public String getOrganizerId() { return organizerId; }
+    public void setOrganizerId(String organizerId) { this.organizerId = organizerId; }
+
+    public List<String> getRecipients() { return recipients; }
+    public void setRecipients(List<String> recipients) { this.recipients = recipients; }
+
+    public boolean isSystemLog() { return isSystemLog; }
+    public void setSystemLog(boolean systemLog) { isSystemLog = systemLog; }
 }

@@ -70,6 +70,10 @@ public class ProfileDetailsView extends AppCompatActivity {
     }
 
     private void deleteProfile() {
+        if (targetUserId.equals(userViewModel.getDeviceId())) {
+            Toast.makeText(this, "You cannot delete your own profile", Toast.LENGTH_SHORT).show();
+            return;
+        }
         userViewModel.deleteUser(targetUserId, result -> {
             if (result) {
                 Toast.makeText(ProfileDetailsView.this, "Profile deleted successfully", Toast.LENGTH_SHORT).show();

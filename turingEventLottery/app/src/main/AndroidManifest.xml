@@ -58,6 +58,18 @@
         <activity
             android:name=".view.ProfileDetailsView"
             android:exported="false" />
+        <activity
+            android:name=".view.BrowseOrganizersView"
+            android:exported="false" />
+        <activity
+            android:name=".view.OrganizerDetailView"
+            android:exported="false" />
+        <activity
+            android:name=".view.BrowseNotificationLogsView"
+            android:exported="false" />
+        <activity
+            android:name=".view.NotificationLogDetailView"
+            android:exported="false" />
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />

@@ -10,6 +10,7 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
+
 import com.example.turing_eventlottery.R;
 import com.example.turing_eventlottery.model.Event;
 import com.example.turing_eventlottery.model.EventRepository;
@@ -73,6 +74,14 @@ public class CreateEventView extends AppCompatActivity {
         setupDateTimePicker(regStartInput);
         setupDateTimePicker(regEndInput);
 
+        userViewModel.loadUser(user -> {
+            if (user != null && user.isBanned()) {
+                Toast.makeText(this, "Your organizer account has been suspended. You cannot create events.", Toast.LENGTH_LONG).show();
+                finish();
+                return;
+            }
+        });
+
         if (publishButton != null) {
             publishButton.setOnClickListener(v -> {
                 saveEvent();
@@ -118,8 +127,11 @@ public class CreateEventView extends AppCompatActivity {
 
         eventRepository.addEvent(newEvent, success -> {
             if (success) {
-                Toast.makeText(CreateEventView.this, "Event published successfully!", Toast.LENGTH_SHORT).show();
-                finish();
+                userViewModel.setOrganizerStatus(result -> {
+                    // Continue regardless of result - event is already created
+                    Toast.makeText(CreateEventView.this, "Event published successfully!", Toast.LENGTH_SHORT).show();
+                    finish();
+                });
             } else {
                 Toast.makeText(CreateEventView.this, "Failed to publish event", Toast.LENGTH_SHORT).show();
             }

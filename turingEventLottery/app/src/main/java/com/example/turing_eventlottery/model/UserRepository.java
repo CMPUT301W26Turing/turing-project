@@ -111,4 +111,84 @@ public class UserRepository {
                 .addOnSuccessListener(v -> Log.d(TAG, "User successfully written to database"))
                 .addOnFailureListener(e -> Log.e(TAG, "Error writing user to database", e));
     }
+
+    /**
+     * Retrieves all organizers from the database.
+     *
+     * @param callback callback used to return the result asynchronously
+     */
+    public void getAllOrganizers(UsersCallback callback) {
+        usersCollection.whereEqualTo("organizer", true)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<User> organizers = new ArrayList<>();
+                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                        User user = document.toObject(User.class);
+                        organizers.add(user);
+                    }
+                    callback.onSuccess(organizers);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error getting all organizers", e);
+                    callback.onSuccess(new ArrayList<>());
+                });
+    }
+
+    /**
+     * Sets the organizer status for a user.
+     *
+     * @param userId the ID of the user
+     * @param callback callback returning true if successful, false otherwise
+     */
+    public void setOrganizerStatus(String userId, EventCallback<Boolean> callback) {
+        usersCollection.document(userId).get()
+                .addOnSuccessListener(document -> {
+                    if (document.exists()) {
+                        User user = document.toObject(User.class);
+                        user.setOrganizer(true);
+                        user.setBanned(false);
+                        usersCollection.document(userId).set(user)
+                                .addOnSuccessListener(v -> callback.onCallback(true))
+                                .addOnFailureListener(e -> {
+                                    Log.e(TAG, "Error setting organizer status", e);
+                                    callback.onCallback(false);
+                                });
+                    } else {
+                        callback.onCallback(false);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error getting user for organizer status", e);
+                    callback.onCallback(false);
+                });
+    }
+
+    /**
+     * Removes (bans) an organizer from the system by marking them as banned.
+     * The organizer will no longer be able to create or manage events.
+     *
+     * @param organizerId the ID of the organizer to remove
+     * @param callback callback returning true if successful, false otherwise
+     */
+    public void removeOrganizer(String organizerId, EventCallback<Boolean> callback) {
+        usersCollection.document(organizerId).get()
+                .addOnSuccessListener(document -> {
+                    if (document.exists()) {
+                        User organizer = document.toObject(User.class);
+                        organizer.setOrganizer(false);
+                        usersCollection.document(organizerId).set(organizer)
+                                .addOnSuccessListener(v -> callback.onCallback(true))
+                                .addOnFailureListener(e -> {
+                                    Log.e(TAG, "Error removing organizer", e);
+                                    callback.onCallback(false);
+                                });
+                    } else {
+                        callback.onCallback(false);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error getting organizer", e);
+                    callback.onCallback(false);
+                });
+    }
 }

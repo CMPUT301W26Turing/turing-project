@@ -37,8 +37,26 @@ public class GreetingView extends AppCompatActivity {
         });
 
         organizerCard.setOnClickListener(v -> {
-            Intent intent = new Intent(GreetingView.this, OrganizerDashboardView.class);
-            startActivity(intent);
+            userViewModel.loadUser(new UserCallback() {
+                @Override
+                public void onSuccess(User user) {
+                    if (user != null && user.isBanned()) {
+                        Toast.makeText(GreetingView.this, "Your organizer account has been suspended", Toast.LENGTH_SHORT).show();
+                    } else if (user != null && user.isOrganizer()) {
+                        Intent intent = new Intent(GreetingView.this, OrganizerDashboardView.class);
+                        startActivity(intent);
+                    } else {
+                        userViewModel.setOrganizerStatus(success -> {
+                            if (success) {
+                                Intent intent = new Intent(GreetingView.this, OrganizerDashboardView.class);
+                                startActivity(intent);
+                            } else {
+                                Toast.makeText(GreetingView.this, "Failed to set organizer status", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+                }
+            });
         });
 
         administratorCard.setOnClickListener(v -> {
@@ -51,7 +69,7 @@ public class GreetingView extends AppCompatActivity {
                     } else if (user != null && "Guest".equals(user.getUserName())) {
                         // User not in Firestore yet — auto-create as admin
                         String id = userViewModel.getDeviceId();
-                        User adminUser = new User(id, "Admin", null, null, true, false);
+                        User adminUser = new User(id, "Admin", null, null, true, false, false);
                         new UserRepository().addOrUpdateUser(adminUser);
                         Toast.makeText(GreetingView.this, "Admin user created. Tap again to enter.", Toast.LENGTH_SHORT).show();
                     } else {

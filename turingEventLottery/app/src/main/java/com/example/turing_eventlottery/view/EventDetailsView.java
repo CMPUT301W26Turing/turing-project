@@ -30,6 +30,8 @@ public class EventDetailsView extends AppCompatActivity {
     private TextView dateTimeView;
     private TextView demandCountView;
     private TextView descriptionView;
+    private TextView organizerIdView;
+    private View organizerBox;
     private MaterialButton deleteEventButton;
     private MaterialButton waitlistButton;
 
@@ -49,6 +51,8 @@ public class EventDetailsView extends AppCompatActivity {
         dateTimeView = findViewById(R.id.eventDateTime);
         demandCountView = findViewById(R.id.demandTotal);
         descriptionView = findViewById(R.id.eventDescription);
+        organizerIdView = findViewById(R.id.organizerId);
+        organizerBox = findViewById(R.id.organizerBox);
         deleteEventButton = findViewById(R.id.deleteEventButton);
         waitlistButton = findViewById(R.id.waitlistButton);
         MaterialButton backButton = findViewById(R.id.backButton);
@@ -60,6 +64,11 @@ public class EventDetailsView extends AppCompatActivity {
         fromAdmin = getIntent().getBooleanExtra("fromAdmin", false);
 
         backButton.setOnClickListener(v -> finish());
+
+        if (fromAdmin) {
+            organizerBox.setVisibility(View.VISIBLE);
+            waitlistButton.setVisibility(View.GONE);
+        }
 
         if (eventId != null) {
             eventViewModel.getEventById(eventId, this::displayEvent);
@@ -139,6 +148,10 @@ public class EventDetailsView extends AppCompatActivity {
         eventViewModel.getWaitlistCount(event.getId(), count ->
                 demandCountView.setText(String.valueOf(count)));
         descriptionView.setText(event.getDescription());
+
+        if (fromAdmin && event.getOrganizerId() != null) {
+            organizerIdView.setText(event.getOrganizerId());
+        }
 
         String posterUrl = event.getPosterUrl();
         if (posterUrl != null && !posterUrl.isEmpty()) {

@@ -32,6 +32,8 @@ public class BrowseProfilesView extends AppCompatActivity {
         profilesCountText = findViewById(R.id.profilesCountText);
         userViewModel = new UserViewModel(this);
         fromAdmin = getIntent().getBooleanExtra("fromAdmin", false);
+
+        findViewById(R.id.backButton).setOnClickListener(v -> finish());
     }
 
     @Override
