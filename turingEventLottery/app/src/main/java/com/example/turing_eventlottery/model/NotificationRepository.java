@@ -67,4 +67,45 @@ public class NotificationRepository {
                 .addOnSuccessListener(v -> callback.onCallback(true))
                 .addOnFailureListener(e -> callback.onCallback(false));
     }
+
+    public void getAllNotificationLogs(EventCallback<List<Notification>> callback) {
+        notificationsCollection
+                .orderBy("timestamp", Query.Direction.DESCENDING)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        List<Notification> logs = new ArrayList<>();
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            Notification log = document.toObject(Notification.class);
+                            log.setId(document.getId());
+                            logs.add(log);
+                        }
+                        callback.onCallback(logs);
+                    } else {
+                        Log.e(TAG, "Error getting notification logs", task.getException());
+                        callback.onCallback(null);
+                    }
+                });
+    }
+
+    public void getNotificationLogsByEvent(String eventId, EventCallback<List<Notification>> callback) {
+        notificationsCollection
+                .whereEqualTo("eventId", eventId)
+                .orderBy("timestamp", Query.Direction.DESCENDING)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        List<Notification> logs = new ArrayList<>();
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            Notification log = document.toObject(Notification.class);
+                            log.setId(document.getId());
+                            logs.add(log);
+                        }
+                        callback.onCallback(logs);
+                    } else {
+                        Log.e(TAG, "Error getting notification logs by event", task.getException());
+                        callback.onCallback(null);
+                    }
+                });
+    }
 }
