@@ -4,8 +4,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,8 +21,10 @@ import com.example.turing_eventlottery.model.Event;
 import com.example.turing_eventlottery.model.EventRepository;
 import com.example.turing_eventlottery.viewmodel.EventViewModel;
 import com.example.turing_eventlottery.viewmodel.UserViewModel;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.card.MaterialCardView;
 import com.bumptech.glide.Glide;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
 
 import java.util.ArrayList;
@@ -53,7 +57,9 @@ public class BrowseEventsView extends AppCompatActivity {
         fromAdmin = getIntent().getBooleanExtra("fromAdmin", false);
 
         initViews();
+        setupSpinners();
         setupTabs();
+        setupNavigation();
     }
 
     private void initViews() {
@@ -70,14 +76,53 @@ public class BrowseEventsView extends AppCompatActivity {
         myEventsRecyclerView.setAdapter(myEventsAdapter);
 
         findViewById(R.id.backButton).setOnClickListener(v -> finish());
-        
-        View fabCreate = findViewById(R.id.fabCreate);
-        if (fabCreate != null) {
-            fabCreate.setOnClickListener(v -> {
-                Intent intent = new Intent(this, CreateEventView.class);
-                startActivity(intent);
-            });
-        }
+    }
+
+    private void setupSpinners() {
+        Spinner interestsSpinner = findViewById(R.id.browseEventsInterestsSpinner);
+        Spinner availabilitySpinner = findViewById(R.id.browseEventsAvailabilitySpinner);
+
+        ArrayAdapter<CharSequence> interestsAdapter = ArrayAdapter.createFromResource(this,
+                R.array.browse_events_interests_spinner, R.layout.custom_spinner_item);
+        interestsAdapter.setDropDownViewResource(R.layout.custom_spinner_dropdown_item);
+        interestsSpinner.setAdapter(interestsAdapter);
+
+        ArrayAdapter<CharSequence> availabilityAdapter = ArrayAdapter.createFromResource(this,
+                R.array.browse_events_availability_spinner, R.layout.custom_spinner_item);
+        availabilityAdapter.setDropDownViewResource(R.layout.custom_spinner_dropdown_item);
+        availabilitySpinner.setAdapter(availabilityAdapter);
+    }
+
+    private void setupNavigation() {
+        BottomNavigationView bottomNav = findViewById(R.id.bottomNav);
+        FloatingActionButton fabCreate = findViewById(R.id.fabCreate);
+
+        bottomNav.setSelectedItemId(R.id.nav_events);
+
+        bottomNav.setOnItemSelectedListener(item -> {
+            int itemId = item.getItemId();
+            if (itemId == R.id.nav_home) {
+                startActivity(new Intent(this, EntrantDashboardView.class));
+                finish();
+                return true;
+            } else if (itemId == R.id.nav_events) {
+                return true;
+            } else if (itemId == R.id.nav_alerts) {
+                startActivity(new Intent(this, MyNotificationsView.class));
+                finish();
+                return true;
+            } else if (itemId == R.id.nav_profile) {
+                startActivity(new Intent(this, MyProfileView.class));
+                finish();
+                return true;
+            }
+            return false;
+        });
+
+        fabCreate.setOnClickListener(v -> {
+            Intent intent = new Intent(this, CreateEventView.class);
+            startActivity(intent);
+        });
     }
 
     private void setupTabs() {
