@@ -231,15 +231,15 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Browse Events"
-                            android:textSize="18sp"
+                            android:text="Events"
                             android:textColor="@color/white"
+                            android:textSize="18sp"
                             android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Find new lotteries to join"
+                            android:text="Find and manage lotteries"
                             android:textColor="@color/white" />
 
                     </LinearLayout>
@@ -276,7 +276,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="My Notifications"
+                            android:text="Notifications"
                             android:textColor="@color/headerText"
                             android:textSize="18sp"
                             android:textStyle="bold" />
@@ -321,16 +321,16 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="My History"
-                            android:textStyle="bold"
+                            android:text="History"
                             android:textColor="@color/headerText"
-                            android:textSize="18sp"/>
+                            android:textSize="18sp"
+                            android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Review past participation"
-                            android:textColor="@color/headerSubtext"/>
+                            android:text="Review past events"
+                            android:textColor="@color/headerSubtext" />
 
                     </LinearLayout>
 
@@ -366,10 +366,10 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="My Profile"
-                            android:textStyle="bold"
+                            android:text="Profile"
+                            android:textColor="@color/headerText"
                             android:textSize="18sp"
-                            android:textColor="@color/headerText"/>
+                            android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
