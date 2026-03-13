@@ -54,6 +54,8 @@ public class UserDashboardView extends AppCompatActivity {
         profileInitialsText = findViewById(R.id.profileInitialsText);
         MaterialButton adminButton = findViewById(R.id.adminButton);
 
+        MaterialButton adminButton = findViewById(R.id.adminButton);
+
         userViewModel.loadUser(new UserCallback() {
             @Override
             public void onSuccess(User user) {
@@ -73,6 +75,9 @@ public class UserDashboardView extends AppCompatActivity {
                         }
                         profileInitialsText.setText(initials);
                     }
+                    if (user.isAdmin()) {
+                        adminButton.setVisibility(View.VISIBLE);
+                    }
                 }
 
                 // Admin button
@@ -85,6 +90,10 @@ public class UserDashboardView extends AppCompatActivity {
                     });
                 }
             }
+        });
+
+        adminButton.setOnClickListener(v -> {
+            startActivity(new Intent(UserDashboardView.this, AdminDashboardView.class));
         });
 
         setupNavigation();

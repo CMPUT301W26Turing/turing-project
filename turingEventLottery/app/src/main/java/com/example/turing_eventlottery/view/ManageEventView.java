@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.ImageView;
@@ -139,8 +140,8 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
 
         eventRepository.getEventById(eventId, event -> {
             if (event != null) {
-                displayEvent(event);
                 loadAllParticipants();
+                displayEvent(event);
             } else {
                 Toast.makeText(this, "Error loading event", Toast.LENGTH_SHORT).show();
             }
@@ -151,7 +152,11 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
         eventName.setText(event.getName());
         eventDateTime.setText(event.getDate());
         geoSwitch.setChecked(event.isGeolocationRequired());
-        runLotteryButton.setText("Run Lottery (" + event.getWinnersToDraw() + ")");
+        int possibleSpots = event.getWinnersToDraw() - enrolledList.size() - invitedList.size();
+        Log.d("ManageEventView", "enrolledList.size(): " + enrolledList.size());
+        Log.d("ManageEventView", "invitedList.size(): " + invitedList.size());
+        Log.d("ManageEventView", "Possible spots: " + possibleSpots);
+        runLotteryButton.setText("Run Lottery (" + possibleSpots + ")");
     }
 
     private void loadAllParticipants() {
@@ -203,10 +208,11 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
                         capacityProgress.setProgress(Math.min(100, (totalWaitlist * 100) / cap));
                     }
                 } else {
-                    capacityValue.setText(totalWaitlist);
+                    capacityValue.setText(String.valueOf(totalWaitlist));// was(capacityValue.setText(totalWaitlist))
                     capacityProgress.setProgress(0);
                     spotsRemaining.setText("N/A");
                 }
+                displayEvent(event);
             }
         });
 
@@ -357,8 +363,9 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
             int numToDraw = Math.min(event.getWinnersToDraw(), waitingList.size());
 
             int numEnrolled = enrolledList.size();
+            int numInvited = invitedList.size();
 
-            if (numToDraw - numEnrolled <= 0) {
+            if ((numToDraw - numEnrolled - numInvited) <= 0) {
                 Toast.makeText(this, "No more spots for event", Toast.LENGTH_SHORT).show();
                 return;
             }
@@ -371,9 +378,40 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
                 String userId = (String) winner.get("userId");
                 notifyWinner(userId, event);
             }
+
+            // users who were NOT selected (US 01.04.02)
+            for (Map<String, Object> entrant : waitingList) {
+
+                String userId = (String) entrant.get("userId");
+
+                boolean isWinner = false;
+
+                for (Map<String, Object> winner : winners) {
+                    if (winner.get("userId").equals(userId)) {
+                        isWinner = true;
+                        break;
+                    }
+                }
+
+                // notify losers
+                if (!isWinner) {
+
+                    Notification notification = new Notification(
+                            userId,
+                            event.getId(),
+                            event.getName(),
+                            event.getDate(),
+                            "Not Selected"
+                    );
+
+                    notificationRepository.addNotification(notification);
+                }
+            }
+
             Toast.makeText(this, "Lottery completed. " + numToDraw + " entrants invited.", Toast.LENGTH_SHORT).show();
             loadAllParticipants();
         });
+
     }
 
     private void drawSingle() {
@@ -384,9 +422,41 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
                 return;
             }
 
+            int numParticipants = enrolledList.size();
+            int numInvited = invitedList.size();
+
+            if (numParticipants + numInvited >= event.getWinnersToDraw()) {
+                Toast.makeText(this, "No more spots for event; cancel an invitation or wait for users to enroll", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             Collections.shuffle(waitingList);
             String winnerId = (String) waitingList.get(0).get("userId");
             notifyWinner(winnerId, event);
+            // check if lottery is finished,if yes notify loser(US 01.04.02)
+            if (invitedList.size() + 1 >= event.getWinnersToDraw()) {
+
+                for (Map<String, Object> entrant : waitingList) {
+
+                    String entrantId = (String) entrant.get("userId");
+
+                    if (!entrantId.equals(winnerId)) {
+
+                        Notification notification = new Notification(
+                                entrantId,
+                                event.getId(),
+                                event.getName(),
+                                event.getDate(),
+                                "Not Selected"
+                        );
+
+                        notificationRepository.addNotification(notification);
+                    }
+                }
+            }
+
+
+
             Toast.makeText(this, "One entrant invited.", Toast.LENGTH_SHORT).show();
             loadAllParticipants();
         });
