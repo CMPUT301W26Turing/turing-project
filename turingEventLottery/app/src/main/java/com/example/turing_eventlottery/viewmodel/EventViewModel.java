@@ -37,6 +37,22 @@ public class EventViewModel {
         eventRepository.deleteEvent(eventId, callback);
     }
 
+    /**
+     * Gets the user's status for a specific event: "Enrolled", "Invited", "Waiting", or "None"
+     */
+    public void getUserEventStatus(String eventId, String userId, EventCallback<String> callback) {
+        eventRepository.getUserEventStatus(eventId, userId, callback);
+    }
+
+    /**
+     * Accepts an invitation by registering the user as a participant
+     */
+    public void acceptInvitation(String eventId, String userId, EventCallback<Boolean> callback) {
+        eventRepository.registerParticipant(eventId, userId, callback);
+    }
+
+
+
     public void checkRegistrationStatus(String eventId, EventCallback<Boolean> callback) {
         eventRepository.getEventRegPeriod(eventId, period -> {
             if (period == null) return;
