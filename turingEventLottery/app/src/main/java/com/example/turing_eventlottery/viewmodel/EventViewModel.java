@@ -101,7 +101,7 @@ public class EventViewModel {
      * Checks whether registration is currently open for a given event.
      *
      * @param eventId The event ID
-     * @param callback callback returning {@code true} if registration is open
+     * @param callback callback returning true if registration is open
      */
     public void checkRegistrationStatus(String eventId, EventCallback<Boolean> callback) {
         eventRepository.getEventRegPeriod(eventId, period -> {

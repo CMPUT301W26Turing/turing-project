@@ -112,6 +112,7 @@ public class EventDetailsView extends AppCompatActivity {
                         return;
                     }
 
+
                     //CASE 2: Invited via lottery → Show "Accept" button
                     if ("Invited".equals(status)) {
                         isOnWaitlist = false;
