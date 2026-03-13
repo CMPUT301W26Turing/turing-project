@@ -5,8 +5,13 @@ import android.content.SharedPreferences;
 import android.provider.Settings;
 import android.util.Log;
 
+import com.example.turing_eventlottery.model.EventCallback;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Repository class responsible for handling all user-related
@@ -34,7 +39,7 @@ public class UserRepository {
      * Firestone users collection reference.
      */
     public UserRepository() {
-        usersCollection = FirebaseFirestore.getInstance().collection("users");
+        usersCollection = FirebaseFirestore.getInstance().collection(COLLECTION_NAME);
     }
 
     /**
@@ -53,23 +58,57 @@ public class UserRepository {
                         callback.onSuccess(user);
                     } else {
                         // User not in database, treat as guest
-                        callback.onSuccess(new User(userId, null, false, false));
+                        callback.onSuccess(User.createGuest(userId));
                     }
                 })
                 // On failure, treat as guest
                 .addOnFailureListener(e -> {
-                    callback.onSuccess(new User(userId, null, false, false));
+                    callback.onSuccess(User.createGuest(userId));
+                });
+    }
+
+    /**
+     * Retrieves all users from the database.
+     *
+     * @param callback callback used to return the result asynchronously
+     */
+    public void getAllUsers(UsersCallback callback) {
+        usersCollection.get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<User> users = new ArrayList<>();
+                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                        User user = document.toObject(User.class);
+                        users.add(user);
+                    }
+                    callback.onSuccess(users);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error getting all users", e);
+                    callback.onSuccess(new ArrayList<>());
+                });
+    }
+
+    /**
+     * Deletes a user from the database.
+     *
+     * @param userId the ID of the user to delete
+     * @param callback callback returning true if successful, false otherwise
+     */
+    public void deleteUser(String userId, EventCallback<Boolean> callback) {
+        usersCollection.document(userId).delete()
+                .addOnSuccessListener(v -> callback.onCallback(true))
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error deleting user", e);
+                    callback.onCallback(false);
                 });
     }
 
     /**
      * Adds a new user to the database or updates an existing user.
-     * Guest users are not stored in the database.
      *
      * @param user the user to add or update
      */
     public void addOrUpdateUser(User user) {
-
         usersCollection.document(user.getUserId())
                 .set(user)
                 .addOnSuccessListener(v -> Log.d(TAG, "User successfully written to database"))
@@ -77,58 +116,89 @@ public class UserRepository {
     }
 
     /**
-     * Logs in user using device ID.
-     * Creates new user if not exists, or returns existing user.
+<<<<<<< HEAD
+
+=======
+     * Retrieves all organizers from the database.
      *
-     * @param context Android context
-     * @param callback callback to return result
+     * @param callback callback used to return the result asynchronously
      */
-    public void loginWithDeviceId(Context context, UserCallback callback) {
-        String deviceId = getDeviceId(context);
-
-        // Try to find user with this device ID
-        usersCollection.whereEqualTo("deviceId", deviceId)
-                .limit(1)
+    public void getAllOrganizers(UsersCallback callback) {
+        usersCollection.whereEqualTo("organizer", true)
                 .get()
-                .addOnSuccessListener(querySnapshot -> {
-                    if (!querySnapshot.isEmpty()) {
-                        // User exists - return first match
-                        User existingUser = querySnapshot.getDocuments().get(0).toObject(User.class);
-                        callback.onSuccess(existingUser);
-                    } else {
-                        // Create new user with device ID
-                        String newUserId = java.util.UUID.randomUUID().toString();
-                        User newUser = new User(newUserId, null, false, false);
-                        newUser.setDeviceId(deviceId);
-
-                        addOrUpdateUser(newUser);
-                        callback.onSuccess(newUser);
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<User> organizers = new ArrayList<>();
+                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                        User user = document.toObject(User.class);
+                        organizers.add(user);
                     }
+                    callback.onSuccess(organizers);
                 })
                 .addOnFailureListener(e -> {
-                    Log.e(TAG, "Device login error", e);
-                    // Fallback: create guest user
-                    callback.onSuccess(new User(java.util.UUID.randomUUID().toString(), null, false, false));
+                    Log.e(TAG, "Error getting all organizers", e);
+                    callback.onSuccess(new ArrayList<>());
+
                 });
     }
 
     /**
-     * Helper: Gets or creates a unique device ID
-     */
-    private String getDeviceId(Context context) {
-        SharedPreferences prefs = context.getSharedPreferences("device_prefs", Context.MODE_PRIVATE);
-        String deviceId = prefs.getString("device_id", null);
+<<<<<<< HEAD
 
-        if (deviceId == null) {
-            deviceId = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
-            // Fallback if ANDROID_ID is null
-            if (deviceId == null) {
-                deviceId = java.util.UUID.randomUUID().toString();
-            }
-            prefs.edit().putString("device_id", deviceId).apply();
-        }
-        return deviceId;
+=======
+     * Sets the organizer status for a user.
+     *
+     * @param userId the ID of the user
+     * @param callback callback returning true if successful, false otherwise
+     */
+    public void setOrganizerStatus(String userId, EventCallback<Boolean> callback) {
+        usersCollection.document(userId).get()
+                .addOnSuccessListener(document -> {
+                    if (document.exists()) {
+                        User user = document.toObject(User.class);
+                        user.setOrganizer(true);
+                        user.setBanned(false);
+                        usersCollection.document(userId).set(user)
+                                .addOnSuccessListener(v -> callback.onCallback(true))
+                                .addOnFailureListener(e -> {
+                                    Log.e(TAG, "Error setting organizer status", e);
+                                    callback.onCallback(false);
+                                });
+                    } else {
+                        callback.onCallback(false);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error getting user for organizer status", e);
+                    callback.onCallback(false);
+                });
     }
 
-
+    /**
+     * Removes (bans) an organizer from the system by marking them as banned.
+     * The organizer will no longer be able to create or manage events.
+     *
+     * @param organizerId the ID of the organizer to remove
+     * @param callback callback returning true if successful, false otherwise
+     */
+    public void removeOrganizer(String organizerId, EventCallback<Boolean> callback) {
+        usersCollection.document(organizerId).get()
+                .addOnSuccessListener(document -> {
+                    if (document.exists()) {
+                        User organizer = document.toObject(User.class);
+                        organizer.setOrganizer(false);
+                        usersCollection.document(organizerId).set(organizer)
+                                .addOnSuccessListener(v -> callback.onCallback(true))
+                                .addOnFailureListener(e -> {
+                                    Log.e(TAG, "Error removing organizer", e);
+                                    callback.onCallback(false);
+                                });
+                    } else {
+                        callback.onCallback(false);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error getting organizer", e);
+                    callback.onCallback(false);
+                });
+    }
 }

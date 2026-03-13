@@ -12,7 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TuringEventLottery">
         <activity
-            android:name=".view.GreetingView"
+            android:name=".view.EntrantDashboardView"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -20,13 +20,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".view.EntrantDashboardView"
-            android:exported="false" />
-        <activity
             android:name=".view.BrowseEventsView"
-            android:exported="false" />
-        <activity
-            android:name=".view.OrganizerDashboardView"
             android:exported="false" />
         <activity
             android:name=".view.CreateEventView"
@@ -37,8 +31,39 @@
         <activity
             android:name=".view.EventDetailsView"
             android:exported="false" />
-        <activity android:name=".view.ManageEventView" />
-        <activity android:name=".view.MyNotificationsView" />
+        <activity
+            android:name=".view.MyProfileView"
+            android:exported="false" />
+        <activity 
+            android:name=".view.ManageEventView"
+            android:exported="false" />
+        <activity 
+            android:name=".view.MyNotificationsView"
+            android:exported="false" />
+        <activity
+            android:name=".view.SendNotificationView"
+            android:exported="false" />
+        <activity
+            android:name=".view.AdminDashboardView"
+            android:exported="false" />
+        <activity
+            android:name=".view.BrowseProfilesView"
+            android:exported="false" />
+        <activity
+            android:name=".view.ProfileDetailsView"
+            android:exported="false" />
+        <activity
+            android:name=".view.BrowseOrganizersView"
+            android:exported="false" />
+        <activity
+            android:name=".view.OrganizerDetailView"
+            android:exported="false" />
+        <activity
+            android:name=".view.BrowseNotificationLogsView"
+            android:exported="false" />
+        <activity
+            android:name=".view.NotificationLogDetailView"
+            android:exported="false" />
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />

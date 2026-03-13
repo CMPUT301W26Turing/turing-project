@@ -1,10 +1,13 @@
 package com.example.turing_eventlottery.view;
 
-import static androidx.databinding.DataBindingUtil.setContentView;
-
+import android.app.AlertDialog;
+import android.content.res.ColorStateList;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -12,16 +15,31 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.bumptech.glide.Glide;
 import com.example.turing_eventlottery.R;
 import com.example.turing_eventlottery.model.Event;
+import com.example.turing_eventlottery.model.EventCallback;
+import com.example.turing_eventlottery.model.User;
 import com.example.turing_eventlottery.viewmodel.EventViewModel;
+import com.example.turing_eventlottery.viewmodel.UserViewModel;
+import com.google.android.material.button.MaterialButton;
+
 
 public class EventDetailsView extends AppCompatActivity {
     private EventViewModel eventViewModel;
+    private UserViewModel userViewModel;
 
     private ImageView posterView;
     private TextView nameView;
     private TextView locationView;
     private TextView dateTimeView;
+    private TextView demandCountView;
     private TextView descriptionView;
+    private TextView organizerIdView;
+    private View organizerBox;
+    private MaterialButton deleteEventButton;
+    private MaterialButton waitlistButton;
+
+    private boolean isOnWaitlist;
+    private String eventId;
+    private boolean fromAdmin;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,29 +51,218 @@ public class EventDetailsView extends AppCompatActivity {
         nameView = findViewById(R.id.eventName);
         locationView = findViewById(R.id.eventLocation);
         dateTimeView = findViewById(R.id.eventDateTime);
+        demandCountView = findViewById(R.id.demandTotal);
         descriptionView = findViewById(R.id.eventDescription);
+        organizerIdView = findViewById(R.id.organizerId);
+        organizerBox = findViewById(R.id.organizerBox);
+        deleteEventButton = findViewById(R.id.deleteEventButton);
+        waitlistButton = findViewById(R.id.waitlistButton);
+        MaterialButton backButton = findViewById(R.id.backButton);
 
         eventViewModel = new EventViewModel();
+        userViewModel = new UserViewModel(this);
 
-        String eventId = getIntent().getStringExtra("EVENT_ID");
+        eventId = getIntent().getStringExtra("EVENT_ID");
+        fromAdmin = getIntent().getBooleanExtra("fromAdmin", false);
+
+        backButton.setOnClickListener(v -> finish());
+
+        if (fromAdmin) {
+            organizerBox.setVisibility(View.VISIBLE);
+            //waitlistButton.setVisibility(View.GONE); (I marked this out because I can not join my own event)
+        }
 
         if (eventId != null) {
             eventViewModel.getEventById(eventId, this::displayEvent);
+
+            eventViewModel.checkRegistrationStatus(eventId, isOpen -> {
+                waitlistButton.setEnabled(isOpen);
+            });
         }
+
+        userViewModel.loadUser(loadedUser -> {
+            if (loadedUser.isAdmin() && fromAdmin) {
+                deleteEventButton.setVisibility(View.VISIBLE);
+                deleteEventButton.setOnClickListener(v -> showDeleteConfirmation());
+            }
+
+            // Check user's event status: "Enrolled", "Invited", "Waiting", or "None"
+            eventViewModel.getUserEventStatus(eventId, loadedUser.getUserId(), new EventCallback<String>() {
+                @Override
+                public void onCallback(String status) {
+
+                    //CASE 1: Already enrolled
+                    if ("Enrolled".equals(status)) {
+                        isOnWaitlist = false;
+                        waitlistButton.setEnabled(false);
+                        waitlistButton.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.greenIconTint)));
+                        waitlistButton.setTextColor(getColor(R.color.white));
+                        waitlistButton.setText("Enrolled");
+                        return;
+                    }
+
+                    //CASE 2: Invited via lottery → Show "Accept" button
+                    if ("Invited".equals(status)) {
+                        isOnWaitlist = false;
+                        waitlistButton.setEnabled(true);
+                        waitlistButton.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.primaryBlue)));
+                        waitlistButton.setTextColor(getColor(R.color.white));
+                        waitlistButton.setText("Accept");
+                    } else {
+                        //CASE 3: Check waitlist status for "Waiting" or "None"
+                        eventViewModel.isUserOnWaitlist(loadedUser, eventId, new EventCallback<Boolean>() {
+                            @Override
+                            public void onCallback(Boolean onWaitlist) {
+                                isOnWaitlist = onWaitlist != null && onWaitlist;
+                                updateWaitlistButton();
+                            }
+                        });
+                    }
+
+                    //Handle button click
+                    waitlistButton.setOnClickListener(v -> {
+                        if ("Guest".equals(loadedUser.getUserName())) {
+                            Toast.makeText(EventDetailsView.this,
+                                    "You must create an account first, go to My Profile",
+                                    Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+
+                        // Re-check status to prevent race conditions
+                        eventViewModel.getUserEventStatus(eventId, loadedUser.getUserId(), new EventCallback<String>() {
+                            @Override
+                            public void onCallback(String currentStatus) {
+
+                                //Prevent double-enrollment
+                                if ("Enrolled".equals(currentStatus)) {
+                                    Toast.makeText(EventDetailsView.this,
+                                            "You are already enrolled in this event",
+                                            Toast.LENGTH_SHORT).show();
+                                    return;
+                                }
+
+                                //CASE: Accept invitation
+                                if ("Invited".equals(currentStatus)) {
+                                    waitlistButton.setEnabled(false); // Prevent double-click
+
+                                    eventViewModel.acceptInvitation(eventId, loadedUser.getUserId(), new EventCallback<Boolean>() {
+                                        @Override
+                                        public void onCallback(Boolean success) {
+                                            if (success != null && success) {
+                                                waitlistButton.setEnabled(false);
+                                                waitlistButton.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.greenIconTint)));
+                                                waitlistButton.setTextColor(getColor(R.color.white));
+                                                waitlistButton.setText("Enrolled");
+                                                Toast.makeText(EventDetailsView.this, "Invitation Accepted!", Toast.LENGTH_SHORT).show();
+
+                                                eventViewModel.getUserEventStatus(eventId, loadedUser.getUserId(), new EventCallback<String>() {
+                                                    @Override
+                                                    public void onCallback(String newStatus) {
+                                                        Log.d("EventDetails", "New status after accept: " + newStatus);
+                                                    }
+                                                });
+                                            } else {
+                                                waitlistButton.setEnabled(true); // Re-enable on failure
+                                                Toast.makeText(EventDetailsView.this, "Failed to accept invitation", Toast.LENGTH_SHORT).show();
+                                            }
+                                        }
+                                    });
+                                    return;
+                                }
+
+                                //CASE: Leave waitlist (existing functionality)
+                                if (isOnWaitlist) {
+                                    eventViewModel.leaveWaitlist(loadedUser, eventId, new EventCallback<Boolean>() {
+                                        @Override
+                                        public void onCallback(Boolean success) {
+                                            if (success != null && success) {
+                                                isOnWaitlist = false;
+                                                Toast.makeText(EventDetailsView.this,
+                                                        "You have left the waitlist",
+                                                        Toast.LENGTH_SHORT).show();
+                                                updateWaitlistButton();
+                                            } else {
+                                                Toast.makeText(EventDetailsView.this,
+                                                        "Failed to leave waitlist, try again",
+                                                        Toast.LENGTH_SHORT).show();
+                                            }
+                                        }
+                                    });
+                                }
+                                //CASE: Join waitlist (existing functionality)
+                                else {
+                                    eventViewModel.joinWaitlist(loadedUser, eventId, new EventCallback<Boolean>() {
+                                        @Override
+                                        public void onCallback(Boolean success) {
+                                            if (success != null && success) {
+                                                isOnWaitlist = true;
+                                                Toast.makeText(EventDetailsView.this,
+                                                        "You have joined the waitlist",
+                                                        Toast.LENGTH_SHORT).show();
+                                                updateWaitlistButton();
+                                            } else {
+                                                Toast.makeText(EventDetailsView.this,
+                                                        "Failed to join waitlist, try again",
+                                                        Toast.LENGTH_SHORT).show();
+                                            }
+                                        }
+                                    });
+                                }
+                            }
+                        });
+                    });
+                }
+            });
+        });
+    }
+
+    private void showDeleteConfirmation() {
+        new AlertDialog.Builder(this)
+                .setTitle("Delete Event")
+                .setMessage("Are you sure you want to delete this event? This action cannot be undone.")
+                .setPositiveButton("Delete", (dialog, which) -> {
+                    eventViewModel.deleteEvent(eventId, success -> {
+                        if (success) {
+                            Toast.makeText(this, "Event deleted successfully", Toast.LENGTH_SHORT).show();
+                            finish();
+                        } else {
+                            Toast.makeText(this, "Failed to delete event", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 
     private void displayEvent(Event event) {
+        if (event == null) return;
         nameView.setText(event.getName());
         locationView.setText(event.getLocation());
-        dateTimeView.setText(event.getDate());
+        dateTimeView.setText(eventViewModel.formatEventDate(event.getDate()));
+        eventViewModel.getWaitlistCount(event.getId(), count ->
+                demandCountView.setText(String.valueOf(count)));
         descriptionView.setText(event.getDescription());
 
-        String posterUrl = event.getPosterUrl();
+        if (fromAdmin && event.getOrganizerId() != null) {
+            organizerIdView.setText(event.getOrganizerId());
+        }
 
+        String posterUrl = event.getPosterUrl();
         if (posterUrl != null && !posterUrl.isEmpty()) {
-            Glide.with(this)
-                    .load(posterUrl)
-                    .into(posterView);
+            Glide.with(this).load(posterUrl).into(posterView);
+        }
+
+    }
+
+    private void updateWaitlistButton() {
+        if (isOnWaitlist) {
+            waitlistButton.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.white)));
+            waitlistButton.setTextColor(getColor(R.color.red));
+            waitlistButton.setText("Leave Waitlist");
+        } else {
+            waitlistButton.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.primaryBlue)));
+            waitlistButton.setTextColor(getColor(R.color.white));
+            waitlistButton.setText("Join Waitlist");
         }
     }
 }

@@ -3,9 +3,13 @@ package com.example.turing_eventlottery.viewmodel;
 import android.content.Context;
 import android.provider.Settings;
 
+import com.example.turing_eventlottery.model.EventCallback;
 import com.example.turing_eventlottery.model.User;
 import com.example.turing_eventlottery.model.UserRepository;
 import com.example.turing_eventlottery.model.UserCallback;
+import com.example.turing_eventlottery.model.UsersCallback;
+
+import java.util.List;
 
 /**
  * ViewModel responsible for managing user-related data
@@ -18,7 +22,7 @@ import com.example.turing_eventlottery.model.UserCallback;
  * </p>
  *
  * @author Matthew Adams
- * @version 1.0
+ * @version 1.1
  * @since 1.0
  * @see User
  * @see UserRepository
@@ -55,20 +59,99 @@ public class UserViewModel {
      * Loads the current user that is associated
      * with the device.
      *
-     * @return the user ID of the current user
+     * @param callback callback used to return the result asynchronously
      */
     public void loadUser(UserCallback callback) {
         String deviceId = getDeviceId();
-        userRepository.getUser(deviceId, callback);
+        userRepository.getUser(deviceId, loadedUser -> {
+            user = loadedUser;
+            callback.onSuccess(loadedUser);
+        });
     }
 
     /**
-     * Updates the contact information for the current user.
+     * Retrieves all users from the database.
      *
-     * @param contactInfo the new contact information
+     * @param callback callback used to return the result asynchronously
      */
-    public void updateContactInfo(String contactInfo) {
+    public void getAllUsers(UsersCallback callback) {
+        userRepository.getAllUsers(callback);
+    }
+
+    /**
+     * Loads a user by their ID (for admin viewing other profiles).
+     *
+     * @param userId the ID of the user to load
+     * @param callback callback used to return the result asynchronously
+     */
+    public void loadUserById(String userId, UserCallback callback) {
+        userRepository.getUser(userId, callback);
+    }
+
+    /**
+     * Deletes a user from the database.
+     *
+     * @param userId the ID of the user to delete
+     * @param callback callback returning true if successful, false otherwise
+     */
+    public void deleteUser(String userId, EventCallback<Boolean> callback) {
+        userRepository.deleteUser(userId, callback);
+    }
+
+    /**
+     * Edits the personal information fields of the current user
+     *
+     * @param name the user's full name
+     * @param email the user's email
+     * @param phone the user's phone number
+     */
+    public void updateUserProfile(String name, String email, String phone) {
+        user.setUserName(name);
+        user.setUserEmail(email);
+        user.setUserPhoneNumber(phone);
+
+        userRepository.addOrUpdateUser(user);
+    }
+
+    /**
+     * Updates the contact information of the current user
+     *
+     * @param email the user's email
+     * @param phone the user's phone number
+     */
+    public void updateContactInfo(String email, String phone) {
+        user.setUserEmail(email);
+        user.setUserPhoneNumber(phone);
+        userRepository.addOrUpdateUser(user);
+    }
+
+    /**
+     * Retrieves all organizers from the database.
+     *
+     * @param callback callback used to return the result asynchronously
+     */
+    public void getAllOrganizers(UsersCallback callback) {
+        userRepository.getAllOrganizers(callback);
+    }
+
+    /**
+     * Sets the current user as an organizer.
+     *
+     * @param callback callback returning true if successful, false otherwise
+     */
+    public void setOrganizerStatus(EventCallback<Boolean> callback) {
         String deviceId = getDeviceId();
-        user.setContactInfo(contactInfo);
+        userRepository.setOrganizerStatus(deviceId, callback);
+    }
+
+    /**
+     * Removes (bans) an organizer account from the system.
+     * The organizer will no longer be able to create or manage events.
+     *
+     * @param organizerId the ID of the organizer to remove
+     * @param callback callback returning true if successful, false otherwise
+     */
+    public void removeOrganizer(String organizerId, EventCallback<Boolean> callback) {
+        userRepository.removeOrganizer(organizerId, callback);
     }
 }

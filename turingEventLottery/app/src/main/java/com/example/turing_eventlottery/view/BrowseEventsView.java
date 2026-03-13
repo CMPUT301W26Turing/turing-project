@@ -3,26 +3,47 @@ package com.example.turing_eventlottery.view;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.turing_eventlottery.R;
 import com.example.turing_eventlottery.model.Event;
+import com.example.turing_eventlottery.model.EventRepository;
 import com.example.turing_eventlottery.viewmodel.EventViewModel;
+import com.example.turing_eventlottery.viewmodel.UserViewModel;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.card.MaterialCardView;
 import com.bumptech.glide.Glide;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.tabs.TabLayout;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class BrowseEventsView extends AppCompatActivity {
+    private View browseContainer;
     private LinearLayout eventsContainer;
-    private EventViewModel eventViewModel;
     private TextView resultsText;
     private TextView upcomingLotteries;
+
+    private View manageContainer;
+    private RecyclerView myEventsRecyclerView;
+    private MyEventsAdapter myEventsAdapter;
+    
+    private EventViewModel eventViewModel;
+    private EventRepository eventRepository;
+    private UserViewModel userViewModel;
+    private boolean fromAdmin;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,12 +51,136 @@ public class BrowseEventsView extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.browse_events);
 
+        eventViewModel = new EventViewModel();
+        eventRepository = new EventRepository();
+        userViewModel = new UserViewModel(this);
+        fromAdmin = getIntent().getBooleanExtra("fromAdmin", false);
+
+        initViews();
+        setupSpinners();
+        setupTabs();
+        setupNavigation();
+    }
+
+    private void initViews() {
+        browseContainer = findViewById(R.id.browseContainer);
+        manageContainer = findViewById(R.id.manageContainer);
+
         eventsContainer = findViewById(R.id.eventsContainer);
         resultsText = findViewById(R.id.resultsText);
         upcomingLotteries = findViewById(R.id.upcomingText);
-        eventViewModel = new EventViewModel();
-        eventViewModel.getEvents(this::displayEvents);
 
+        myEventsRecyclerView = findViewById(R.id.myEventsRecyclerView);
+        myEventsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        myEventsAdapter = new MyEventsAdapter(new ArrayList<>());
+        myEventsRecyclerView.setAdapter(myEventsAdapter);
+
+        findViewById(R.id.backButton).setOnClickListener(v -> finish());
+    }
+
+    private void setupSpinners() {
+        Spinner interestsSpinner = findViewById(R.id.browseEventsInterestsSpinner);
+        Spinner availabilitySpinner = findViewById(R.id.browseEventsAvailabilitySpinner);
+
+        ArrayAdapter<CharSequence> interestsAdapter = ArrayAdapter.createFromResource(this,
+                R.array.browse_events_interests_spinner, R.layout.custom_spinner_item);
+        interestsAdapter.setDropDownViewResource(R.layout.custom_spinner_dropdown_item);
+        interestsSpinner.setAdapter(interestsAdapter);
+
+        ArrayAdapter<CharSequence> availabilityAdapter = ArrayAdapter.createFromResource(this,
+                R.array.browse_events_availability_spinner, R.layout.custom_spinner_item);
+        availabilityAdapter.setDropDownViewResource(R.layout.custom_spinner_dropdown_item);
+        availabilitySpinner.setAdapter(availabilityAdapter);
+    }
+
+    private void setupNavigation() {
+        BottomNavigationView bottomNav = findViewById(R.id.bottomNav);
+        FloatingActionButton fabCreate = findViewById(R.id.fabCreate);
+
+        bottomNav.setSelectedItemId(R.id.nav_events);
+
+        bottomNav.setOnItemSelectedListener(item -> {
+            int itemId = item.getItemId();
+            if (itemId == R.id.nav_home) {
+                startActivity(new Intent(this, EntrantDashboardView.class));
+                finish();
+                return true;
+            } else if (itemId == R.id.nav_events) {
+                return true;
+            } else if (itemId == R.id.nav_alerts) {
+                startActivity(new Intent(this, MyNotificationsView.class));
+                finish();
+                return true;
+            } else if (itemId == R.id.nav_profile) {
+                startActivity(new Intent(this, MyProfileView.class));
+                finish();
+                return true;
+            }
+            return false;
+        });
+
+        fabCreate.setOnClickListener(v -> {
+            Intent intent = new Intent(this, CreateEventView.class);
+            startActivity(intent);
+        });
+    }
+
+    private void setupTabs() {
+        TabLayout tabs = findViewById(R.id.dashboardTabs);
+        tabs.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                if (tab.getPosition() == 0) {
+                    showBrowseView();
+                } else {
+                    showManageView();
+                }
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {}
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {}
+        });
+    }
+
+    private void showBrowseView() {
+        browseContainer.setVisibility(View.VISIBLE);
+        manageContainer.setVisibility(View.GONE);
+        loadAllEvents();
+    }
+
+    private void showManageView() {
+        browseContainer.setVisibility(View.GONE);
+        manageContainer.setVisibility(View.VISIBLE);
+        loadOrganizerEvents();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        TabLayout tabs = findViewById(R.id.dashboardTabs);
+        if (tabs.getSelectedTabPosition() == 0) {
+            loadAllEvents();
+        } else {
+            loadOrganizerEvents();
+        }
+    }
+
+    private void loadAllEvents() {
+        eventViewModel.getEvents(this::displayEvents);
+    }
+
+    private void loadOrganizerEvents() {
+        String currentUserId = userViewModel.getDeviceId();
+        eventRepository.getEventsByOrganizer(currentUserId, events -> {
+            if (events != null) {
+                myEventsAdapter.updateEvents(events);
+            } else {
+                Toast.makeText(this, "Failed to load events", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void displayEvents(List<Event> events) {
@@ -43,7 +188,6 @@ public class BrowseEventsView extends AppCompatActivity {
 
         resultsText.setText(events.size() + " Results");
         upcomingLotteries.setText("Upcoming Lotteries");
-
 
         for (Event event : events) {
             MaterialCardView card = (MaterialCardView) LayoutInflater.from(this)
@@ -56,29 +200,24 @@ public class BrowseEventsView extends AppCompatActivity {
                 posterView.setBackgroundColor(getColor(R.color.secondaryClickableCardsAndSpinners));
                 posterView.setImageDrawable(null);
             } else {
-                Glide.with(this)
-                        .load(posterUrl)
-                        .into(posterView);
+                Glide.with(this).load(posterUrl).into(posterView);
             }
 
-            TextView location = card.findViewById(R.id.locationText);
-            location.setText(event.getLocation());
-
-            TextView name = card.findViewById(R.id.eventName);
-            name.setText(event.getName());
-
-            TextView dateTime = card.findViewById(R.id.dateTimeText);
-            dateTime.setText(event.getDate());
+            ((TextView) card.findViewById(R.id.locationText)).setText(event.getLocation());
+            ((TextView) card.findViewById(R.id.eventName)).setText(event.getName());
+            ((TextView) card.findViewById(R.id.dateTimeText)).setText(event.getDate());
 
             card.setOnClickListener(v -> openEventDetails(event.getId()));
-
             eventsContainer.addView(card);
         }
     }
 
-   private void openEventDetails(String eventId) {
+    private void openEventDetails(String eventId) {
         Intent intent = new Intent(this, EventDetailsView.class);
         intent.putExtra("EVENT_ID", eventId);
+        if (fromAdmin) {
+            intent.putExtra("fromAdmin", true);
+        }
         startActivity(intent);
-   }
+    }
 }

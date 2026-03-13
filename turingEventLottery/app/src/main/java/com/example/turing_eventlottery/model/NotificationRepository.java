@@ -31,6 +31,16 @@ public class NotificationRepository {
                 });
     }
 
+    public void removeNotification(Notification notification) {
+        notificationsCollection.document(notification.getId()).delete()
+                .addOnSuccessListener(v -> {
+                    Log.d(TAG, "Notification removed with ID: " + notification.getId());
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error removing notification", e);
+                });
+    }
+
     public void getNotificationsByUserId(String userId, EventCallback<List<Notification>> callback) {
         notificationsCollection.whereEqualTo("userId", userId)
                 .orderBy("timestamp", Query.Direction.DESCENDING)
@@ -46,6 +56,54 @@ public class NotificationRepository {
                         callback.onCallback(notifications);
                     } else {
                         Log.e(TAG, "Error getting notifications", task.getException());
+                        callback.onCallback(null);
+                    }
+                });
+    }
+
+    public void updateNotificationStatus(String notificationId, String status, EventCallback<Boolean> callback) {
+        notificationsCollection.document(notificationId)
+                .update("status", status)
+                .addOnSuccessListener(v -> callback.onCallback(true))
+                .addOnFailureListener(e -> callback.onCallback(false));
+    }
+
+    public void getAllNotificationLogs(EventCallback<List<Notification>> callback) {
+        notificationsCollection
+                .orderBy("timestamp", Query.Direction.DESCENDING)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        List<Notification> logs = new ArrayList<>();
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            Notification log = document.toObject(Notification.class);
+                            log.setId(document.getId());
+                            logs.add(log);
+                        }
+                        callback.onCallback(logs);
+                    } else {
+                        Log.e(TAG, "Error getting notification logs", task.getException());
+                        callback.onCallback(null);
+                    }
+                });
+    }
+
+    public void getNotificationLogsByEvent(String eventId, EventCallback<List<Notification>> callback) {
+        notificationsCollection
+                .whereEqualTo("eventId", eventId)
+                .orderBy("timestamp", Query.Direction.DESCENDING)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        List<Notification> logs = new ArrayList<>();
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            Notification log = document.toObject(Notification.class);
+                            log.setId(document.getId());
+                            logs.add(log);
+                        }
+                        callback.onCallback(logs);
+                    } else {
+                        Log.e(TAG, "Error getting notification logs by event", task.getException());
                         callback.onCallback(null);
                     }
                 });

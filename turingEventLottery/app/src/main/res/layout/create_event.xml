@@ -82,42 +82,55 @@
                 app:strokeColor="#DDE1FF"
                 app:strokeWidth="1dp">
 
-                <LinearLayout
+                <FrameLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:orientation="vertical">
+                    android:layout_height="match_parent">
 
-                    <FrameLayout
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:background="@drawable/blue_icon_background"
-                        android:padding="10dp">
+                    <ImageView
+                        android:id="@+id/eventPosterPreview"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop"
+                        android:visibility="gone" />
 
-                        <ImageView
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:src="@drawable/baseline_image_24"
-                            app:tint="@color/primaryBlue" />
-                    </FrameLayout>
+                    <LinearLayout
+                        android:id="@+id/uploadPlaceholder"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:orientation="vertical">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:fontFamily="@font/poppins_semibold"
-                        android:text="Upload Event Poster"
-                        android:textColor="@color/headerText"
-                        android:textSize="14sp" />
+                        <FrameLayout
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:background="@drawable/blue_icon_background"
+                            android:padding="10dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Recommended: 1200x600px"
-                        android:textColor="@color/headerSubtext"
-                        android:textSize="12sp" />
+                            <ImageView
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:src="@drawable/baseline_image_24"
+                                app:tint="@color/primaryBlue" />
+                        </FrameLayout>
 
-                </LinearLayout>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:fontFamily="@font/poppins_semibold"
+                            android:text="Upload Event Poster"
+                            android:textColor="@color/headerText"
+                            android:textSize="14sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Recommended: 1200x600px"
+                            android:textColor="@color/headerSubtext"
+                            android:textSize="12sp" />
+
+                    </LinearLayout>
+                </FrameLayout>
             </com.google.android.material.card.MaterialCardView>
 
             <TextView
@@ -522,7 +535,7 @@
                                 android:layout_marginStart="8dp"
                                 android:background="@android:color/transparent"
                                 android:fontFamily="@font/poppins_semibold"
-                                android:hint="100"
+                                android:hint="No Limit"
                                 android:inputType="number"
                                 android:textColor="@color/headerText"
                                 android:textSize="18sp" />
