@@ -359,9 +359,38 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
                 String userId = (String) winner.get("userId");
                 notifyWinner(userId, event);
             }
+
+            // Notify users who were NOT selected(US 01.04.02)
+            for (Map<String, Object> entrant : waitingList) {
+
+                String userId = (String) entrant.get("userId");
+
+                boolean isWinner = false;
+
+                for (Map<String, Object> winner : winners) {
+                    if (winner.get("userId").equals(userId)) {
+                        isWinner = true;
+                        break;
+                    }
+                }
+
+                if (!isWinner) {
+                    Notification notification = new Notification(
+                            userId,
+                            event.getId(),
+                            event.getName(),
+                            event.getDate(),
+                            "Unfortunately you were not selected for this event."
+                    );
+
+                    notificationRepository.addNotification(notification);
+                }
+            }
+
             Toast.makeText(this, "Lottery completed. " + numToDraw + " entrants invited.", Toast.LENGTH_SHORT).show();
             loadAllParticipants();
         });
+
     }
 
     private void drawSingle() {
