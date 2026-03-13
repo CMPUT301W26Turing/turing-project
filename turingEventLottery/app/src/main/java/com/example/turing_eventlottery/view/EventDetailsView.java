@@ -20,6 +20,13 @@ import com.example.turing_eventlottery.viewmodel.EventViewModel;
 import com.example.turing_eventlottery.viewmodel.UserViewModel;
 import com.google.android.material.button.MaterialButton;
 
+/**
+ * View for displaying a specific event's details.
+ * <p>
+ *     Handles displaying event information (poster, name, location, date/time, description)
+ *     Admin actions and user actions.
+ * </p>
+ */
 public class EventDetailsView extends AppCompatActivity {
     private EventViewModel eventViewModel;
     private UserViewModel userViewModel;
@@ -45,6 +52,7 @@ public class EventDetailsView extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.event_details);
 
+        // Bind views
         posterView = findViewById(R.id.eventPoster);
         nameView = findViewById(R.id.eventName);
         locationView = findViewById(R.id.eventLocation);
@@ -65,6 +73,7 @@ public class EventDetailsView extends AppCompatActivity {
 
         backButton.setOnClickListener(v -> finish());
 
+        // Show organizer info and hide waitlist if accessed by admin
         if (fromAdmin) {
             organizerBox.setVisibility(View.VISIBLE);
             waitlistButton.setVisibility(View.GONE);
@@ -73,22 +82,26 @@ public class EventDetailsView extends AppCompatActivity {
         if (eventId != null) {
             eventViewModel.getEventById(eventId, this::displayEvent);
 
+            // Enable waitlist button only if registration is open
             eventViewModel.checkRegistrationStatus(eventId, isOpen -> {
                 waitlistButton.setEnabled(isOpen);
             });
         }
 
         userViewModel.loadUser(loadedUser -> {
+            // Show delete button for admins
             if (loadedUser.isAdmin() && fromAdmin) {
                 deleteEventButton.setVisibility(View.VISIBLE);
                 deleteEventButton.setOnClickListener(v -> showDeleteConfirmation());
             }
 
+            // Check if the user is on the waitlist
             eventViewModel.isUserOnWaitlist(loadedUser, eventId, onWaitlist -> {
                 isOnWaitlist = onWaitlist;
                 updateWaitlistButton();
             });
 
+            // Handle waitlist join/leave
             waitlistButton.setOnClickListener(v -> {
                 if ("Guest".equals(loadedUser.getUserName())) {
                     Toast.makeText(this,

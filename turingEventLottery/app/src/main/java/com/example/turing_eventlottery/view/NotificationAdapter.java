@@ -19,6 +19,11 @@ import com.google.android.material.card.MaterialCardView;
 
 import java.util.List;
 
+/**
+ * Adapter for displaying a list of {@link Notification} objects in a RecyclerView.
+ * Handles UI updates based on notification type and provides callbacks for accept/decline
+ * actions on invitations.
+ */
 public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapter.NotificationViewHolder> {
 
     private List<Notification> notifications;

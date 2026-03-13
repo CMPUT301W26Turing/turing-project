@@ -19,6 +19,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+/**
+ * Adapter for displaying a list of entrants who are waiting for event.
+ */
+// View handles business logic, will fix for part 4 to follow proper MVVM architecture
 public class WaitingEntrantsAdapter extends RecyclerView.Adapter<WaitingEntrantsAdapter.EntrantViewHolder> {
 
     private List<Map<String, Object>> entrants;

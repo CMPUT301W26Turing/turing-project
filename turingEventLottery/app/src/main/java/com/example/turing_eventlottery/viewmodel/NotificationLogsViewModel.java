@@ -25,7 +25,8 @@ public class NotificationLogsViewModel {
     }
 
     /**
-     * Load all notification logs from the system
+     * Load all notification logs from the system.
+     *
      * @param callback callback with list of logs or null on error
      */
     public void loadNotificationLogs(EventCallback<List<Notification>> callback) {
@@ -42,7 +43,8 @@ public class NotificationLogsViewModel {
     }
 
     /**
-     * Load notification logs for a specific event
+     * Load notification logs for a specific event.
+     *
      * @param eventId the event ID to filter by
      * @param callback callback with list of logs for that event or null on error
      */

@@ -31,8 +31,8 @@ import java.util.UUID;
  *
  * @author Matthew Adams
  * @author Miro
- * @version 1.1
- * @since 1.0
+ * @version 1.2
+ * @since 03-07-2026
  * @see Event
  * @see User
  * @see EventCallback
