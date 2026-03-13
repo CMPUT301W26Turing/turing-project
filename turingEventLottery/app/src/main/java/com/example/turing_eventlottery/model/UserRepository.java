@@ -116,9 +116,6 @@ public class UserRepository {
     }
 
     /**
-<<<<<<< HEAD
-
-=======
      * Retrieves all organizers from the database.
      *
      * @param callback callback used to return the result asynchronously
@@ -142,9 +139,6 @@ public class UserRepository {
     }
 
     /**
-<<<<<<< HEAD
-
-=======
      * Sets the organizer status for a user.
      *
      * @param userId the ID of the user
