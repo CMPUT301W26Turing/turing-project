@@ -25,6 +25,14 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.util.ArrayList;
 import java.util.Collections;
 
+/**
+ * Activity to display the notifications for the current user.
+ * <p>
+ *     Users can accept or decline invitations. Accepting adds to even participants.
+ *     Declining triggers a new lottery draw if there are other users on the waitlist.
+ * </p>
+ */
+// Need to fix MVVM architecture for part 4
 public class MyNotificationsView extends AppCompatActivity implements NotificationAdapter.OnNotificationActionListener {
 
     private NotificationRepository notificationRepository;
@@ -71,7 +79,7 @@ public class MyNotificationsView extends AppCompatActivity implements Notificati
         bottomNav.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
             if (itemId == R.id.nav_home) {
-                startActivity(new Intent(this, EntrantDashboardView.class));
+                startActivity(new Intent(this, UserDashboardView.class));
                 finish();
                 return true;
             } else if (itemId == R.id.nav_events) {

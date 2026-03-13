@@ -16,6 +16,13 @@ import com.google.android.material.card.MaterialCardView;
 
 import java.util.List;
 
+/**
+ * Activity for browsing all user profiles/
+ * <p>
+ *     Displays a list of all users with basic information (name/email/ID).
+ *     Supports navigation to detailed profile view.
+ * </p>
+ */
 public class BrowseProfilesView extends AppCompatActivity {
     private LinearLayout profilesContainer;
     private TextView profilesCountText;

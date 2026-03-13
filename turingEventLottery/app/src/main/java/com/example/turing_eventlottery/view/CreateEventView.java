@@ -31,6 +31,20 @@ import com.google.android.material.textfield.TextInputEditText;
 import java.util.Calendar;
 import java.util.Locale;
 
+/**
+ * Activity for creating new events (organizer).
+ * <p>
+ *     Allows an organizer to enter event details, pick date/times, upload poster image,
+ *     and publish the event. Validates input fields and handles asynchronous poster upload
+ *     before saving the event.
+ * </p>
+ */
+
+/*
+Currently, this class does not follow proper MVVM architecture and fill be fixed for part 4.
+(Repository -> Model) -> ViewModel -> View.
+View should not know anything about the Repository. (Should not directly access EventRepository)
+ */
 public class CreateEventView extends AppCompatActivity {
 
     private TextInputEditText eventDateInput;

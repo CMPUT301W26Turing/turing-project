@@ -26,6 +26,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Activity that allows event organizers to send notifications to different audiences for
+ * their events, such as waitlists, selected participants, or cancelled entrants.
+ */
 public class SendNotificationView extends AppCompatActivity {
 
     private AutoCompleteTextView eventDropdown;

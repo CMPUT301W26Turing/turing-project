@@ -22,6 +22,11 @@ import java.util.List;
 /**
  * Activity for browsing all notification logs (admin only)
  * Displays a list of all notifications sent by organizers to entrants
+ * <p>
+ *     Displays a list of notifications sent by organizers to entrants.
+ *     Supports empty state handling. Each notification card navigates
+ *     to a detail view when clicked.
+ * </p>
  */
 public class BrowseNotificationLogsView extends AppCompatActivity {
     private LinearLayout logsContainer;

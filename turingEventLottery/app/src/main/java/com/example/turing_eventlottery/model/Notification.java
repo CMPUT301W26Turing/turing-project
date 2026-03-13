@@ -3,6 +3,18 @@ package com.example.turing_eventlottery.model;
 import com.google.firebase.firestore.Exclude;
 import java.util.List;
 
+/**
+ * This class represents a notification related to an event in the application.
+ * <p>
+ *     Notifications can be either user targeted (participants/waitlist)
+ *     or system logs created by organizers for audit purposes.
+ * </p>
+ *
+ * @author Yuze
+ * @version 1.0
+ * @since 03-09-2026
+ * @see NotificationRepository
+ */
 public class Notification {
     private String id;
     private String userId;
@@ -16,8 +28,21 @@ public class Notification {
     private List<String> recipients;
     private boolean isSystemLog;
 
+    /**
+     * Default constructor required for Firebase Firestone Database.
+     */
     public Notification() {}
 
+    /**
+     * Constructor that creates a user targeted notification with a message.
+     *
+     * @param userId The ID of the recipient user
+     * @param eventId The ID of the related event
+     * @param eventName The name of the related event
+     * @param eventDate The date of the event
+     * @param message The message content of the notification
+     * @param status The status of the notification
+     */
     public Notification(String userId, String eventId, String eventName, String eventDate, String message, String status) {
         this.userId = userId;
         this.eventId = eventId;
@@ -28,6 +53,15 @@ public class Notification {
         this.timestamp = System.currentTimeMillis();
     }
 
+    /**
+     *  Constructor that creates a user targeted notification without a message.
+     *
+     * @param userId The ID of the recipient user
+     * @param eventId The ID of the related event
+     * @param eventName The name of the event
+     * @param eventDate The date of the event
+     * @param status The status of the notification
+     */
     public Notification(String userId, String eventId, String eventName, String eventDate, String status) {
         this.userId = userId;
         this.eventId = eventId;
@@ -38,8 +72,15 @@ public class Notification {
     }
 
     /**
-     * Constructor for creating system notification logs (admin audit trail)
-     * Used when organizers send notifications to entrants
+     * Constructor that creates a system notification log for organizers sending
+     * notifications to multiple recipients.
+     *
+     * @param organizerId The ID of the organizer sending the notification
+     * @param eventId The ID of the related event
+     * @param eventName The name of the event
+     * @param eventDate The date of the event
+     * @param message The notification message content
+     * @param recipients the list of recipient user IDs
      */
     public Notification(String organizerId, String eventId, String eventName, String eventDate,
                        String message, List<String> recipients) {
