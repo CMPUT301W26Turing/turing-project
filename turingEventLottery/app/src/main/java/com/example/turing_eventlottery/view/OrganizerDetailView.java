@@ -14,6 +14,11 @@ import com.example.turing_eventlottery.model.User;
 import com.example.turing_eventlottery.model.UserCallback;
 import com.example.turing_eventlottery.viewmodel.UserViewModel;
 
+/**
+ * This Activity displays the detailed information of a specific organizer.
+ * Admins can view the organizer's information and account status.
+ * It also provides the option to remove the organizer from the system.
+ */
 public class OrganizerDetailView extends AppCompatActivity {
     private UserViewModel userViewModel;
     private TextView organizerNameText, organizerIdText, organizerEmailText, organizerStatusText;
@@ -26,6 +31,7 @@ public class OrganizerDetailView extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.organizer_detail);
 
+        // Initialize UI elements
         organizerNameText = findViewById(R.id.organizerName);
         organizerIdText = findViewById(R.id.organizerId);
         organizerEmailText = findViewById(R.id.organizerEmail);
@@ -56,6 +62,7 @@ public class OrganizerDetailView extends AppCompatActivity {
         });
     }
 
+    // Confirmation dialog before removing the organizer
     private void showRemoveConfirmation() {
         new AlertDialog.Builder(this)
                 .setTitle("Remove Organizer")
@@ -65,6 +72,7 @@ public class OrganizerDetailView extends AppCompatActivity {
                 .show();
     }
 
+    // Removes the organizer
     private void removeOrganizer() {
         userViewModel.removeOrganizer(targetOrganizerId, result -> {
             if (result) {

@@ -17,6 +17,14 @@ import com.example.turing_eventlottery.model.EventRepository;
 
 import java.util.List;
 
+/**
+ * RecyclerView Adapter for displaying a list of events that the user manages.
+ * <p>
+ *     Each list item shows event name, event date, waitlist count / capacity, registration status.
+ * </p>
+ * Clicking an event opens the ManageEventView for that event.
+ */
+// Need to fix MVVM architecture for part 4
 public class MyEventsAdapter extends RecyclerView.Adapter<MyEventsAdapter.EventViewHolder> {
 
     private List<Event> eventList;

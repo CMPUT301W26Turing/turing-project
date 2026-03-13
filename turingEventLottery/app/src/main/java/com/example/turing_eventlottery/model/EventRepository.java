@@ -21,6 +21,22 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+
+/**
+ * Repository class for interacting with Event data within Firebase Firestore Database.
+ * <p>
+ *     This class handles CRUD operations for events; adding events, getting events,
+ *     managing waitlists, and fetching registration periods.
+ * </p>
+ *
+ * @author Matthew Adams
+ * @author Miro
+ * @version 1.2
+ * @since 03-07-2026
+ * @see Event
+ * @see User
+ * @see EventCallback
+ */
 public class EventRepository {
     private static final String TAG = "EventRepository";
     private static final String COLLECTION_NAME = "events";

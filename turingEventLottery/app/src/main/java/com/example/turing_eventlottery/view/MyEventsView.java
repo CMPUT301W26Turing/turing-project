@@ -18,6 +18,11 @@ import com.example.turing_eventlottery.viewmodel.UserViewModel;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Activity to display a list of events created by the current organizer. Users
+ * a RecyclerView with MyEventsAdapter to show each event and its registration status.
+ */
+// Need to fix MVVM architecture for part 4
 public class MyEventsView extends AppCompatActivity {
 
     private RecyclerView myEventsRecyclerView;

@@ -14,7 +14,7 @@ import com.google.firebase.firestore.Exclude;
  * @author Matthew Adams
  * @author Miro
  * @version 1.1
- * @since 1.0
+ * @since 03-07-2026
  * @see EventViewModel
  */
 

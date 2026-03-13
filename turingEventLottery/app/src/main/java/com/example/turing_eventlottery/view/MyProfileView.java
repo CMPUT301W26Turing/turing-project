@@ -16,6 +16,13 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+/**
+ * Activity that displays and allows editing of the current user's profile.
+ * <p>
+ *     Users can update their name, email, phone number.
+ *     Also includes navigation to other parts of the application via bottom navigation and FAB.
+ * </p>
+ */
 public class MyProfileView extends AppCompatActivity {
     private EditText fullNameText;
     private EditText emailText;
@@ -51,6 +58,7 @@ public class MyProfileView extends AppCompatActivity {
             String email = emailText.getText().toString().trim();
             String phone = phoneText.getText().toString().trim();
 
+            // Validate email format
             if (!email.contains("@") || !email.endsWith(".com")) {
                 Toast.makeText(this, "Please enter a valid email address.", Toast.LENGTH_SHORT).show();
                 return;
@@ -60,6 +68,7 @@ public class MyProfileView extends AppCompatActivity {
                 phone = null;
             }
 
+            // Update user profile
             userViewModel.updateUserProfile(name, email, phone);
             Toast.makeText(this, "Profile Updated!", Toast.LENGTH_SHORT).show();
         });
@@ -77,7 +86,7 @@ public class MyProfileView extends AppCompatActivity {
         bottomNav.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
             if (itemId == R.id.nav_home) {
-                startActivity(new Intent(this, EntrantDashboardView.class));
+                startActivity(new Intent(this, UserDashboardView.class));
                 finish();
                 return true;
             } else if (itemId == R.id.nav_events) {

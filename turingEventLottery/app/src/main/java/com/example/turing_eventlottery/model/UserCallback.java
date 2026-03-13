@@ -8,7 +8,7 @@ package com.example.turing_eventlottery.model;
  *
  * @author Matthew Adams
  * @version 1.0
- * @since 1.0
+ * @since 03-07-2026
  * @see User
  */
 
