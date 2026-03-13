@@ -84,6 +84,20 @@ public class EventViewModel {
     }
 
     /**
+     * Gets the user's status for a specific event: "Enrolled", "Invited", "Waiting", or "None"
+     */
+    public void getUserEventStatus(String eventId, String userId, EventCallback<String> callback) {
+        eventRepository.getUserEventStatus(eventId, userId, callback);
+    }
+
+    /**
+     * Accepts an invitation by registering the user as a participant
+     */
+    public void acceptInvitation(String eventId, String userId, EventCallback<Boolean> callback) {
+        eventRepository.registerParticipant(eventId, userId, callback);
+    }
+
+    /**
      * Checks whether registration is currently open for a given event.
      *
      * @param eventId The event ID

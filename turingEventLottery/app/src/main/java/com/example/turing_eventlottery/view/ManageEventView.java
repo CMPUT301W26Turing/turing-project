@@ -208,7 +208,7 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
                         capacityProgress.setProgress(Math.min(100, (totalWaitlist * 100) / cap));
                     }
                 } else {
-                    capacityValue.setText(totalWaitlist);
+                    capacityValue.setText(String.valueOf(totalWaitlist));// was(capacityValue.setText(totalWaitlist))
                     capacityProgress.setProgress(0);
                     spotsRemaining.setText("N/A");
                 }
@@ -378,9 +378,40 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
                 String userId = (String) winner.get("userId");
                 notifyWinner(userId, event);
             }
+
+            // users who were NOT selected (US 01.04.02)
+            for (Map<String, Object> entrant : waitingList) {
+
+                String userId = (String) entrant.get("userId");
+
+                boolean isWinner = false;
+
+                for (Map<String, Object> winner : winners) {
+                    if (winner.get("userId").equals(userId)) {
+                        isWinner = true;
+                        break;
+                    }
+                }
+
+                // notify losers
+                if (!isWinner) {
+
+                    Notification notification = new Notification(
+                            userId,
+                            event.getId(),
+                            event.getName(),
+                            event.getDate(),
+                            "Not Selected"
+                    );
+
+                    notificationRepository.addNotification(notification);
+                }
+            }
+
             Toast.makeText(this, "Lottery completed. " + numToDraw + " entrants invited.", Toast.LENGTH_SHORT).show();
             loadAllParticipants();
         });
+
     }
 
     private void drawSingle() {
@@ -402,6 +433,30 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
             Collections.shuffle(waitingList);
             String winnerId = (String) waitingList.get(0).get("userId");
             notifyWinner(winnerId, event);
+            // check if lottery is finished,if yes notify loser(US 01.04.02)
+            if (invitedList.size() + 1 >= event.getWinnersToDraw()) {
+
+                for (Map<String, Object> entrant : waitingList) {
+
+                    String entrantId = (String) entrant.get("userId");
+
+                    if (!entrantId.equals(winnerId)) {
+
+                        Notification notification = new Notification(
+                                entrantId,
+                                event.getId(),
+                                event.getName(),
+                                event.getDate(),
+                                "Not Selected"
+                        );
+
+                        notificationRepository.addNotification(notification);
+                    }
+                }
+            }
+
+
+
             Toast.makeText(this, "One entrant invited.", Toast.LENGTH_SHORT).show();
             loadAllParticipants();
         });

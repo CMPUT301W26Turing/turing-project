@@ -1,5 +1,8 @@
 package com.example.turing_eventlottery.model;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.provider.Settings;
 import android.util.Log;
 
 import com.example.turing_eventlottery.model.EventCallback;
@@ -131,6 +134,7 @@ public class UserRepository {
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Error getting all organizers", e);
                     callback.onSuccess(new ArrayList<>());
+
                 });
     }
 
