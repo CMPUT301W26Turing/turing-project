@@ -21,6 +21,7 @@ import com.example.turing_eventlottery.viewmodel.EventViewModel;
 import com.example.turing_eventlottery.viewmodel.UserViewModel;
 import com.google.android.material.button.MaterialButton;
 
+
 /**
  * View for displaying a specific event's details.
  * <p>

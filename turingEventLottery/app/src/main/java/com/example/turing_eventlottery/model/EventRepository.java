@@ -303,27 +303,27 @@ public class EventRepository {
     public void registerParticipant(String eventId, String userId, EventCallback<Boolean> callback) {
         userRepository.getUser(userId, user -> {
             if (user != null) {
-                // Remove from waitlist (even if not on waitlist, continue anyway)
-                removeUserFromWaitlist(eventId, user, removed -> {
-                    // Always try to add to participants, regardless of waitlist removal
-                    Map<String, Object> data = new HashMap<>();
-                    data.put("username", user.getUserName());
-                    data.put("timestamp", Timestamp.now());
-                    data.put("status", "Enrolled");
+                // Always add to participants, regardless of waitlist status
+                Map<String, Object> data = new HashMap<>();
+                data.put("username", user.getUserName());
+                data.put("timestamp", Timestamp.now());
+                data.put("status", "Enrolled");
 
-                    eventsCollection.document(eventId)
-                            .collection("participants")
-                            .document(userId)
-                            .set(data)
-                            .addOnSuccessListener(v -> {
-                                Log.d(TAG, "User " + userId + " registered as participant");
-                                callback.onCallback(true);
-                            })
-                            .addOnFailureListener(e -> {
-                                Log.e(TAG, "Error adding participant", e);
-                                callback.onCallback(false);
+                eventsCollection.document(eventId)
+                        .collection("participants")
+                        .document(userId)
+                        .set(data)
+                        .addOnSuccessListener(v -> {
+                            // After adding to participants, try to remove from waitlist
+                            removeUserFromWaitlist(eventId, user, removed -> {
+                                Log.d(TAG, "User enrolled. Removed from waitlist: " + removed);
                             });
-                });
+                            callback.onCallback(true);
+                        })
+                        .addOnFailureListener(e -> {
+                            Log.e(TAG, "Error adding participant", e);
+                            callback.onCallback(false);
+                        });
             } else {
                 callback.onCallback(false);
             }
@@ -472,6 +472,8 @@ public class EventRepository {
                 })
                 .addOnFailureListener(e -> callback.onCallback("None"));
     }
+
+
 
 
 
