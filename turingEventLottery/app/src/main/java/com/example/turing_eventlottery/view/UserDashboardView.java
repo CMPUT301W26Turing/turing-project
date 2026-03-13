@@ -52,7 +52,6 @@ public class UserDashboardView extends AppCompatActivity {
 
         greetingMessage = findViewById(R.id.greetingMessage);
         profileInitialsText = findViewById(R.id.profileInitialsText);
-
         MaterialButton adminButton = findViewById(R.id.adminButton);
 
         userViewModel.loadUser(new UserCallback() {
@@ -77,6 +76,16 @@ public class UserDashboardView extends AppCompatActivity {
                     if (user.isAdmin()) {
                         adminButton.setVisibility(View.VISIBLE);
                     }
+                }
+
+                // Admin button
+                if (user.isAdmin()) {
+                    adminButton.setVisibility(View.VISIBLE);;
+
+                    adminButton.setOnClickListener(v -> {
+                        Intent intent = new Intent(UserDashboardView.this, AdminDashboardView.class);
+                        startActivity(intent);
+                    });
                 }
             }
         });
