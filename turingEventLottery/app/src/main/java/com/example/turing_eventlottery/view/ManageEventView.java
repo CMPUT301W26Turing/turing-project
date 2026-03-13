@@ -360,7 +360,7 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
                 notifyWinner(userId, event);
             }
 
-// Notify users who were NOT selected (US 01.04.02)
+            // users who were NOT selected (US 01.04.02)
             for (Map<String, Object> entrant : waitingList) {
 
                 String userId = (String) entrant.get("userId");
@@ -374,8 +374,8 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
                     }
                 }
 
-                // Only notify losers when event is full
-                if (!isWinner && winners.size() >= event.getWinnersToDraw()) {
+                // notify losers
+                if (!isWinner) {
 
                     Notification notification = new Notification(
                             userId,
@@ -406,6 +406,30 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
             Collections.shuffle(waitingList);
             String winnerId = (String) waitingList.get(0).get("userId");
             notifyWinner(winnerId, event);
+            // check if lottery is finished,if yes notify loser(US 01.04.02)
+            if (invitedList.size() + 1 >= event.getWinnersToDraw()) {
+
+                for (Map<String, Object> entrant : waitingList) {
+
+                    String entrantId = (String) entrant.get("userId");
+
+                    if (!entrantId.equals(winnerId)) {
+
+                        Notification notification = new Notification(
+                                entrantId,
+                                event.getId(),
+                                event.getName(),
+                                event.getDate(),
+                                "Not Selected"
+                        );
+
+                        notificationRepository.addNotification(notification);
+                    }
+                }
+            }
+
+
+
             Toast.makeText(this, "One entrant invited.", Toast.LENGTH_SHORT).show();
             loadAllParticipants();
         });
