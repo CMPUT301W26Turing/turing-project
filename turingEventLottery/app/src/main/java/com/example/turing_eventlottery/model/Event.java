@@ -3,7 +3,6 @@ package com.example.turing_eventlottery.model;
 import com.example.turing_eventlottery.viewmodel.EventViewModel;
 import com.google.firebase.firestore.Exclude;
 
-
 /**
  * Represents an event in the system.
  *  <p>
@@ -17,7 +16,6 @@ import com.google.firebase.firestore.Exclude;
  * @since 03-07-2026
  * @see EventViewModel
  */
-
 public class Event {
     private String id;
     private String organizerId;
@@ -32,7 +30,6 @@ public class Event {
     private int winnersToDraw;
     private int waitlistCap;
     private boolean geolocationRequired;
-
 
     /**
      * A default constructor required for Firebase Firestore.
@@ -75,7 +72,6 @@ public class Event {
         this.winnersToDraw = winnersToDraw;
         this.waitlistCap = waitlistCap;
         this.geolocationRequired = geolocationRequired;
-
     }
 
     @Exclude
@@ -117,5 +113,4 @@ public class Event {
 
     public boolean isGeolocationRequired() { return geolocationRequired; }
     public void setGeolocationRequired(boolean geolocationRequired) { this.geolocationRequired = geolocationRequired; }
-
 }
