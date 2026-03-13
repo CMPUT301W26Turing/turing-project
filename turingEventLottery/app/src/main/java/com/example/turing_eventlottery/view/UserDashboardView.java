@@ -2,6 +2,7 @@ package com.example.turing_eventlottery.view;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
@@ -12,6 +13,7 @@ import com.example.turing_eventlottery.model.User;
 import com.example.turing_eventlottery.model.UserCallback;
 import com.example.turing_eventlottery.viewmodel.UserViewModel;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -51,6 +53,8 @@ public class UserDashboardView extends AppCompatActivity {
         greetingMessage = findViewById(R.id.greetingMessage);
         profileInitialsText = findViewById(R.id.profileInitialsText);
 
+        MaterialButton adminButton = findViewById(R.id.adminButton);
+
         userViewModel.loadUser(new UserCallback() {
             @Override
             public void onSuccess(User user) {
@@ -70,8 +74,15 @@ public class UserDashboardView extends AppCompatActivity {
                         }
                         profileInitialsText.setText(initials);
                     }
+                    if (user.isAdmin()) {
+                        adminButton.setVisibility(View.VISIBLE);
+                    }
                 }
             }
+        });
+
+        adminButton.setOnClickListener(v -> {
+            startActivity(new Intent(UserDashboardView.this, AdminDashboardView.class));
         });
 
         setupNavigation();
