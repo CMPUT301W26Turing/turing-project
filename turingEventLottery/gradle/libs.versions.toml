@@ -10,6 +10,7 @@ constraintlayout = "2.2.1"
 cardview = "1.0.0"
 firebaseFirestore = "26.1.1"
 firebaseStorage = "22.0.1"
+zxingAndroidEmbedded = "4.3.0"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -22,6 +23,8 @@ constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayo
 cardview = { group = "androidx.cardview", name = "cardview", version.ref = "cardview" }
 firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore", version.ref = "firebaseFirestore" }
 firebase-storage = { group = "com.google.firebase", name = "firebase-storage", version.ref = "firebaseStorage" }
+zxing-android-embedded = { group = "com.journeyapps", name = "zxing-android-embedded", version.ref = "zxingAndroidEmbedded" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
+

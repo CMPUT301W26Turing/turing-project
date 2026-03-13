@@ -3,8 +3,10 @@ package com.example.turing_eventlottery.view;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.turing_eventlottery.R;
@@ -14,6 +16,8 @@ import com.example.turing_eventlottery.viewmodel.UserViewModel;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.journeyapps.barcodescanner.ScanContract;
+import com.journeyapps.barcodescanner.ScanOptions;
 
 /**
  * Activity representing the main dashboard for a user.
@@ -33,6 +37,17 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 public class EntrantDashboardView extends AppCompatActivity {
     private TextView greetingMessage;
     private TextView profileInitialsText;
+
+    private final ActivityResultLauncher<ScanOptions> qrCodeLauncher = registerForActivityResult(new ScanContract(), result -> {
+        if (result.getContents() != null) {
+            String eventId = result.getContents();
+            Intent intent = new Intent(this, EventDetailsView.class);
+            intent.putExtra("EVENT_ID", eventId);
+            startActivity(intent);
+        } else {
+            Toast.makeText(this, "Cancelled", Toast.LENGTH_LONG).show();
+        }
+    });
 
     /**
      * Initializes the dashboard UI and sets up navigation
@@ -82,10 +97,14 @@ public class EntrantDashboardView extends AppCompatActivity {
         MaterialCardView myHistory = findViewById(R.id.myHistory);
         MaterialCardView myProfile = findViewById(R.id.myProfile);
 
-//        joinByQrCode.setOnClickListener(v -> {
-//            Intent intent = new Intent(EntrantDashboardView.this, JoinByQrCode.class);
-//            startActivity(intent);
-//        });
+        joinByQrCode.setOnClickListener(v -> {
+            ScanOptions options = new ScanOptions();
+            options.setPrompt("Scan an Event QR Code");
+            options.setBeepEnabled(true);
+            options.setOrientationLocked(true);
+            options.setCaptureActivity(QRCodeScanActivity.class);
+            qrCodeLauncher.launch(options);
+        });
         browseEvents.setOnClickListener(v -> {
             Intent intent = new Intent(EntrantDashboardView.this, BrowseEventsView.class);
             startActivity(intent);
