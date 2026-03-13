@@ -54,8 +54,6 @@ public class UserDashboardView extends AppCompatActivity {
         profileInitialsText = findViewById(R.id.profileInitialsText);
         MaterialButton adminButton = findViewById(R.id.adminButton);
 
-        MaterialButton adminButton = findViewById(R.id.adminButton);
-
         userViewModel.loadUser(new UserCallback() {
             @Override
             public void onSuccess(User user) {
