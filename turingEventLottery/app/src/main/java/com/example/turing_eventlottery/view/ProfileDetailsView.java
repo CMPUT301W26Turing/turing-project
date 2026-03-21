@@ -14,6 +14,10 @@ import com.example.turing_eventlottery.model.User;
 import com.example.turing_eventlottery.model.UserCallback;
 import com.example.turing_eventlottery.viewmodel.UserViewModel;
 
+/**
+ * Activity for displaying detailed information for a specific user profile.
+ * Admins can view user information and optionally delete the profile.
+ */
 public class ProfileDetailsView extends AppCompatActivity {
     private UserViewModel userViewModel;
     private TextView userIdText, contactInfoText, adminStatusText;

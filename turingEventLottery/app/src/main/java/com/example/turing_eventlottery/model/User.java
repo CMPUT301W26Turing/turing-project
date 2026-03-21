@@ -16,7 +16,7 @@ import java.util.List;
  *
  * @author Matthew Adams
  * @version 1.1
- * @since 1.0
+ * @since 03-07-2026
  * @see UserViewModel
  */
 public class User {
@@ -28,6 +28,8 @@ public class User {
     private boolean isAdmin = false;
     private boolean isOrganizer = false;
     private boolean isBanned = false;
+
+    private String deviceId;
 
     /**
      * A default constructor required for Firebase Firestore.
@@ -149,4 +151,5 @@ public class User {
     public void setBanned(boolean banned) {
         isBanned = banned;
     }
+
 }

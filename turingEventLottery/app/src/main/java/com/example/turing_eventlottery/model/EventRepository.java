@@ -31,8 +31,8 @@ import java.util.UUID;
  *
  * @author Matthew Adams
  * @author Miro
- * @version 1.1
- * @since 1.0
+ * @version 1.2
+ * @since 03-07-2026
  * @see Event
  * @see User
  * @see EventCallback
@@ -67,7 +67,6 @@ public class EventRepository {
                     event.setId(documentReference.getId());
                     Log.d(TAG, "Event added with ID: " + documentReference.getId());
 
-                    // Update organizer's associated events
                     userRepository.getUser(event.getOrganizerId(), user -> {
                         if (user != null) {
                             user.addAssociatedEvent(event.getId());
@@ -177,10 +176,8 @@ public class EventRepository {
      */
     public void deleteEvent(String eventId, EventCallback<Boolean> callback) {
         CommentRepository commentRepository = new CommentRepository();
-        
-        // 1. Delete all comments associated with this event (Cascades to user collections)
+
         commentRepository.deleteAllEventComments(eventId, commentSuccess -> {
-            // 2. Delete the event document itself
             eventsCollection.document(eventId).delete()
                     .addOnSuccessListener(v -> callback.onCallback(true))
                     .addOnFailureListener(e -> {
@@ -244,7 +241,6 @@ public class EventRepository {
                 .document(user.getUserId())
                 .set(waitlistEntry)
                 .addOnSuccessListener(v -> {
-                    // Update user's associated events
                     user.addAssociatedEvent(eventId);
                     userRepository.addOrUpdateUser(user);
                     callback.onCallback(true);
@@ -325,24 +321,27 @@ public class EventRepository {
     public void registerParticipant(String eventId, String userId, EventCallback<Boolean> callback) {
         userRepository.getUser(userId, user -> {
             if (user != null) {
-                // Remove from waitlist collection and add to participants array in event doc
-                removeUserFromWaitlist(eventId, user, success -> {
-                    if (success) {
-                        Map<String, Object> data = new HashMap<>();
-                        data.put("username", user.getUserName());
-                        data.put("timestamp", Timestamp.now());
-                        data.put("status", "Enrolled");
+                // Always add to participants, regardless of waitlist status
+                Map<String, Object> data = new HashMap<>();
+                data.put("username", user.getUserName());
+                data.put("timestamp", Timestamp.now());
+                data.put("status", "Enrolled");
 
-                        eventsCollection.document(eventId)
-                                .collection("participants")
-                                .document(userId)
-                                .set(data)
-                                .addOnSuccessListener(v -> callback.onCallback(true))
-                                .addOnFailureListener(e -> callback.onCallback(false));
-                    } else {
-                        callback.onCallback(false);
-                    }
-                });
+                eventsCollection.document(eventId)
+                        .collection("participants")
+                        .document(userId)
+                        .set(data)
+                        .addOnSuccessListener(v -> {
+                            // After adding to participants, try to remove from waitlist
+                            removeUserFromWaitlist(eventId, user, removed -> {
+                                Log.d(TAG, "User enrolled. Removed from waitlist: " + removed);
+                            });
+                            callback.onCallback(true);
+                        })
+                        .addOnFailureListener(e -> {
+                            Log.e(TAG, "Error adding participant", e);
+                            callback.onCallback(false);
+                        });
             } else {
                 callback.onCallback(false);
             }
@@ -496,4 +495,45 @@ public class EventRepository {
                             });
                 });
     }
+
+    /**
+     * Gets the user's status for a specific event: "Enrolled", "Invited", "Waiting", or "None"
+     * @param eventId the event ID
+     * @param userId the user ID
+     * @param callback callback returning the status string
+     */
+    public void getUserEventStatus(String eventId, String userId, EventCallback<String> callback) {
+        // First check if user is in participants collection
+        eventsCollection.document(eventId)
+                .collection("participants")
+                .document(userId)
+                .get()
+                .addOnSuccessListener(participantDoc -> {
+                    if (participantDoc.exists()) {
+                        callback.onCallback("Enrolled");
+                        return;
+                    }
+
+                    // If not enrolled, check waitlist
+                    eventsCollection.document(eventId)
+                            .collection("waitlist")
+                            .document(userId)
+                            .get()
+                            .addOnSuccessListener(waitlistDoc -> {
+                                if (waitlistDoc.exists()) {
+                                    String status = waitlistDoc.getString("status");
+                                    callback.onCallback(status != null ? status : "Waiting");
+                                } else {
+                                    callback.onCallback("None");
+                                }
+                            })
+                            .addOnFailureListener(e -> callback.onCallback("None"));
+                })
+                .addOnFailureListener(e -> callback.onCallback("None"));
+    }
+
+
+
+
+
 }

@@ -17,6 +17,14 @@ import com.google.android.material.card.MaterialCardView;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Activity for browsing all organizers (admin view).
+ * <p>
+ *     Displays a list of all non-banned organizers, showing their user details
+ *     such as, name, email, and status. Each organizer card navigates
+ *     to the organizer detail view when clicked.
+ * </p>
+ */
 public class BrowseOrganizersView extends AppCompatActivity {
     private LinearLayout organizersContainer;
     private TextView organizersCountText;
@@ -32,16 +40,18 @@ public class BrowseOrganizersView extends AppCompatActivity {
         organizersCountText = findViewById(R.id.organizersCountText);
         userViewModel = new UserViewModel(this);
 
+        // Back button that closes activity
         findViewById(R.id.backButton).setOnClickListener(v -> finish());
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        loadOrganizers();
+        loadOrganizers(); // Refresh the list of organizers when the view resumes
     }
 
     private void loadOrganizers() {
+        // Async call to fetch all organizers
         userViewModel.getAllOrganizers(organizers -> {
             if (organizers != null) {
                 displayOrganizers(organizers);
@@ -52,6 +62,7 @@ public class BrowseOrganizersView extends AppCompatActivity {
     private void displayOrganizers(List<User> organizers) {
         organizersContainer.removeAllViews();
 
+        // Filter out all banned organizers
         List<User> activeOrganizers = new ArrayList<>();
         for (User organizer : organizers) {
             if (!organizer.isBanned()) {
@@ -59,6 +70,7 @@ public class BrowseOrganizersView extends AppCompatActivity {
             }
         }
 
+        // Update count text
         organizersCountText.setText(activeOrganizers.size() + " Organizer" + (activeOrganizers.size() != 1 ? "s" : ""));
 
         LayoutInflater inflater = LayoutInflater.from(this);
@@ -69,6 +81,7 @@ public class BrowseOrganizersView extends AppCompatActivity {
             TextView emailText = card.findViewById(R.id.organizerCardEmail);
             com.google.android.material.chip.Chip statusChip = card.findViewById(R.id.organizerCardStatus);
 
+            // Fallback if missing name/email
             String displayName = organizer.getUserName();
             if (displayName == null || displayName.isEmpty()) {
                 displayName = "Anonymous Organizer";
@@ -77,6 +90,7 @@ public class BrowseOrganizersView extends AppCompatActivity {
             emailText.setText(organizer.getUserEmail() != null ? organizer.getUserEmail() : "No Email");
             statusChip.setText("Active");
 
+            // Click card to view organizer details
             card.setOnClickListener(v -> {
                 Intent intent = new Intent(this, OrganizerDetailView.class);
                 intent.putExtra("ORGANIZER_ID", organizer.getUserId());

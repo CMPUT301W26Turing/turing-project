@@ -11,23 +11,48 @@ import org.junit.Test;
 import com.example.turing_eventlottery.model.User;
 
 public class UserTest {
+    private User user;
+    private User emptyUser;
     private User guestUser;
-    private User adminUser;
-    private User bannedUser;
-    private User regularUser;
 
-    /**
     @Before
     public void setUp() {
-        guestUser = User.createGuest("guest123");
-        adminUser = new User("admin123", "Admin User", "admin@example.com", null, true, false);
-        bannedUser = new User("user01", "Banned User", "user01@example.com", "780-555-0001", false, true);
-        regularUser = new User("user02", "Regular User", "user02@example.com", "780-555-0002", false, false);
+        user = new User(
+                "Cas",
+                "Castiel",
+                "castiel@angle.com",
+                "1234567890",
+                true,
+                true,
+                false
+        );
+        emptyUser = new User();
+        guestUser = User.createGuest("guest67");
     }
 
     @Test
-    public void testGuestUser() {
-        assertEquals("guest123", guestUser.getUserId());
+    public void testUserConstructor() {
+        assertEquals("Cas", user.getUserId());
+        assertEquals("Castiel", user.getUserName());
+        assertEquals("castiel@angle.com", user.getUserEmail());
+        assertEquals("1234567890", user.getUserPhoneNumber());
+        assertTrue(user.isAdmin());
+        assertFalse(user.isBanned());
+    }
+
+    @Test
+    public void testEmptyConstructor() {
+        assertNull(emptyUser.getUserId());
+        assertNull(emptyUser.getUserName());
+        assertNull(emptyUser.getUserEmail());
+        assertNull(emptyUser.getUserPhoneNumber());
+        assertFalse(emptyUser.isAdmin());
+        assertFalse(emptyUser.isBanned());
+    }
+
+    @Test
+    public void testCreateGuest() {
+        assertEquals("guest67", guestUser.getUserId());
         assertEquals("Guest", guestUser.getUserName());
         assertNull(guestUser.getUserEmail());
         assertNull(guestUser.getUserPhoneNumber());
@@ -36,63 +61,42 @@ public class UserTest {
     }
 
     @Test
-    public void testAdminUserFlags() {
-        assertTrue(adminUser.isAdmin());
-        assertFalse(adminUser.isBanned());
-        assertEquals("admin@example.com", adminUser.getUserEmail());
-        assertNull(adminUser.getUserPhoneNumber());
-    }
-
-    @Test
-    public void testBannedUserFlags() {
-        assertTrue(bannedUser.isBanned());
-        assertFalse(bannedUser.isAdmin());
-        assertEquals("user01@example.com", bannedUser.getUserEmail());
-        assertEquals("780-555-0001", bannedUser.getUserPhoneNumber());
-    }
-
-    @Test
-    public void testSetBanned() {
-        regularUser.setBanned(true);
-        assertTrue(regularUser.isBanned());
-    }
-
-    @Test
-    public void testSetAdmin() {
-        regularUser.setAdmin(true);
-        assertTrue(regularUser.isAdmin());
+    public void testSetUserId() {
+        emptyUser.setUserId("newId");
+        assertEquals("newId", emptyUser.getUserId());
     }
 
     @Test
     public void testSetUserName() {
-        regularUser.setUserName("Updated Name");
-        assertEquals("Updated Name", regularUser.getUserName());
+        emptyUser.setUserName("Dean");
+        assertEquals("Dean", emptyUser.getUserName());
     }
 
     @Test
     public void testSetUserEmail() {
-        regularUser.setUserEmail("new@example.com");
-        assertEquals("new@example.com", regularUser.getUserEmail());
+        emptyUser.setUserEmail("dean@winchester.com");
+        assertEquals("dean@winchester.com", emptyUser.getUserEmail());
     }
 
     @Test
     public void testSetUserPhoneNumber() {
-        regularUser.setUserPhoneNumber("780-555-9999");
-        assertEquals("780-555-9999", regularUser.getUserPhoneNumber());
+        emptyUser.setUserPhoneNumber("0987654321");
+        assertEquals("0987654321", emptyUser.getUserPhoneNumber());
     }
 
     @Test
-    public void testUserId() {
-        assertEquals("guest123", guestUser.getUserId());
-        assertEquals("admin123", adminUser.getUserId());
-        assertEquals("user01", bannedUser.getUserId());
-        assertEquals("user02", regularUser.getUserId());
+    public void testSetAdmin() {
+        emptyUser.setAdmin(true);
+        assertTrue(emptyUser.isAdmin());
+        emptyUser.setAdmin(false);
+        assertFalse(emptyUser.isAdmin());
     }
 
     @Test
-    public void testSetUserId() {
-        regularUser.setUserId("newId");
-        assertEquals("newId", regularUser.getUserId());
+    public void testSetBanned() {
+        emptyUser.setBanned(true);
+        assertTrue(emptyUser.isBanned());
+        emptyUser.setBanned(false);
+        assertFalse(emptyUser.isBanned());
     }
-    */
 }

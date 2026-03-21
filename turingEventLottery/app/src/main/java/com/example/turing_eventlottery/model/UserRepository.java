@@ -1,5 +1,8 @@
 package com.example.turing_eventlottery.model;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.provider.Settings;
 import android.util.Log;
 
 import com.google.firebase.firestore.CollectionReference;
@@ -21,8 +24,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * </p>
  *
  * @author Matthew Adams
- * @version 1.0
- * @since 1.0
+ * @version 1.1
+ * @since 03-07-2026
  * @see User
  * @see UserCallback
  */
@@ -179,6 +182,7 @@ public class UserRepository {
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Error getting all organizers", e);
                     callback.onSuccess(new ArrayList<>());
+
                 });
     }
 

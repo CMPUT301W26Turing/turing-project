@@ -3,6 +3,7 @@ package com.example.turing_eventlottery.view;
 import android.app.AlertDialog;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -25,9 +26,15 @@ import com.example.turing_eventlottery.model.User;
 import com.example.turing_eventlottery.viewmodel.EventViewModel;
 import com.example.turing_eventlottery.viewmodel.UserViewModel;
 import com.google.android.material.button.MaterialButton;
-
 import java.util.List;
 
+/**
+ * View for displaying a specific event's details.
+ * <p>
+ *     Handles displaying event information (poster, name, location, date/time, description)
+ *     Admin actions and user actions.
+ * </p>
+ */
 public class EventDetailsView extends AppCompatActivity {
     private EventViewModel eventViewModel;
     private UserViewModel userViewModel;
@@ -43,7 +50,7 @@ public class EventDetailsView extends AppCompatActivity {
     private View organizerBox;
     private MaterialButton deleteEventButton;
     private MaterialButton waitlistButton;
-    
+
     private LinearLayout commentsList;
     private EditText commentInput;
     private ImageButton postCommentButton;
@@ -59,6 +66,7 @@ public class EventDetailsView extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.event_details);
 
+        // Bind views
         posterView = findViewById(R.id.eventPoster);
         nameView = findViewById(R.id.eventName);
         locationView = findViewById(R.id.eventLocation);
@@ -70,7 +78,7 @@ public class EventDetailsView extends AppCompatActivity {
         deleteEventButton = findViewById(R.id.deleteEventButton);
         waitlistButton = findViewById(R.id.waitlistButton);
         MaterialButton backButton = findViewById(R.id.backButton);
-        
+
         commentsList = findViewById(R.id.commentsList);
         commentInput = findViewById(R.id.commentInput);
         postCommentButton = findViewById(R.id.postCommentButton);
@@ -84,60 +92,156 @@ public class EventDetailsView extends AppCompatActivity {
 
         backButton.setOnClickListener(v -> finish());
 
+        // Show organizer info and hide waitlist if accessed by admin
         if (fromAdmin) {
             organizerBox.setVisibility(View.VISIBLE);
-            waitlistButton.setVisibility(View.GONE);
+            //waitlistButton.setVisibility(View.GONE); (I marked this out because I can not join my own event)
         }
 
         if (eventId != null) {
             eventViewModel.getEventById(eventId, this::displayEvent);
 
+            // Enable waitlist button only if registration is open
             eventViewModel.checkRegistrationStatus(eventId, isOpen -> {
                 waitlistButton.setEnabled(isOpen);
             });
-            
+
             loadComments();
         }
 
         userViewModel.loadUser(loadedUser -> {
+            // Show delete button for admins
             this.currentUser = loadedUser;
             if (loadedUser.isAdmin() && fromAdmin) {
                 deleteEventButton.setVisibility(View.VISIBLE);
                 deleteEventButton.setOnClickListener(v -> showDeleteConfirmation());
             }
 
-            eventViewModel.isUserOnWaitlist(loadedUser, eventId, onWaitlist -> {
-                isOnWaitlist = onWaitlist;
-                updateWaitlistButton();
-            });
+            // Check user's event status: "Enrolled", "Invited", "Waiting", or "None"
+            eventViewModel.getUserEventStatus(eventId, loadedUser.getUserId(), new EventCallback<String>() {
+                @Override
+                public void onCallback(String status) {
 
-            waitlistButton.setOnClickListener(v -> {
-                if ("Guest".equals(loadedUser.getUserName())) {
-                    Toast.makeText(this,
-                            "You must create an account first, go to My Profile",
-                            Toast.LENGTH_SHORT).show();
-                    return;
-                }
+                    //CASE 1: Already enrolled
+                    if ("Enrolled".equals(status)) {
+                        isOnWaitlist = false;
+                        waitlistButton.setEnabled(false);
+                        waitlistButton.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.greenIconTint)));
+                        waitlistButton.setTextColor(getColor(R.color.white));
+                        waitlistButton.setText("Enrolled");
+                        return;
+                    }
 
-                if (isOnWaitlist) {
-                    eventViewModel.leaveWaitlist(loadedUser, eventId, success -> {
-                        if (success) {
-                            isOnWaitlist = false;
-                            Toast.makeText(this, "You have left the waitlist", Toast.LENGTH_SHORT).show();
-                            updateWaitlistButton();
-                        } else {
-                            Toast.makeText(this, "Failed to leave waitlist, try again", Toast.LENGTH_SHORT).show();
+
+                    //CASE 2: Invited via lottery → Show "Accept" button
+                    if ("Invited".equals(status)) {
+                        isOnWaitlist = false;
+                        waitlistButton.setEnabled(true);
+                        waitlistButton.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.primaryBlue)));
+                        waitlistButton.setTextColor(getColor(R.color.white));
+                        waitlistButton.setText("Accept");
+                    } else {
+                        //CASE 3: Check waitlist status for "Waiting" or "None"
+                        eventViewModel.isUserOnWaitlist(loadedUser, eventId, new EventCallback<Boolean>() {
+                            @Override
+                            public void onCallback(Boolean onWaitlist) {
+                                isOnWaitlist = onWaitlist != null && onWaitlist;
+                                updateWaitlistButton();
+                            }
+                        });
+                    }
+
+                    //Handle button click
+                    waitlistButton.setOnClickListener(v -> {
+                        if ("Guest".equals(loadedUser.getUserName())) {
+                            Toast.makeText(EventDetailsView.this,
+                                    "You must create an account first, go to My Profile",
+                                    Toast.LENGTH_SHORT).show();
+                            return;
                         }
-                    });
-                } else {
-                    eventViewModel.joinWaitlist(loadedUser, eventId, success -> {
-                        if (success) {
-                            isOnWaitlist = true;
-                            Toast.makeText(this, "You have joined the waitlist", Toast.LENGTH_SHORT).show();
-                            updateWaitlistButton();
-                        } else {
-                            Toast.makeText(this, "Failed to join waitlist, try again", Toast.LENGTH_SHORT).show();
-                        }
+
+                        // Re-check status to prevent race conditions
+                        eventViewModel.getUserEventStatus(eventId, loadedUser.getUserId(), new EventCallback<String>() {
+                            @Override
+                            public void onCallback(String currentStatus) {
+
+                                //Prevent double-enrollment
+                                if ("Enrolled".equals(currentStatus)) {
+                                    Toast.makeText(EventDetailsView.this,
+                                            "You are already enrolled in this event",
+                                            Toast.LENGTH_SHORT).show();
+                                    return;
+                                }
+
+                                //CASE: Accept invitation
+                                if ("Invited".equals(currentStatus)) {
+                                    waitlistButton.setEnabled(false); // Prevent double-click
+
+                                    eventViewModel.acceptInvitation(eventId, loadedUser.getUserId(), new EventCallback<Boolean>() {
+                                        @Override
+                                        public void onCallback(Boolean success) {
+                                            if (success != null && success) {
+                                                waitlistButton.setEnabled(false);
+                                                waitlistButton.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.greenIconTint)));
+                                                waitlistButton.setTextColor(getColor(R.color.white));
+                                                waitlistButton.setText("Enrolled");
+                                                Toast.makeText(EventDetailsView.this, "Invitation Accepted!", Toast.LENGTH_SHORT).show();
+
+                                                eventViewModel.getUserEventStatus(eventId, loadedUser.getUserId(), new EventCallback<String>() {
+                                                    @Override
+                                                    public void onCallback(String newStatus) {
+                                                        Log.d("EventDetails", "New status after accept: " + newStatus);
+                                                    }
+                                                });
+                                            } else {
+                                                waitlistButton.setEnabled(true); // Re-enable on failure
+                                                Toast.makeText(EventDetailsView.this, "Failed to accept invitation", Toast.LENGTH_SHORT).show();
+                                            }
+                                        }
+                                    });
+                                    return;
+                                }
+
+                                //CASE: Leave waitlist (existing functionality)
+                                if (isOnWaitlist) {
+                                    eventViewModel.leaveWaitlist(loadedUser, eventId, new EventCallback<Boolean>() {
+                                        @Override
+                                        public void onCallback(Boolean success) {
+                                            if (success != null && success) {
+                                                isOnWaitlist = false;
+                                                Toast.makeText(EventDetailsView.this,
+                                                        "You have left the waitlist",
+                                                        Toast.LENGTH_SHORT).show();
+                                                updateWaitlistButton();
+                                            } else {
+                                                Toast.makeText(EventDetailsView.this,
+                                                        "Failed to leave waitlist, try again",
+                                                        Toast.LENGTH_SHORT).show();
+                                            }
+                                        }
+                                    });
+                                }
+                                //CASE: Join waitlist (existing functionality)
+                                else {
+                                    eventViewModel.joinWaitlist(loadedUser, eventId, new EventCallback<Boolean>() {
+                                        @Override
+                                        public void onCallback(Boolean success) {
+                                            if (success != null && success) {
+                                                isOnWaitlist = true;
+                                                Toast.makeText(EventDetailsView.this,
+                                                        "You have joined the waitlist",
+                                                        Toast.LENGTH_SHORT).show();
+                                                updateWaitlistButton();
+                                            } else {
+                                                Toast.makeText(EventDetailsView.this,
+                                                        "Failed to join waitlist, try again",
+                                                        Toast.LENGTH_SHORT).show();
+                                            }
+                                        }
+                                    });
+                                }
+                            }
+                        });
                     });
                 }
             });
@@ -180,9 +284,9 @@ public class EventDetailsView extends AppCompatActivity {
 
         text1.setText(comment.getText());
         text2.setText("User ID: " + comment.getUserId());
-        
+
         commentsList.addView(commentView);
-        
+
         // Add a simple separator
         View separator = new View(this);
         separator.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 1));
