@@ -4,7 +4,11 @@ import android.app.AlertDialog;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -13,6 +17,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 import com.example.turing_eventlottery.R;
+import com.example.turing_eventlottery.model.Comment;
+import com.example.turing_eventlottery.model.CommentRepository;
 import com.example.turing_eventlottery.model.Event;
 import com.example.turing_eventlottery.model.EventCallback;
 import com.example.turing_eventlottery.model.User;
@@ -20,9 +26,12 @@ import com.example.turing_eventlottery.viewmodel.EventViewModel;
 import com.example.turing_eventlottery.viewmodel.UserViewModel;
 import com.google.android.material.button.MaterialButton;
 
+import java.util.List;
+
 public class EventDetailsView extends AppCompatActivity {
     private EventViewModel eventViewModel;
     private UserViewModel userViewModel;
+    private CommentRepository commentRepository;
 
     private ImageView posterView;
     private TextView nameView;
@@ -34,10 +43,15 @@ public class EventDetailsView extends AppCompatActivity {
     private View organizerBox;
     private MaterialButton deleteEventButton;
     private MaterialButton waitlistButton;
+    
+    private LinearLayout commentsList;
+    private EditText commentInput;
+    private ImageButton postCommentButton;
 
     private boolean isOnWaitlist;
     private String eventId;
     private boolean fromAdmin;
+    private User currentUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,9 +70,14 @@ public class EventDetailsView extends AppCompatActivity {
         deleteEventButton = findViewById(R.id.deleteEventButton);
         waitlistButton = findViewById(R.id.waitlistButton);
         MaterialButton backButton = findViewById(R.id.backButton);
+        
+        commentsList = findViewById(R.id.commentsList);
+        commentInput = findViewById(R.id.commentInput);
+        postCommentButton = findViewById(R.id.postCommentButton);
 
         eventViewModel = new EventViewModel();
         userViewModel = new UserViewModel(this);
+        commentRepository = new CommentRepository();
 
         eventId = getIntent().getStringExtra("EVENT_ID");
         fromAdmin = getIntent().getBooleanExtra("fromAdmin", false);
@@ -76,9 +95,12 @@ public class EventDetailsView extends AppCompatActivity {
             eventViewModel.checkRegistrationStatus(eventId, isOpen -> {
                 waitlistButton.setEnabled(isOpen);
             });
+            
+            loadComments();
         }
 
         userViewModel.loadUser(loadedUser -> {
+            this.currentUser = loadedUser;
             if (loadedUser.isAdmin() && fromAdmin) {
                 deleteEventButton.setVisibility(View.VISIBLE);
                 deleteEventButton.setOnClickListener(v -> showDeleteConfirmation());
@@ -120,6 +142,52 @@ public class EventDetailsView extends AppCompatActivity {
                 }
             });
         });
+
+        postCommentButton.setOnClickListener(v -> {
+            String text = commentInput.getText().toString().trim();
+            if (text.isEmpty()) return;
+            if (currentUser == null || "Guest".equals(currentUser.getUserName())) {
+                Toast.makeText(this, "Please log in to comment", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            commentRepository.addComment(currentUser.getUserId(), eventId, text, success -> {
+                if (success) {
+                    commentInput.setText("");
+                    loadComments();
+                } else {
+                    Toast.makeText(this, "Failed to post comment", Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
+    }
+
+    private void loadComments() {
+        commentRepository.getCommentsByEvent(eventId, comments -> {
+            commentsList.removeAllViews();
+            if (comments != null) {
+                for (Comment comment : comments) {
+                    addCommentToView(comment);
+                }
+            }
+        });
+    }
+
+    private void addCommentToView(Comment comment) {
+        View commentView = getLayoutInflater().inflate(android.R.layout.simple_list_item_2, null);
+        TextView text1 = commentView.findViewById(android.R.id.text1);
+        TextView text2 = commentView.findViewById(android.R.id.text2);
+
+        text1.setText(comment.getText());
+        text2.setText("User ID: " + comment.getUserId());
+        
+        commentsList.addView(commentView);
+        
+        // Add a simple separator
+        View separator = new View(this);
+        separator.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 1));
+        separator.setBackgroundColor(0xFFDDDDDD);
+        commentsList.addView(separator);
     }
 
     private void showDeleteConfirmation() {

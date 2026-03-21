@@ -66,6 +66,15 @@ public class EventRepository {
                 .addOnSuccessListener(documentReference -> {
                     event.setId(documentReference.getId());
                     Log.d(TAG, "Event added with ID: " + documentReference.getId());
+
+                    // Update organizer's associated events
+                    userRepository.getUser(event.getOrganizerId(), user -> {
+                        if (user != null) {
+                            user.addAssociatedEvent(event.getId());
+                            userRepository.addOrUpdateUser(user);
+                        }
+                    });
+
                     callback.onCallback(true);
                 })
                 .addOnFailureListener(e -> {
@@ -167,12 +176,18 @@ public class EventRepository {
      * @param callback callback returning true if successful, false otherwise
      */
     public void deleteEvent(String eventId, EventCallback<Boolean> callback) {
-        eventsCollection.document(eventId).delete()
-                .addOnSuccessListener(v -> callback.onCallback(true))
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "Error deleting event", e);
-                    callback.onCallback(false);
-                });
+        CommentRepository commentRepository = new CommentRepository();
+        
+        // 1. Delete all comments associated with this event (Cascades to user collections)
+        commentRepository.deleteAllEventComments(eventId, commentSuccess -> {
+            // 2. Delete the event document itself
+            eventsCollection.document(eventId).delete()
+                    .addOnSuccessListener(v -> callback.onCallback(true))
+                    .addOnFailureListener(e -> {
+                        Log.e(TAG, "Error deleting event", e);
+                        callback.onCallback(false);
+                    });
+        });
     }
 
     /**
@@ -228,7 +243,12 @@ public class EventRepository {
         eventRef.collection("waitlist")
                 .document(user.getUserId())
                 .set(waitlistEntry)
-                .addOnSuccessListener(v -> callback.onCallback(true))
+                .addOnSuccessListener(v -> {
+                    // Update user's associated events
+                    user.addAssociatedEvent(eventId);
+                    userRepository.addOrUpdateUser(user);
+                    callback.onCallback(true);
+                })
                 .addOnFailureListener(e -> callback.onCallback(false));
     }
 
@@ -241,10 +261,12 @@ public class EventRepository {
      *                 {@code false} otherwise
      */
     public void removeUserFromWaitlist(String eventId, User user, EventCallback<Boolean> callback) {
-        eventsCollection.document(eventId).collection("waitlist")
-                .document(user.getUserId())
-                .delete()
-                .addOnSuccessListener(v -> callback.onCallback(true))
+        eventsCollection.document(eventId).collection("waitlist").document(user.getUserId()).delete()
+                .addOnSuccessListener(v -> {
+                    user.removeAssociatedEvent(eventId);
+                    userRepository.addOrUpdateUser(user);
+                    callback.onCallback(true);
+                })
                 .addOnFailureListener(e -> callback.onCallback(false));
     }
 
@@ -431,6 +453,47 @@ public class EventRepository {
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Error getting participants", e);
                     callback.onCallback(null);
+                });
+    }
+
+    /**
+     * Gets all associated users for an event.
+     * @param eventId the event ID
+     * @param callback a list of all Users associated with the event
+     */
+    public void getAllAssociatedUsers(String eventId, EventCallback<List<User>> callback) {
+        List<User> users = new ArrayList<>();
+        eventsCollection.document(eventId).get().addOnSuccessListener(documentSnapshot -> {
+            userRepository.getUser(documentSnapshot.getString("organizerId"), organizer -> {
+                if (organizer != null) users.add(organizer);
+                eventsCollection.document(eventId).collection("participants").get().addOnSuccessListener(pDocs -> {
+                    for (QueryDocumentSnapshot d : pDocs) users.add(d.toObject(User.class));
+                    eventsCollection.document(eventId).collection("waitlist").get().addOnSuccessListener(wDocs -> {
+                        for (QueryDocumentSnapshot d : wDocs) users.add(d.toObject(User.class));
+                        callback.onCallback(users);
+                    });
+                });
+            });
+        });
+    }
+
+    /**
+     * Removes a user from an event.
+     * @param eventId the event ID to remove from
+     * @param user the user to be removed
+     * @param callback true if successful, false if not
+     */
+    public void removeFromEvent(String eventId, User user, EventCallback<Boolean> callback) {
+        eventsCollection.document(eventId).collection("participants")
+                .document(user.getUserId())
+                .delete()
+                .addOnCompleteListener(pTask -> {
+                    eventsCollection.document(eventId).collection("waitlist")
+                            .document(user.getUserId())
+                            .delete()
+                            .addOnCompleteListener(wTask -> {
+                                callback.onCallback(pTask.isSuccessful() || wTask.isSuccessful());
+                            });
                 });
     }
 }
