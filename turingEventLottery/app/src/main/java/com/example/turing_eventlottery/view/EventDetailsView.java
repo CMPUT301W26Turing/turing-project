@@ -10,6 +10,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,6 +27,7 @@ import com.example.turing_eventlottery.model.User;
 import com.example.turing_eventlottery.viewmodel.EventViewModel;
 import com.example.turing_eventlottery.viewmodel.UserViewModel;
 import com.google.android.material.button.MaterialButton;
+
 import java.util.List;
 
 /**
@@ -59,6 +61,7 @@ public class EventDetailsView extends AppCompatActivity {
     private String eventId;
     private boolean fromAdmin;
     private User currentUser;
+    private Event currentEvent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,14 +102,16 @@ public class EventDetailsView extends AppCompatActivity {
         }
 
         if (eventId != null) {
-            eventViewModel.getEventById(eventId, this::displayEvent);
+            eventViewModel.getEventById(eventId, event -> {
+                this.currentEvent = event;
+                displayEvent(event);
+                loadComments();
+            });
 
             // Enable waitlist button only if registration is open
             eventViewModel.checkRegistrationStatus(eventId, isOpen -> {
                 waitlistButton.setEnabled(isOpen);
             });
-
-            loadComments();
         }
 
         userViewModel.loadUser(loadedUser -> {
@@ -255,7 +260,7 @@ public class EventDetailsView extends AppCompatActivity {
                 return;
             }
 
-            commentRepository.addComment(currentUser.getUserId(), eventId, text, success -> {
+            commentRepository.addComment(currentUser.getUserId(), currentUser.getUserName(), eventId, text, success -> {
                 if (success) {
                     commentInput.setText("");
                     loadComments();
@@ -278,20 +283,68 @@ public class EventDetailsView extends AppCompatActivity {
     }
 
     private void addCommentToView(Comment comment) {
-        View commentView = getLayoutInflater().inflate(android.R.layout.simple_list_item_2, null);
-        TextView text1 = commentView.findViewById(android.R.id.text1);
-        TextView text2 = commentView.findViewById(android.R.id.text2);
+        View view = getLayoutInflater().inflate(R.layout.item_comment, null);
+        TextView nameView = view.findViewById(R.id.commentUserName);
+        TextView textView = view.findViewById(R.id.commentText);
+        TextView avatarText = view.findViewById(R.id.commentAvatarText);
+        ImageView menuButton = view.findViewById(R.id.commentMenu);
+        
+        nameView.setText(comment.getUserName());
+        textView.setText(comment.getText());
+        
+        // Handle Initials
+        String initials = "";
+        String username = comment.getUserName();
+        if (username != null && !username.isEmpty()) {
+            String[] parts = username.split(" ");
+            if (parts.length > 0 && !parts[0].isEmpty()) {
+                initials += parts[0].substring(0, 1).toUpperCase();
+                if (parts.length > 1 && !parts[1].isEmpty()) {
+                    initials += parts[1].substring(0, 1).toUpperCase();
+                }
+            }
+        }
+        avatarText.setText(initials);
 
-        text1.setText(comment.getText());
-        text2.setText("User ID: " + comment.getUserId());
+        // Show menu if it's the current user's comment OR if current user is the organizer
+        boolean isOwner = currentUser != null && comment.getUserId().equals(currentUser.getUserId());
+        boolean isOrganizer = currentUser != null && currentEvent != null && currentUser.getUserId().equals(currentEvent.getOrganizerId());
 
-        commentsList.addView(commentView);
+        if (isOwner || isOrganizer) {
+            menuButton.setVisibility(View.VISIBLE);
+            menuButton.setOnClickListener(v -> {
+                PopupMenu popup = new PopupMenu(this, v);
+                popup.getMenu().add("Delete");
+                popup.setOnMenuItemClickListener(item -> {
+                    if (item.getTitle().equals("Delete")) {
+                        showDeleteCommentConfirmation(comment);
+                        return true;
+                    }
+                    return false;
+                });
+                popup.show();
+            });
+        }
 
-        // Add a simple separator
-        View separator = new View(this);
-        separator.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 1));
-        separator.setBackgroundColor(0xFFDDDDDD);
-        commentsList.addView(separator);
+        commentsList.addView(view);
+    }
+
+    private void showDeleteCommentConfirmation(Comment comment) {
+        new AlertDialog.Builder(this)
+                .setTitle("Delete Comment")
+                .setMessage("Are you sure you want to delete this comment?")
+                .setPositiveButton("Delete", (dialog, which) -> {
+                    commentRepository.deleteComment(comment, success -> {
+                        if (success) {
+                            Toast.makeText(this, "Comment deleted", Toast.LENGTH_SHORT).show();
+                            loadComments();
+                        } else {
+                            Toast.makeText(this, "Failed to delete comment", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 
     private void showDeleteConfirmation() {

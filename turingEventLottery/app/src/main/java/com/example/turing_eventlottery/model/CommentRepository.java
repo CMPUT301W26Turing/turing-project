@@ -34,13 +34,14 @@ public class CommentRepository {
      * Adds a comment to both the user's and the event's comment collections.
      *
      * @param userId the ID of the user
+     * @param userName the name of the user
      * @param eventId the ID of the event
      * @param text the comment text
      * @param callback callback returning true if successful
      */
-    public void addComment(String userId, String eventId, String text, EventCallback<Boolean> callback) {
+    public void addComment(String userId, String userName, String eventId, String text, EventCallback<Boolean> callback) {
         String commentId = UUID.randomUUID().toString();
-        Comment comment = new Comment(commentId, userId, eventId, text, Timestamp.now());
+        Comment comment = new Comment(commentId, userId, userName, eventId, text, Timestamp.now());
 
         WriteBatch batch = db.batch();
 

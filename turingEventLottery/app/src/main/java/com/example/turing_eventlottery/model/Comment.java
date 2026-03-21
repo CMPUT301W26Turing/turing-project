@@ -14,6 +14,7 @@ import com.google.firebase.Timestamp;
 public class Comment {
     private String commentId;
     private String userId;
+    private String userName;
     private String eventId;
     private String text;
     private Timestamp timestamp;
@@ -28,13 +29,15 @@ public class Comment {
      *
      * @param commentId the unique identifier for the comment
      * @param userId the ID of the user who made the comment
+     * @param userName the name of the user who made the comment
      * @param eventId the ID of the event the comment is for
      * @param text the content of the comment
      * @param timestamp the time the comment was created
      */
-    public Comment(String commentId, String userId, String eventId, String text, Timestamp timestamp) {
+    public Comment(String commentId, String userId, String userName, String eventId, String text, Timestamp timestamp) {
         this.commentId = commentId;
         this.userId = userId;
+        this.userName = userName;
         this.eventId = eventId;
         this.text = text;
         this.timestamp = timestamp;
@@ -54,6 +57,14 @@ public class Comment {
 
     public void setUserId(String userId) {
         this.userId = userId;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
     public String getEventId() {
