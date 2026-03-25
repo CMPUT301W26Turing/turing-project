@@ -5,7 +5,12 @@ import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -14,6 +19,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 import com.example.turing_eventlottery.R;
+import com.example.turing_eventlottery.model.Comment;
+import com.example.turing_eventlottery.model.CommentRepository;
 import com.example.turing_eventlottery.model.Event;
 import com.example.turing_eventlottery.model.EventCallback;
 import com.example.turing_eventlottery.model.User;
@@ -21,6 +28,7 @@ import com.example.turing_eventlottery.viewmodel.EventViewModel;
 import com.example.turing_eventlottery.viewmodel.UserViewModel;
 import com.google.android.material.button.MaterialButton;
 
+import java.util.List;
 
 /**
  * View for displaying a specific event's details.
@@ -32,6 +40,7 @@ import com.google.android.material.button.MaterialButton;
 public class EventDetailsView extends AppCompatActivity {
     private EventViewModel eventViewModel;
     private UserViewModel userViewModel;
+    private CommentRepository commentRepository;
 
     private ImageView posterView;
     private TextView nameView;
@@ -44,9 +53,15 @@ public class EventDetailsView extends AppCompatActivity {
     private MaterialButton deleteEventButton;
     private MaterialButton waitlistButton;
 
+    private LinearLayout commentsList;
+    private EditText commentInput;
+    private ImageButton postCommentButton;
+
     private boolean isOnWaitlist;
     private String eventId;
     private boolean fromAdmin;
+    private User currentUser;
+    private Event currentEvent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,8 +82,13 @@ public class EventDetailsView extends AppCompatActivity {
         waitlistButton = findViewById(R.id.waitlistButton);
         MaterialButton backButton = findViewById(R.id.backButton);
 
+        commentsList = findViewById(R.id.commentsList);
+        commentInput = findViewById(R.id.commentInput);
+        postCommentButton = findViewById(R.id.postCommentButton);
+
         eventViewModel = new EventViewModel();
         userViewModel = new UserViewModel(this);
+        commentRepository = new CommentRepository();
 
         eventId = getIntent().getStringExtra("EVENT_ID");
         fromAdmin = getIntent().getBooleanExtra("fromAdmin", false);
@@ -82,7 +102,11 @@ public class EventDetailsView extends AppCompatActivity {
         }
 
         if (eventId != null) {
-            eventViewModel.getEventById(eventId, this::displayEvent);
+            eventViewModel.getEventById(eventId, event -> {
+                this.currentEvent = event;
+                displayEvent(event);
+                loadComments();
+            });
 
             // Enable waitlist button only if registration is open
             eventViewModel.checkRegistrationStatus(eventId, isOpen -> {
@@ -92,6 +116,7 @@ public class EventDetailsView extends AppCompatActivity {
 
         userViewModel.loadUser(loadedUser -> {
             // Show delete button for admins
+            this.currentUser = loadedUser;
             if (loadedUser.isAdmin() && fromAdmin) {
                 deleteEventButton.setVisibility(View.VISIBLE);
                 deleteEventButton.setOnClickListener(v -> showDeleteConfirmation());
@@ -226,6 +251,100 @@ public class EventDetailsView extends AppCompatActivity {
                 }
             });
         });
+
+        postCommentButton.setOnClickListener(v -> {
+            String text = commentInput.getText().toString().trim();
+            if (text.isEmpty()) return;
+            if (currentUser == null || "Guest".equals(currentUser.getUserName())) {
+                Toast.makeText(this, "Please log in to comment", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            commentRepository.addComment(currentUser.getUserId(), currentUser.getUserName(), eventId, text, success -> {
+                if (success) {
+                    commentInput.setText("");
+                    loadComments();
+                } else {
+                    Toast.makeText(this, "Failed to post comment", Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
+    }
+
+    private void loadComments() {
+        commentRepository.getCommentsByEvent(eventId, comments -> {
+            commentsList.removeAllViews();
+            if (comments != null) {
+                for (Comment comment : comments) {
+                    addCommentToView(comment);
+                }
+            }
+        });
+    }
+
+    private void addCommentToView(Comment comment) {
+        View view = getLayoutInflater().inflate(R.layout.item_comment, null);
+        TextView nameView = view.findViewById(R.id.commentUserName);
+        TextView textView = view.findViewById(R.id.commentText);
+        TextView avatarText = view.findViewById(R.id.commentAvatarText);
+        ImageView menuButton = view.findViewById(R.id.commentMenu);
+        
+        nameView.setText(comment.getUserName());
+        textView.setText(comment.getText());
+        
+        // Handle Initials
+        String initials = "";
+        String username = comment.getUserName();
+        if (username != null && !username.isEmpty()) {
+            String[] parts = username.split(" ");
+            if (parts.length > 0 && !parts[0].isEmpty()) {
+                initials += parts[0].substring(0, 1).toUpperCase();
+                if (parts.length > 1 && !parts[1].isEmpty()) {
+                    initials += parts[1].substring(0, 1).toUpperCase();
+                }
+            }
+        }
+        avatarText.setText(initials);
+
+        // Show menu if it's the current user's comment OR if current user is the organizer
+        boolean isOwner = currentUser != null && comment.getUserId().equals(currentUser.getUserId());
+        boolean isOrganizer = currentUser != null && currentEvent != null && currentUser.getUserId().equals(currentEvent.getOrganizerId());
+
+        if (isOwner || isOrganizer) {
+            menuButton.setVisibility(View.VISIBLE);
+            menuButton.setOnClickListener(v -> {
+                PopupMenu popup = new PopupMenu(this, v);
+                popup.getMenu().add("Delete");
+                popup.setOnMenuItemClickListener(item -> {
+                    if (item.getTitle().equals("Delete")) {
+                        showDeleteCommentConfirmation(comment);
+                        return true;
+                    }
+                    return false;
+                });
+                popup.show();
+            });
+        }
+
+        commentsList.addView(view);
+    }
+
+    private void showDeleteCommentConfirmation(Comment comment) {
+        new AlertDialog.Builder(this)
+                .setTitle("Delete Comment")
+                .setMessage("Are you sure you want to delete this comment?")
+                .setPositiveButton("Delete", (dialog, which) -> {
+                    commentRepository.deleteComment(comment, success -> {
+                        if (success) {
+                            Toast.makeText(this, "Comment deleted", Toast.LENGTH_SHORT).show();
+                            loadComments();
+                        } else {
+                            Toast.makeText(this, "Failed to delete comment", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 
     private void showDeleteConfirmation() {
