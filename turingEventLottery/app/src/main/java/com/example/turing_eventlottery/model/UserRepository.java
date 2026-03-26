@@ -1,8 +1,5 @@
 package com.example.turing_eventlottery.model;
 
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.provider.Settings;
 import android.util.Log;
 
 import com.google.firebase.firestore.CollectionReference;
@@ -27,7 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @version 1.1
  * @since 03-07-2026
  * @see User
- * @see UserCallback
+ * @see ModelCallback
  */
 public class UserRepository {
     private static final String TAG = "UserRepository";
@@ -50,20 +47,20 @@ public class UserRepository {
      * @param userId the ID of the user to retrieve
      * @param callback callback used to return the result asynchronously
      */
-    public void getUser(String userId, UserCallback callback) {
+    public void getUser(String userId, ModelCallback<User> callback) {
         usersCollection.document(userId).get()
                 .addOnSuccessListener(document -> {
                     if (document.exists()) {
                         User user = document.toObject(User.class);
-                        callback.onSuccess(user);
+                        callback.onCallback(user);
                     } else {
                         // User not in database, treat as guest
-                        callback.onSuccess(User.createGuest(userId));
+                        callback.onCallback(User.createGuest(userId));
                     }
                 })
                 // On failure, treat as guest
                 .addOnFailureListener(e -> {
-                    callback.onSuccess(User.createGuest(userId));
+                    callback.onCallback(User.createGuest(userId));
                 });
     }
 
@@ -72,7 +69,7 @@ public class UserRepository {
      *
      * @param callback callback used to return the result asynchronously
      */
-    public void getAllUsers(UsersCallback callback) {
+    public void getAllUsers(ModelCallback<List<User>> callback) {
         usersCollection.get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     List<User> users = new ArrayList<>();
@@ -80,11 +77,11 @@ public class UserRepository {
                         User user = document.toObject(User.class);
                         users.add(user);
                     }
-                    callback.onSuccess(users);
+                    callback.onCallback(users);
                 })
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Error getting all users", e);
-                    callback.onSuccess(new ArrayList<>());
+                    callback.onCallback(new ArrayList<>());
                 });
     }
 
@@ -96,7 +93,7 @@ public class UserRepository {
      * @param userId the ID of the user to delete
      * @param callback callback returning true if successful, false otherwise
      */
-    public void deleteUser(String userId, EventCallback<Boolean> callback) {
+    public void deleteUser(String userId, ModelCallback<Boolean> callback) {
         EventRepository eventRepository = new EventRepository();
         CommentRepository commentRepository = new CommentRepository();
 
@@ -143,7 +140,7 @@ public class UserRepository {
         });
     }
 
-    private void checkAllDone(AtomicInteger count, int total, String userId, EventCallback<Boolean> callback) {
+    private void checkAllDone(AtomicInteger count, int total, String userId, ModelCallback<Boolean> callback) {
         if (count.incrementAndGet() == total) {
             usersCollection.document(userId).delete()
                     .addOnSuccessListener(v -> callback.onCallback(true))
@@ -168,7 +165,7 @@ public class UserRepository {
      *
      * @param callback callback used to return the result asynchronously
      */
-    public void getAllOrganizers(UsersCallback callback) {
+    public void getAllOrganizers(ModelCallback<List<User>> callback) {
         usersCollection.whereEqualTo("organizer", true)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
@@ -177,11 +174,11 @@ public class UserRepository {
                         User user = document.toObject(User.class);
                         organizers.add(user);
                     }
-                    callback.onSuccess(organizers);
+                    callback.onCallback(organizers);
                 })
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Error getting all organizers", e);
-                    callback.onSuccess(new ArrayList<>());
+                    callback.onCallback(new ArrayList<>());
 
                 });
     }
@@ -192,19 +189,24 @@ public class UserRepository {
      * @param userId the ID of the user
      * @param callback callback returning true if successful, false otherwise
      */
-    public void setOrganizerStatus(String userId, EventCallback<Boolean> callback) {
+    public void setOrganizerStatus(String userId, ModelCallback<Boolean> callback) {
         usersCollection.document(userId).get()
                 .addOnSuccessListener(document -> {
                     if (document.exists()) {
                         User user = document.toObject(User.class);
-                        user.setOrganizer(true);
-                        user.setBanned(false);
-                        usersCollection.document(userId).set(user)
-                                .addOnSuccessListener(v -> callback.onCallback(true))
-                                .addOnFailureListener(e -> {
-                                    Log.e(TAG, "Error setting organizer status", e);
-                                    callback.onCallback(false);
+                        if (user != null) {
+                            user.setOrganizer(true);
+                            user.setBanned(false);
+                            usersCollection.document(userId).set(user)
+                                    .addOnSuccessListener(v -> callback.onCallback(true))
+                                    .addOnFailureListener(e -> {
+                                        Log.e(TAG, "Error setting organizer status", e);
+                                        callback.onCallback(false);
                                 });
+                        } else {
+                            Log.e(TAG, "User mapping returned null");
+                            callback.onCallback(false);
+                        }
                     } else {
                         callback.onCallback(false);
                     }
@@ -222,18 +224,22 @@ public class UserRepository {
      * @param organizerId the ID of the organizer to remove
      * @param callback callback returning true if successful, false otherwise
      */
-    public void removeOrganizer(String organizerId, EventCallback<Boolean> callback) {
+    public void removeOrganizer(String organizerId, ModelCallback<Boolean> callback) {
         usersCollection.document(organizerId).get()
                 .addOnSuccessListener(document -> {
                     if (document.exists()) {
                         User organizer = document.toObject(User.class);
-                        organizer.setOrganizer(false);
-                        usersCollection.document(organizerId).set(organizer)
-                                .addOnSuccessListener(v -> callback.onCallback(true))
-                                .addOnFailureListener(e -> {
-                                    Log.e(TAG, "Error removing organizer", e);
-                                    callback.onCallback(false);
-                                });
+                        if (organizer != null) {
+                            organizer.setOrganizer(false);
+                            usersCollection.document(organizerId).set(organizer)
+                                    .addOnSuccessListener(v -> callback.onCallback(true))
+                                    .addOnFailureListener(e -> {
+                                        Log.e(TAG, "Error removing organizer", e);
+                                        callback.onCallback(false);
+                                    });
+                        } else {
+                            Log.e(TAG, "Organizer mapping returned null");
+                        }
                     } else {
                         callback.onCallback(false);
                     }

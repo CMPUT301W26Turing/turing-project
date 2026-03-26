@@ -39,7 +39,7 @@ public class CommentRepository {
      * @param text the comment text
      * @param callback callback returning true if successful
      */
-    public void addComment(String userId, String userName, String eventId, String text, EventCallback<Boolean> callback) {
+    public void addComment(String userId, String userName, String eventId, String text, ModelCallback<Boolean> callback) {
         String commentId = UUID.randomUUID().toString();
         Comment comment = new Comment(commentId, userId, userName, eventId, text, Timestamp.now());
 
@@ -62,7 +62,7 @@ public class CommentRepository {
      * @param comment the comment to delete
      * @param callback callback returning true if successful
      */
-    public void deleteComment(Comment comment, EventCallback<Boolean> callback) {
+    public void deleteComment(Comment comment, ModelCallback<Boolean> callback) {
         WriteBatch batch = db.batch();
 
         batch.delete(db.collection("users").document(comment.getUserId()).collection("comments").document(comment.getCommentId()));
@@ -82,7 +82,7 @@ public class CommentRepository {
      * @param eventId the event ID
      * @param callback callback returning a list of comments
      */
-    public void getCommentsByEvent(String eventId, EventCallback<List<Comment>> callback) {
+    public void getCommentsByEvent(String eventId, ModelCallback<List<Comment>> callback) {
         db.collection("events").document(eventId).collection("comments")
                 .orderBy("timestamp", Query.Direction.DESCENDING)
                 .get()
@@ -102,7 +102,7 @@ public class CommentRepository {
      * @param userId the user ID
      * @param callback callback returning true when all deletions are complete
      */
-    public void deleteAllUserComments(String userId, EventCallback<Boolean> callback) {
+    public void deleteAllUserComments(String userId, ModelCallback<Boolean> callback) {
         CollectionReference userComments = db.collection("users").document(userId).collection("comments");
 
         userComments.get().addOnSuccessListener(queryDocumentSnapshots -> {
@@ -131,7 +131,7 @@ public class CommentRepository {
      * @param eventId the event ID
      * @param callback callback returning true when all deletions are complete
      */
-    public void deleteAllEventComments(String eventId, EventCallback<Boolean> callback) {
+    public void deleteAllEventComments(String eventId, ModelCallback<Boolean> callback) {
         CollectionReference eventComments = db.collection("events").document(eventId).collection("comments");
 
         eventComments.get().addOnSuccessListener(queryDocumentSnapshots -> {

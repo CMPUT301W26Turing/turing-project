@@ -1,7 +1,7 @@
 package com.example.turing_eventlottery.viewmodel;
 
 import com.example.turing_eventlottery.model.Event;
-import com.example.turing_eventlottery.model.EventCallback;
+import com.example.turing_eventlottery.model.ModelCallback;
 import com.example.turing_eventlottery.model.EventRepository;
 import com.example.turing_eventlottery.model.User;
 
@@ -40,7 +40,7 @@ public class EventViewModel {
      * @param event The event to add
      * @param callback callback returning {@code true} if successful, {@code false} otherwise
      */
-    public void addEvent(Event event, EventCallback<Boolean> callback) {
+    public void addEvent(Event event, ModelCallback<Boolean> callback) {
         eventRepository.addEvent(event, callback);
     }
 
@@ -49,7 +49,7 @@ public class EventViewModel {
      *
      * @param callback callback returning a list of events
      */
-    public void getEvents(EventCallback<List<Event>> callback) {
+    public void getEvents(ModelCallback<List<Event>> callback) {
         eventRepository.getEvents(callback);
     }
 
@@ -59,7 +59,7 @@ public class EventViewModel {
      * @param organizerId The organizer ID
      * @param callback callback returning a list of events created from the organizer
      */
-    public void getEventsByOrganizer(String organizerId, EventCallback<List<Event>> callback) {
+    public void getEventsByOrganizer(String organizerId, ModelCallback<List<Event>> callback) {
         eventRepository.getEventsByOrganizer(organizerId, callback);
     }
 
@@ -69,7 +69,7 @@ public class EventViewModel {
      * @param eventId The event ID
      * @param callback callback returning the event object
      */
-    public void getEventById(String eventId, EventCallback<Event> callback) {
+    public void getEventById(String eventId, ModelCallback<Event> callback) {
         eventRepository.getEventById(eventId, callback);
     }
 
@@ -79,21 +79,21 @@ public class EventViewModel {
      * @param eventId The event ID
      * @param callback callback returning {@code true} if event deletion succeeded
      */
-    public void deleteEvent(String eventId, EventCallback<Boolean> callback) {
+    public void deleteEvent(String eventId, ModelCallback<Boolean> callback) {
         eventRepository.deleteEvent(eventId, callback);
     }
 
     /**
      * Gets the user's status for a specific event: "Enrolled", "Invited", "Waiting", or "None"
      */
-    public void getUserEventStatus(String eventId, String userId, EventCallback<String> callback) {
+    public void getUserEventStatus(String eventId, String userId, ModelCallback<String> callback) {
         eventRepository.getUserEventStatus(eventId, userId, callback);
     }
 
     /**
      * Accepts an invitation by registering the user as a participant
      */
-    public void acceptInvitation(String eventId, String userId, EventCallback<Boolean> callback) {
+    public void acceptInvitation(String eventId, String userId, ModelCallback<Boolean> callback) {
         eventRepository.registerParticipant(eventId, userId, callback);
     }
 
@@ -103,7 +103,7 @@ public class EventViewModel {
      * @param eventId The event ID
      * @param callback callback returning true if registration is open
      */
-    public void checkRegistrationStatus(String eventId, EventCallback<Boolean> callback) {
+    public void checkRegistrationStatus(String eventId, ModelCallback<Boolean> callback) {
         eventRepository.getEventRegPeriod(eventId, period -> {
             if (period == null) return;
 
@@ -123,7 +123,7 @@ public class EventViewModel {
      * @param eventId The event ID
      * @param callback callback returning {@code true} if added successfully
      */
-    public void joinWaitlist(User user, String eventId, EventCallback<Boolean> callback) {
+    public void joinWaitlist(User user, String eventId, ModelCallback<Boolean> callback) {
         if ("Guest".equals(user.getUserName())) {
             callback.onCallback(false);
             return;
@@ -148,7 +148,7 @@ public class EventViewModel {
      * @param eventId The event ID
      * @param callback callback returning {@code true} if removal succeeded
      */
-    public void leaveWaitlist(User user, String eventId, EventCallback<Boolean> callback) {
+    public void leaveWaitlist(User user, String eventId, ModelCallback<Boolean> callback) {
         eventRepository.removeUserFromWaitlist(eventId, user, success -> {
             callback.onCallback(success);
           
@@ -168,7 +168,7 @@ public class EventViewModel {
      * @param eventId The event ID
      * @param callback callback returning {@code true} if user is on waitlist
      */
-    public void isUserOnWaitlist(User user, String eventId, EventCallback<Boolean> callback) {
+    public void isUserOnWaitlist(User user, String eventId, ModelCallback<Boolean> callback) {
         if (user == null || "Guest".equals(user.getUserName())) {
             callback.onCallback(false);
             return;
@@ -202,7 +202,7 @@ public class EventViewModel {
      * @param eventId The event ID
      * @param callback callback returning the waitlist count.
      */
-    public void getWaitlistCount(String eventId, EventCallback<Integer> callback) {
+    public void getWaitlistCount(String eventId, ModelCallback<Integer> callback) {
         eventRepository.getWaitlistCount(eventId, count -> {
             callback.onCallback(count);
         });

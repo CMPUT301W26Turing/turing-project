@@ -3,7 +3,7 @@ package com.example.turing_eventlottery.viewmodel;
 import android.content.Context;
 import android.util.Log;
 
-import com.example.turing_eventlottery.model.EventCallback;
+import com.example.turing_eventlottery.model.ModelCallback;
 import com.example.turing_eventlottery.model.Notification;
 import com.example.turing_eventlottery.model.NotificationRepository;
 
@@ -29,7 +29,7 @@ public class NotificationLogsViewModel {
      *
      * @param callback callback with list of logs or null on error
      */
-    public void loadNotificationLogs(EventCallback<List<Notification>> callback) {
+    public void loadNotificationLogs(ModelCallback<List<Notification>> callback) {
         Log.d(TAG, "Loading all notification logs");
         notificationRepository.getAllNotificationLogs(logs -> {
             if (logs != null) {
@@ -48,7 +48,7 @@ public class NotificationLogsViewModel {
      * @param eventId the event ID to filter by
      * @param callback callback with list of logs for that event or null on error
      */
-    public void loadNotificationLogsByEvent(String eventId, EventCallback<List<Notification>> callback) {
+    public void loadNotificationLogsByEvent(String eventId, ModelCallback<List<Notification>> callback) {
         Log.d(TAG, "Loading notification logs for event: " + eventId);
         notificationRepository.getNotificationLogsByEvent(eventId, logs -> {
             if (logs != null) {

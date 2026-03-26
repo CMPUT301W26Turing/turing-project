@@ -13,10 +13,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.turing_eventlottery.R;
 import com.example.turing_eventlottery.model.EventRepository;
+import com.example.turing_eventlottery.model.ModelCallback;
 import com.example.turing_eventlottery.model.Notification;
 import com.example.turing_eventlottery.model.NotificationRepository;
 import com.example.turing_eventlottery.model.User;
-import com.example.turing_eventlottery.model.UserCallback;
 import com.example.turing_eventlottery.model.UserRepository;
 import com.example.turing_eventlottery.viewmodel.UserViewModel;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -103,9 +103,9 @@ public class MyNotificationsView extends AppCompatActivity implements Notificati
     }
 
     private void loadNotifications() {
-        userViewModel.loadUser(new UserCallback() {
+        userViewModel.loadUser(new ModelCallback<User>() {
             @Override
-            public void onSuccess(User user) {
+            public void onCallback(User user) {
                 if (user != null) {
                     View sendNotificationBtn = findViewById(R.id.sendNotificationButton);
                     if (user.isOrganizer()) {
@@ -151,9 +151,9 @@ public class MyNotificationsView extends AppCompatActivity implements Notificati
 
     @Override
     public void onDecline(Notification notification) {
-        userRepository.getUser(notification.getUserId(), new UserCallback() {
+        userRepository.getUser(notification.getUserId(), new ModelCallback<User>() {
             @Override
-            public void onSuccess(User user) {
+            public void onCallback(User user) {
                 if (user != null) {
                     eventRepository.removeUserFromWaitlist(notification.getEventId(), user, success -> {
                         if (success) {
