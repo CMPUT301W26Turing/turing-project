@@ -1,6 +1,9 @@
 package com.example.turing_eventlottery.model;
 
 import com.example.turing_eventlottery.viewmodel.UserViewModel;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Represents a user in the system.
@@ -21,7 +24,7 @@ public class User {
     private String userName;
     private String userEmail;
     private String userPhoneNumber;
-
+    private String[] associatedEvents;
     private boolean isAdmin = false;
     private boolean isOrganizer = false;
     private boolean isBanned = false;
@@ -98,6 +101,31 @@ public class User {
 
     public void setUserPhoneNumber(String userPhoneNumber) {
         this.userPhoneNumber = userPhoneNumber;
+    }
+
+    public String[] getAssociatedEvents() {
+        return associatedEvents;
+    }
+
+    public void setAssociatedEvents(String[] associatedEvents) {
+        this.associatedEvents = associatedEvents;
+    }
+
+    public void addAssociatedEvent(String eventId) {
+        if (eventId == null) return;
+        List<String> eventList = associatedEvents == null ? new ArrayList<>() : new ArrayList<>(Arrays.asList(associatedEvents));
+        if (!eventList.contains(eventId)) {
+            eventList.add(eventId);
+            this.associatedEvents = eventList.toArray(new String[0]);
+        }
+    }
+
+    public void removeAssociatedEvent(String eventId) {
+        if (eventId == null || associatedEvents == null) return;
+        List<String> eventList = new ArrayList<>(Arrays.asList(associatedEvents));
+        if (eventList.remove(eventId)) {
+            this.associatedEvents = eventList.toArray(new String[0]);
+        }
     }
 
     public boolean isAdmin() {

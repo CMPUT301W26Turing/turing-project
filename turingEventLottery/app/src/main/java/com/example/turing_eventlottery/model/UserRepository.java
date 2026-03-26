@@ -5,13 +5,13 @@ import android.content.SharedPreferences;
 import android.provider.Settings;
 import android.util.Log;
 
-import com.example.turing_eventlottery.model.EventCallback;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Repository class responsible for handling all user-related
@@ -89,18 +89,66 @@ public class UserRepository {
     }
 
     /**
-     * Deletes a user from the database.
+     * Deletes a user from the database and performs a cascading delete.
+     * Deletes events organized by the user and removes the user from
+     * events they have joined.
      *
      * @param userId the ID of the user to delete
      * @param callback callback returning true if successful, false otherwise
      */
     public void deleteUser(String userId, EventCallback<Boolean> callback) {
-        usersCollection.document(userId).delete()
-                .addOnSuccessListener(v -> callback.onCallback(true))
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "Error deleting user", e);
-                    callback.onCallback(false);
-                });
+        EventRepository eventRepository = new EventRepository();
+        CommentRepository commentRepository = new CommentRepository();
+
+        getUser(userId, user -> {
+            if (user == null || "Guest".equals(user.getUserName())) {
+                usersCollection.document(userId).delete()
+                        .addOnSuccessListener(v -> callback.onCallback(true))
+                        .addOnFailureListener(e -> callback.onCallback(false));
+                return;
+            }
+
+            commentRepository.deleteAllUserComments(userId, commentSuccess -> {
+                
+                String[] associatedEvents = user.getAssociatedEvents();
+                if (associatedEvents == null || associatedEvents.length == 0) {
+                    usersCollection.document(userId).delete()
+                            .addOnSuccessListener(v -> callback.onCallback(true))
+                            .addOnFailureListener(e -> callback.onCallback(false));
+                    return;
+                }
+
+                AtomicInteger completedCount = new AtomicInteger(0);
+                int totalEvents = associatedEvents.length;
+
+                for (String eventId : associatedEvents) {
+                    eventRepository.getEventById(eventId, event -> {
+                        if (event != null) {
+                            if (userId.equals(event.getOrganizerId())) {
+                                // Delete event (this should eventually also call deleteAllEventComments)
+                                eventRepository.deleteEvent(eventId, success -> {
+                                    checkAllDone(completedCount, totalEvents, userId, callback);
+                                });
+                            } else {
+                                eventRepository.removeFromEvent(eventId, user, success -> {
+                                    checkAllDone(completedCount, totalEvents, userId, callback);
+                                });
+                            }
+                        } else {
+                            checkAllDone(completedCount, totalEvents, userId, callback);
+                        }
+                    });
+                }
+            });
+        });
+    }
+
+    private void checkAllDone(AtomicInteger count, int total, String userId, EventCallback<Boolean> callback) {
+        if (count.incrementAndGet() == total) {
+            usersCollection.document(userId).delete()
+                    .addOnSuccessListener(v -> callback.onCallback(true))
+                    .addOnFailureListener(e -> callback.onCallback(false));
+        }
     }
 
     /**
