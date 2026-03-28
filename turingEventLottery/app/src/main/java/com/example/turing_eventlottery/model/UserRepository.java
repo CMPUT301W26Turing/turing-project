@@ -106,7 +106,7 @@ public class UserRepository {
             }
 
             commentRepository.deleteAllUserComments(userId, commentSuccess -> {
-                
+
                 String[] associatedEvents = user.getAssociatedEvents();
                 if (associatedEvents == null || associatedEvents.length == 0) {
                     usersCollection.document(userId).delete()

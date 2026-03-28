@@ -5,6 +5,7 @@ import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -26,6 +27,8 @@ import com.example.turing_eventlottery.model.User;
 import com.example.turing_eventlottery.viewmodel.EventViewModel;
 import com.example.turing_eventlottery.viewmodel.UserViewModel;
 import com.google.android.material.button.MaterialButton;
+
+import java.util.List;
 
 /**
  * View for displaying a specific event's details.
@@ -285,10 +288,10 @@ public class EventDetailsView extends AppCompatActivity {
         TextView textView = view.findViewById(R.id.commentText);
         TextView avatarText = view.findViewById(R.id.commentAvatarText);
         ImageView menuButton = view.findViewById(R.id.commentMenu);
-        
+
         nameView.setText(comment.getUserName());
         textView.setText(comment.getText());
-        
+
         // Handle Initials
         String initials = "";
         String username = comment.getUserName();
@@ -303,11 +306,11 @@ public class EventDetailsView extends AppCompatActivity {
         }
         avatarText.setText(initials);
 
-        // Show menu if it's the current user's comment OR if current user is the organizer
         boolean isOwner = currentUser != null && comment.getUserId().equals(currentUser.getUserId());
         boolean isOrganizer = currentUser != null && currentEvent != null && currentUser.getUserId().equals(currentEvent.getOrganizerId());
+        boolean isAdmin = currentUser != null && currentUser.isAdmin();
 
-        if (isOwner || isOrganizer) {
+        if (isOwner || isOrganizer || isAdmin) {
             menuButton.setVisibility(View.VISIBLE);
             menuButton.setOnClickListener(v -> {
                 PopupMenu popup = new PopupMenu(this, v);
