@@ -35,7 +35,7 @@ import java.util.UUID;
  * @since 03-07-2026
  * @see Event
  * @see User
- * @see EventCallback
+ * @see ModelCallback
  */
 public class EventRepository {
     private static final String TAG = "EventRepository";
@@ -61,7 +61,7 @@ public class EventRepository {
      * @param event the Event to add
      * @param callback callback returning true if successful, false otherwise
      */
-    public void addEvent(Event event, EventCallback<Boolean> callback) {
+    public void addEvent(Event event, ModelCallback<Boolean> callback) {
         eventsCollection.add(event)
                 .addOnSuccessListener(documentReference -> {
                     event.setId(documentReference.getId());
@@ -70,7 +70,7 @@ public class EventRepository {
                     userRepository.getUser(event.getOrganizerId(), user -> {
                         if (user != null) {
                             user.addAssociatedEvent(event.getId());
-                            userRepository.addOrUpdateUser(user);
+                            userRepository.addOrUpdateUser((User) user);
                         }
                     });
 
@@ -88,7 +88,7 @@ public class EventRepository {
      * @param imageUri the URI of the image to upload
      * @param callback callback returning the download URL if successful, or null if failed
      */
-    public void uploadEventPoster(Uri imageUri, EventCallback<String> callback) {
+    public void uploadEventPoster(Uri imageUri, ModelCallback<String> callback) {
         String fileName = UUID.randomUUID().toString();
         StorageReference fileRef = storageReference.child(fileName);
 
@@ -107,7 +107,7 @@ public class EventRepository {
      *
      * @param callback callback returning a list of events, or null if an error occurs
      */
-    public void getEvents(EventCallback<List<Event>> callback) {
+    public void getEvents(ModelCallback<List<Event>> callback) {
         eventsCollection.get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 List<Event> events = new ArrayList<>();
@@ -130,7 +130,7 @@ public class EventRepository {
      * @param organizerId the ID of the organizer
      * @param callback callback returning a list of events, or null if an error occurs
      */
-    public void getEventsByOrganizer(String organizerId, EventCallback<List<Event>> callback) {
+    public void getEventsByOrganizer(String organizerId, ModelCallback<List<Event>> callback) {
         eventsCollection.whereEqualTo("organizerId", organizerId).get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 List<Event> events = new ArrayList<>();
@@ -153,7 +153,7 @@ public class EventRepository {
      * @param eventId the event ID
      * @param callback callback returning the Event, or null if not found or error occurs
      */
-    public void getEventById(String eventId, EventCallback<Event> callback) {
+    public void getEventById(String eventId, ModelCallback<Event> callback) {
         eventsCollection.document(eventId).get().addOnCompleteListener(task -> {
             if (task.isSuccessful() && task.getResult() != null) {
                 Event event = task.getResult().toObject(Event.class);
@@ -174,7 +174,7 @@ public class EventRepository {
      * @param eventId the ID of the event to delete
      * @param callback callback returning true if successful, false otherwise
      */
-    public void deleteEvent(String eventId, EventCallback<Boolean> callback) {
+    public void deleteEvent(String eventId, ModelCallback<Boolean> callback) {
         CommentRepository commentRepository = new CommentRepository();
 
         commentRepository.deleteAllEventComments(eventId, commentSuccess -> {
@@ -194,7 +194,7 @@ public class EventRepository {
      * @param callback callback returning a {@link Pair} of {@link Date} objects for
      *                 start and end periods or {@code null} if an error occurs
      */
-    public void getEventRegPeriod(String eventId, EventCallback<Pair<Date, Date>> callback) {
+    public void getEventRegPeriod(String eventId, ModelCallback<Pair<Date, Date>> callback) {
         eventsCollection.document(eventId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     try {
@@ -225,7 +225,7 @@ public class EventRepository {
      * @param user the user to add
      * @param callback callback returning {@code true} if successful, {@code false} otherwise
      */
-    public void addUserToWaitList(String eventId, User user, EventCallback<Boolean> callback) {
+    public void addUserToWaitList(String eventId, User user, ModelCallback<Boolean> callback) {
         if ("Guest".equals(user.getUserName())) {
             callback.onCallback(false);
             return;
@@ -256,7 +256,7 @@ public class EventRepository {
      * @param callback callback returning {@code true} if the user is on the waitlist,
      *                 {@code false} otherwise
      */
-    public void removeUserFromWaitlist(String eventId, User user, EventCallback<Boolean> callback) {
+    public void removeUserFromWaitlist(String eventId, User user, ModelCallback<Boolean> callback) {
         eventsCollection.document(eventId).collection("waitlist").document(user.getUserId()).delete()
                 .addOnSuccessListener(v -> {
                     user.removeAssociatedEvent(eventId);
@@ -274,7 +274,7 @@ public class EventRepository {
      * @param callback callback that returns a list of user IDs on the waitlist.
      *                 Returns null if the query fails
      */
-    public void getWaitlistUsers(String eventId, EventCallback<List<String>> callback) {
+    public void getWaitlistUsers(String eventId, ModelCallback<List<String>> callback) {
         eventsCollection.document(eventId).collection("waitlist")
                 .whereEqualTo("status", "Waiting")
                 .get()
@@ -300,7 +300,7 @@ public class EventRepository {
      * @param callback callback that returns true if the update was successful,
      *                 or false if the update failed
      */
-    public void updateWaitlistStatus(String eventId, String userId, String status, EventCallback<Boolean> callback) {
+    public void updateWaitlistStatus(String eventId, String userId, String status, ModelCallback<Boolean> callback) {
         eventsCollection.document(eventId).collection("waitlist")
                 .document(userId)
                 .update("status", status)
@@ -318,7 +318,7 @@ public class EventRepository {
      * @param callback callback that returns true if the user was successfully
      *                 registered as a participant, or false if failed
      */
-    public void registerParticipant(String eventId, String userId, EventCallback<Boolean> callback) {
+    public void registerParticipant(String eventId, String userId, ModelCallback<Boolean> callback) {
         userRepository.getUser(userId, user -> {
             if (user != null) {
                 // Always add to participants, regardless of waitlist status
@@ -356,7 +356,7 @@ public class EventRepository {
      * @param callback callback returning {@code true} if the user is on the waitlist,
      *                 {@code false} otherwise.
      */
-    public void checkUserOnWaitlist(String eventId, User user, EventCallback<Boolean> callback) {
+    public void checkUserOnWaitlist(String eventId, User user, ModelCallback<Boolean> callback) {
         eventsCollection
                 .document(eventId)
                 .collection("waitlist")
@@ -373,7 +373,7 @@ public class EventRepository {
      * @param eventId the event ID
      * @param callback callback returning the waitlist count.
      */
-    public void getWaitlistCount(String eventId, EventCallback<Integer> callback) {
+    public void getWaitlistCount(String eventId, ModelCallback<Integer> callback) {
         eventsCollection
                 .document(eventId)
                 .collection("waitlist")
@@ -390,7 +390,7 @@ public class EventRepository {
      * @param eventId the event ID
      * @param callback callback returning the participants count
      */
-    public void getParticipantsCount(String eventId, EventCallback<Integer> callback) {
+    public void getParticipantsCount(String eventId, ModelCallback<Integer> callback) {
         eventsCollection
                 .document(eventId)
                 .collection("participants")
@@ -407,7 +407,7 @@ public class EventRepository {
      * @param eventId the event ID
      * @param callback callback returning a list of waitlist entries, or {@code null} if an error occurs
      */
-    public void getWaitlistEntrants(String eventId, EventCallback<List<Map<String, Object>>> callback) {
+    public void getWaitlistEntrants(String eventId, ModelCallback<List<Map<String, Object>>> callback) {
         eventsCollection
                 .document(eventId)
                 .collection("waitlist")
@@ -434,7 +434,7 @@ public class EventRepository {
      * @param eventId the event ID
      * @param callback callback returning a list of participants, or null if an error occurs
      */
-    public void getParticipants(String eventId, EventCallback<List<Map<String, Object>>> callback) {
+    public void getParticipants(String eventId, ModelCallback<List<Map<String, Object>>> callback) {
         eventsCollection
                 .document(eventId)
                 .collection("participants")
@@ -460,7 +460,7 @@ public class EventRepository {
      * @param eventId the event ID
      * @param callback a list of all Users associated with the event
      */
-    public void getAllAssociatedUsers(String eventId, EventCallback<List<User>> callback) {
+    public void getAllAssociatedUsers(String eventId, ModelCallback<List<User>> callback) {
         List<User> users = new ArrayList<>();
         eventsCollection.document(eventId).get().addOnSuccessListener(documentSnapshot -> {
             userRepository.getUser(documentSnapshot.getString("organizerId"), organizer -> {
@@ -482,7 +482,7 @@ public class EventRepository {
      * @param user the user to be removed
      * @param callback true if successful, false if not
      */
-    public void removeFromEvent(String eventId, User user, EventCallback<Boolean> callback) {
+    public void removeFromEvent(String eventId, User user, ModelCallback<Boolean> callback) {
         eventsCollection.document(eventId).collection("participants")
                 .document(user.getUserId())
                 .delete()
@@ -502,7 +502,7 @@ public class EventRepository {
      * @param userId the user ID
      * @param callback callback returning the status string
      */
-    public void getUserEventStatus(String eventId, String userId, EventCallback<String> callback) {
+    public void getUserEventStatus(String eventId, String userId, ModelCallback<String> callback) {
         // First check if user is in participants collection
         eventsCollection.document(eventId)
                 .collection("participants")

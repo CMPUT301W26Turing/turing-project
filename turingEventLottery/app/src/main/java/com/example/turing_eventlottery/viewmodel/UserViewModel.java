@@ -3,11 +3,9 @@ package com.example.turing_eventlottery.viewmodel;
 import android.content.Context;
 import android.provider.Settings;
 
-import com.example.turing_eventlottery.model.EventCallback;
+import com.example.turing_eventlottery.model.ModelCallback;
 import com.example.turing_eventlottery.model.User;
 import com.example.turing_eventlottery.model.UserRepository;
-import com.example.turing_eventlottery.model.UserCallback;
-import com.example.turing_eventlottery.model.UsersCallback;
 
 import java.util.List;
 
@@ -61,11 +59,11 @@ public class UserViewModel {
      *
      * @param callback callback used to return the result asynchronously
      */
-    public void loadUser(UserCallback callback) {
+    public void loadUser(ModelCallback<User> callback) {
         String deviceId = getDeviceId();
         userRepository.getUser(deviceId, loadedUser -> {
             user = loadedUser;
-            callback.onSuccess(loadedUser);
+            callback.onCallback(loadedUser);
         });
     }
 
@@ -74,7 +72,7 @@ public class UserViewModel {
      *
      * @param callback callback used to return the result asynchronously
      */
-    public void getAllUsers(UsersCallback callback) {
+    public void getAllUsers(ModelCallback<List<User>> callback) {
         userRepository.getAllUsers(callback);
     }
 
@@ -84,7 +82,7 @@ public class UserViewModel {
      * @param userId the ID of the user to load
      * @param callback callback used to return the result asynchronously
      */
-    public void loadUserById(String userId, UserCallback callback) {
+    public void loadUserById(String userId, ModelCallback<User> callback) {
         userRepository.getUser(userId, callback);
     }
 
@@ -94,7 +92,7 @@ public class UserViewModel {
      * @param userId the ID of the user to delete
      * @param callback callback returning true if successful, false otherwise
      */
-    public void deleteUser(String userId, EventCallback<Boolean> callback) {
+    public void deleteUser(String userId, ModelCallback<Boolean> callback) {
         userRepository.deleteUser(userId, callback);
     }
 
@@ -130,7 +128,7 @@ public class UserViewModel {
      *
      * @param callback callback used to return the result asynchronously
      */
-    public void getAllOrganizers(UsersCallback callback) {
+    public void getAllOrganizers(ModelCallback<List<User>> callback) {
         userRepository.getAllOrganizers(callback);
     }
 
@@ -139,7 +137,7 @@ public class UserViewModel {
      *
      * @param callback callback returning true if successful, false otherwise
      */
-    public void setOrganizerStatus(EventCallback<Boolean> callback) {
+    public void setOrganizerStatus(ModelCallback<Boolean> callback) {
         String deviceId = getDeviceId();
         userRepository.setOrganizerStatus(deviceId, callback);
     }
@@ -151,7 +149,7 @@ public class UserViewModel {
      * @param organizerId the ID of the organizer to remove
      * @param callback callback returning true if successful, false otherwise
      */
-    public void removeOrganizer(String organizerId, EventCallback<Boolean> callback) {
+    public void removeOrganizer(String organizerId, ModelCallback<Boolean> callback) {
         userRepository.removeOrganizer(organizerId, callback);
     }
 }

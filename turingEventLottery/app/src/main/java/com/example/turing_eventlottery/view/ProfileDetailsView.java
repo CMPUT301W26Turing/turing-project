@@ -10,8 +10,8 @@ import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.turing_eventlottery.R;
+import com.example.turing_eventlottery.model.ModelCallback;
 import com.example.turing_eventlottery.model.User;
-import com.example.turing_eventlottery.model.UserCallback;
 import com.example.turing_eventlottery.viewmodel.UserViewModel;
 
 /**
@@ -52,9 +52,9 @@ public class ProfileDetailsView extends AppCompatActivity {
     }
 
     private void loadUserProfile() {
-        userViewModel.loadUserById(targetUserId, new UserCallback() {
+        userViewModel.loadUserById(targetUserId, new ModelCallback<User>() {
             @Override
-            public void onSuccess(User user) {
+            public void onCallback(User user) {
                 if (user != null) {
                     userIdText.setText(user.getUserId());
                     contactInfoText.setText(user.getUserEmail() != null ? user.getUserEmail() : "No Contact Info");

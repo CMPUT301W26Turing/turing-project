@@ -8,8 +8,8 @@ import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.turing_eventlottery.R;
+import com.example.turing_eventlottery.model.ModelCallback;
 import com.example.turing_eventlottery.model.User;
-import com.example.turing_eventlottery.model.UserCallback;
 import com.example.turing_eventlottery.viewmodel.UserViewModel;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.card.MaterialCardView;
@@ -36,9 +36,9 @@ public class AdminDashboardView extends AppCompatActivity {
 
         // Load the admin user information asynchronously
         UserViewModel userViewModel = new UserViewModel(this);
-        userViewModel.loadUser(new UserCallback() {
+        userViewModel.loadUser(new ModelCallback<User>() {
             @Override
-            public void onSuccess(User user) {
+            public void onCallback(User user) {
                 // Update welcome text once user data is loaded
                 if (user != null && user.getUserName() != null) {
                     welcomeText.setText("Welcome back, " + user.getUserName());

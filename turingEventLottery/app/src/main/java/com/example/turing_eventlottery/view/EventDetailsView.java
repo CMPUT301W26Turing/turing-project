@@ -5,7 +5,6 @@ import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -22,13 +21,11 @@ import com.example.turing_eventlottery.R;
 import com.example.turing_eventlottery.model.Comment;
 import com.example.turing_eventlottery.model.CommentRepository;
 import com.example.turing_eventlottery.model.Event;
-import com.example.turing_eventlottery.model.EventCallback;
+import com.example.turing_eventlottery.model.ModelCallback;
 import com.example.turing_eventlottery.model.User;
 import com.example.turing_eventlottery.viewmodel.EventViewModel;
 import com.example.turing_eventlottery.viewmodel.UserViewModel;
 import com.google.android.material.button.MaterialButton;
-
-import java.util.List;
 
 /**
  * View for displaying a specific event's details.
@@ -123,7 +120,7 @@ public class EventDetailsView extends AppCompatActivity {
             }
 
             // Check user's event status: "Enrolled", "Invited", "Waiting", or "None"
-            eventViewModel.getUserEventStatus(eventId, loadedUser.getUserId(), new EventCallback<String>() {
+            eventViewModel.getUserEventStatus(eventId, loadedUser.getUserId(), new ModelCallback<String>() {
                 @Override
                 public void onCallback(String status) {
 
@@ -147,7 +144,7 @@ public class EventDetailsView extends AppCompatActivity {
                         waitlistButton.setText("Accept");
                     } else {
                         //CASE 3: Check waitlist status for "Waiting" or "None"
-                        eventViewModel.isUserOnWaitlist(loadedUser, eventId, new EventCallback<Boolean>() {
+                        eventViewModel.isUserOnWaitlist(loadedUser, eventId, new ModelCallback<Boolean>() {
                             @Override
                             public void onCallback(Boolean onWaitlist) {
                                 isOnWaitlist = onWaitlist != null && onWaitlist;
@@ -166,7 +163,7 @@ public class EventDetailsView extends AppCompatActivity {
                         }
 
                         // Re-check status to prevent race conditions
-                        eventViewModel.getUserEventStatus(eventId, loadedUser.getUserId(), new EventCallback<String>() {
+                        eventViewModel.getUserEventStatus(eventId, loadedUser.getUserId(), new ModelCallback<String>() {
                             @Override
                             public void onCallback(String currentStatus) {
 
@@ -182,7 +179,7 @@ public class EventDetailsView extends AppCompatActivity {
                                 if ("Invited".equals(currentStatus)) {
                                     waitlistButton.setEnabled(false); // Prevent double-click
 
-                                    eventViewModel.acceptInvitation(eventId, loadedUser.getUserId(), new EventCallback<Boolean>() {
+                                    eventViewModel.acceptInvitation(eventId, loadedUser.getUserId(), new ModelCallback<Boolean>() {
                                         @Override
                                         public void onCallback(Boolean success) {
                                             if (success != null && success) {
@@ -192,7 +189,7 @@ public class EventDetailsView extends AppCompatActivity {
                                                 waitlistButton.setText("Enrolled");
                                                 Toast.makeText(EventDetailsView.this, "Invitation Accepted!", Toast.LENGTH_SHORT).show();
 
-                                                eventViewModel.getUserEventStatus(eventId, loadedUser.getUserId(), new EventCallback<String>() {
+                                                eventViewModel.getUserEventStatus(eventId, loadedUser.getUserId(), new ModelCallback<String>() {
                                                     @Override
                                                     public void onCallback(String newStatus) {
                                                         Log.d("EventDetails", "New status after accept: " + newStatus);
@@ -209,7 +206,7 @@ public class EventDetailsView extends AppCompatActivity {
 
                                 //CASE: Leave waitlist (existing functionality)
                                 if (isOnWaitlist) {
-                                    eventViewModel.leaveWaitlist(loadedUser, eventId, new EventCallback<Boolean>() {
+                                    eventViewModel.leaveWaitlist(loadedUser, eventId, new ModelCallback<Boolean>() {
                                         @Override
                                         public void onCallback(Boolean success) {
                                             if (success != null && success) {
@@ -228,7 +225,7 @@ public class EventDetailsView extends AppCompatActivity {
                                 }
                                 //CASE: Join waitlist (existing functionality)
                                 else {
-                                    eventViewModel.joinWaitlist(loadedUser, eventId, new EventCallback<Boolean>() {
+                                    eventViewModel.joinWaitlist(loadedUser, eventId, new ModelCallback<Boolean>() {
                                         @Override
                                         public void onCallback(Boolean success) {
                                             if (success != null && success) {
