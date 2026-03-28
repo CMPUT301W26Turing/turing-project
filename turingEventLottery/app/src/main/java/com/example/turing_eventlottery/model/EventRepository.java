@@ -51,7 +51,7 @@ public class EventRepository {
      */
     public EventRepository() {
         eventsCollection = FirebaseFirestore.getInstance().collection(COLLECTION_NAME);
-        storageReference = FirebaseStorage.getInstance().getReference().child("event_posters");
+        storageReference = FirebaseStorage.getInstance("gs://turingeventlottery.firebasestorage.app").getReference().child("event_posters");
         userRepository = new UserRepository();
     }
 
@@ -83,6 +83,25 @@ public class EventRepository {
     }
 
     /**
+     * Updates an existing event in the database.
+     *
+     * @param event the Event to update
+     * @param callback callback returning true if successful, false otherwise
+     */
+    public void updateEvent(Event event, EventCallback<Boolean> callback) {
+        if (event.getId() == null) {
+            callback.onCallback(false);
+            return;
+        }
+        eventsCollection.document(event.getId()).set(event)
+                .addOnSuccessListener(v -> callback.onCallback(true))
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error updating event", e);
+                    callback.onCallback(false);
+                });
+    }
+
+    /**
      * Uploads an event poster image to Firebase Storage.
      *
      * @param imageUri the URI of the image to upload
@@ -95,7 +114,10 @@ public class EventRepository {
         fileRef.putFile(imageUri)
                 .addOnSuccessListener(taskSnapshot -> fileRef.getDownloadUrl()
                         .addOnSuccessListener(uri -> callback.onCallback(uri.toString()))
-                        .addOnFailureListener(e -> callback.onCallback(null)))
+                        .addOnFailureListener(e -> {
+                            Log.e(TAG, "Error getting download URL", e);
+                            callback.onCallback(null);
+                        }))
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Error uploading image", e);
                     callback.onCallback(null);
@@ -491,6 +513,8 @@ public class EventRepository {
                             .document(user.getUserId())
                             .delete()
                             .addOnCompleteListener(wTask -> {
+                                user.removeAssociatedEvent(eventId);
+                                userRepository.addOrUpdateUser(user);
                                 callback.onCallback(pTask.isSuccessful() || wTask.isSuccessful());
                             });
                 });

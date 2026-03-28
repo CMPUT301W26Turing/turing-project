@@ -306,11 +306,11 @@ public class EventDetailsView extends AppCompatActivity {
         }
         avatarText.setText(initials);
 
-        // Show menu if it's the current user's comment OR if current user is the organizer
         boolean isOwner = currentUser != null && comment.getUserId().equals(currentUser.getUserId());
         boolean isOrganizer = currentUser != null && currentEvent != null && currentUser.getUserId().equals(currentEvent.getOrganizerId());
+        boolean isAdmin = currentUser != null && currentUser.isAdmin();
 
-        if (isOwner || isOrganizer) {
+        if (isOwner || isOrganizer || isAdmin) {
             menuButton.setVisibility(View.VISIBLE);
             menuButton.setOnClickListener(v -> {
                 PopupMenu popup = new PopupMenu(this, v);

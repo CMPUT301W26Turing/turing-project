@@ -1,10 +1,15 @@
 package com.example.turing_eventlottery.view;
 
 import android.app.Dialog;
+import android.content.ContentValues;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -31,6 +36,7 @@ import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.Timestamp;
 
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -68,7 +74,7 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
     private List<Map<String, Object>> enrolledList = new ArrayList<>();
     private List<Map<String, Object>> cancelledList = new ArrayList<>();
 
-    private ImageView exportButton;
+    private ImageView exportButton, editButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,6 +88,12 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
 
         initViews();
         loadEventDetails();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadEventDetails(); // Reload data when returning from Edit
     }
 
     private void initViews() {
@@ -98,6 +110,7 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
         runLotteryButton = findViewById(R.id.runLotteryButton);
         drawSingleButton = findViewById(R.id.drawSingleButton);
         exportButton = findViewById(R.id.exportButton);
+        editButton = findViewById(R.id.editButton);
         sortText = findViewById(R.id.sortText);
         emptyStateText = findViewById(R.id.emptyStateText);
         listTitle = findViewById(R.id.listTitle);
@@ -109,6 +122,20 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
                 }
             });
         }
+
+        if (editButton != null) {
+            editButton.setOnClickListener(v -> {
+                Intent intent = new Intent(this, EditEventView.class);
+                intent.putExtra("EVENT_ID", eventId);
+                startActivity(intent);
+            });
+        }
+
+        findViewById(R.id.editEventIcon).setOnClickListener(v -> {
+            Intent intent = new Intent(this, EditEventView.class);
+            intent.putExtra("EVENT_ID", eventId);
+            startActivity(intent);
+        });
 
         runLotteryButton.setOnClickListener(v -> runLottery());
         drawSingleButton.setOnClickListener(v -> drawSingle());
@@ -492,6 +519,11 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
             ImageView qrImageView = dialog.findViewById(R.id.qrCodeImageView);
             qrImageView.setImageBitmap(qrBitmap);
 
+            MaterialButton saveButton = dialog.findViewById(R.id.saveQrButton);
+            if (saveButton != null) {
+                saveButton.setOnClickListener(v -> saveBitmapToGallery(qrBitmap, "QR_" + eventId));
+            }
+
             MaterialButton closeButton = dialog.findViewById(R.id.closeDialogButton);
             if (closeButton != null) {
                 closeButton.setOnClickListener(v -> dialog.dismiss());
@@ -500,6 +532,23 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
             dialog.show();
         } catch (Exception e) {
             Toast.makeText(this, "Error generating QR Code", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void saveBitmapToGallery(Bitmap bitmap, String filename) {
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.Images.Media.DISPLAY_NAME, filename + ".png");
+        values.put(MediaStore.Images.Media.MIME_TYPE, "image/png");
+        values.put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/TuringEvents");
+
+        Uri uri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+        if (uri != null) {
+            try (OutputStream out = getContentResolver().openOutputStream(uri)) {
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
+                Toast.makeText(this, "QR Code saved to gallery!", Toast.LENGTH_SHORT).show();
+            } catch (Exception e) {
+                Toast.makeText(this, "Failed to save image", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 }
