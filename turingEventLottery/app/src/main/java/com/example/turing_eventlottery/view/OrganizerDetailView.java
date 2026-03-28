@@ -10,8 +10,8 @@ import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.turing_eventlottery.R;
+import com.example.turing_eventlottery.model.ModelCallback;
 import com.example.turing_eventlottery.model.User;
-import com.example.turing_eventlottery.model.UserCallback;
 import com.example.turing_eventlottery.viewmodel.UserViewModel;
 
 /**
@@ -49,9 +49,9 @@ public class OrganizerDetailView extends AppCompatActivity {
     }
 
     private void loadOrganizerProfile() {
-        userViewModel.loadUserById(targetOrganizerId, new UserCallback() {
+        userViewModel.loadUserById(targetOrganizerId, new ModelCallback<User>() {
             @Override
-            public void onSuccess(User organizer) {
+            public void onCallback(User organizer) {
                 if (organizer != null) {
                     organizerNameText.setText(organizer.getUserName());
                     organizerIdText.setText(organizer.getUserId());

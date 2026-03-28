@@ -1,7 +1,5 @@
 package com.example.turing_eventlottery.model;
 
-import java.util.List;
-
 /**
  * Callback interface used to handle asynchronous event and event related detail retrieval from
  * the Firebase Firestone database.
@@ -21,6 +19,6 @@ import java.util.List;
     Date: 2013-03-07
     License:    CC-BY-SA    4.0     (International)
  */
-public interface EventCallback<T> {
+public interface ModelCallback<T> {
     void onCallback(T result);
 }

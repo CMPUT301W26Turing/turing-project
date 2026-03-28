@@ -73,7 +73,7 @@ public class NotificationRepository {
      * @param userId The ID of the user whose notifications are retrieved
      * @param callback callback that returns the list of notifications, or null if the query fails
      */
-    public void getNotificationsByUserId(String userId, EventCallback<List<Notification>> callback) {
+    public void getNotificationsByUserId(String userId, ModelCallback<List<Notification>> callback) {
         notificationsCollection.whereEqualTo("userId", userId)
                 .orderBy("timestamp", Query.Direction.DESCENDING)
                 .get()
@@ -101,7 +101,7 @@ public class NotificationRepository {
      * @param callback Callback that returns true if the update succeeded,
      *                 or false it if failed
      */
-    public void updateNotificationStatus(String notificationId, String status, EventCallback<Boolean> callback) {
+    public void updateNotificationStatus(String notificationId, String status, ModelCallback<Boolean> callback) {
         notificationsCollection.document(notificationId)
                 .update("status", status)
                 .addOnSuccessListener(v -> callback.onCallback(true))
@@ -115,7 +115,7 @@ public class NotificationRepository {
      * @param callback Callback that returns the list of all notifications,
      *                 or null if teh query fails
      */
-    public void getAllNotificationLogs(EventCallback<List<Notification>> callback) {
+    public void getAllNotificationLogs(ModelCallback<List<Notification>> callback) {
         notificationsCollection
                 .orderBy("timestamp", Query.Direction.DESCENDING)
                 .get()
@@ -142,7 +142,7 @@ public class NotificationRepository {
      * @param callback Callback that returns the list of notifications for the event,
      *                 or null if the query fails
      */
-    public void getNotificationLogsByEvent(String eventId, EventCallback<List<Notification>> callback) {
+    public void getNotificationLogsByEvent(String eventId, ModelCallback<List<Notification>> callback) {
         notificationsCollection
                 .whereEqualTo("eventId", eventId)
                 .orderBy("timestamp", Query.Direction.DESCENDING)

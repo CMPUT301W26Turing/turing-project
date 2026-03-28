@@ -11,8 +11,8 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.turing_eventlottery.R;
+import com.example.turing_eventlottery.model.ModelCallback;
 import com.example.turing_eventlottery.model.User;
-import com.example.turing_eventlottery.model.UserCallback;
 import com.example.turing_eventlottery.viewmodel.UserViewModel;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
@@ -69,9 +69,9 @@ public class UserDashboardView extends AppCompatActivity {
         profileInitialsText = findViewById(R.id.profileInitialsText);
         MaterialButton adminButton = findViewById(R.id.adminButton);
 
-        userViewModel.loadUser(new UserCallback() {
+        userViewModel.loadUser(new ModelCallback<User>() {
             @Override
-            public void onSuccess(User user) {
+            public void onCallback(User user) {
                 if (user != null) {
                     String username = user.getUserName();
                     if (username != null && !username.isEmpty()) {
