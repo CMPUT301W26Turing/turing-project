@@ -88,7 +88,7 @@ public class EventRepository {
      * @param event the Event to update
      * @param callback callback returning true if successful, false otherwise
      */
-    public void updateEvent(Event event, EventCallback<Boolean> callback) {
+    public void updateEvent(Event event, ModelCallback<Boolean> callback) {
         if (event.getId() == null) {
             callback.onCallback(false);
             return;
