@@ -1,7 +1,10 @@
 package com.example.turing_eventlottery.view;
 
+import android.Manifest;
 import android.app.AlertDialog;
+import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
+import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -15,7 +18,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.bumptech.glide.Glide;
@@ -27,6 +33,11 @@ import com.example.turing_eventlottery.model.ModelCallback;
 import com.example.turing_eventlottery.model.User;
 import com.example.turing_eventlottery.viewmodel.EventViewModel;
 import com.example.turing_eventlottery.viewmodel.UserViewModel;
+import com.google.android.gms.location.CurrentLocationRequest;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.Priority;
+import com.google.android.gms.tasks.CancellationTokenSource;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.Timestamp;
 
@@ -74,11 +85,30 @@ public class EventDetailsView extends AppCompatActivity {
     
     private String currentParentId = null;
 
+    private FusedLocationProviderClient fusedLocationClient;
+
+    private final ActivityResultLauncher<String[]> locationPermissionLauncher = registerForActivityResult(
+            new ActivityResultContracts.RequestMultiplePermissions(),
+            result -> {
+                Boolean fineLocationGranted = result.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false);
+                Boolean coarseLocationGranted = result.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false);
+                if (fineLocationGranted != null && fineLocationGranted) {
+                    attemptJoinWithLocation();
+                } else if (coarseLocationGranted != null && coarseLocationGranted) {
+                    attemptJoinWithLocation();
+                } else {
+                    Toast.makeText(this, "Location permission is required to join this event.", Toast.LENGTH_SHORT).show();
+                }
+            }
+    );
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.event_details);
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         // Bind views
         posterView = findViewById(R.id.eventPoster);
@@ -252,22 +282,16 @@ public class EventDetailsView extends AppCompatActivity {
                                 }
                                 //CASE: Join waitlist (existing functionality)
                                 else {
-                                    eventViewModel.joinWaitlist(loadedUser, eventId, new ModelCallback<Boolean>() {
-                                        @Override
-                                        public void onCallback(Boolean success) {
-                                            if (success != null && success) {
-                                                isOnWaitlist = true;
-                                                Toast.makeText(EventDetailsView.this,
-                                                        "You have joined the waitlist",
-                                                        Toast.LENGTH_SHORT).show();
-                                                updateWaitlistButton();
-                                            } else {
-                                                Toast.makeText(EventDetailsView.this,
-                                                        "Failed to join waitlist, try again",
-                                                        Toast.LENGTH_SHORT).show();
-                                            }
-                                        }
-                                    });
+                                    if (currentEvent != null && currentEvent.isGeolocationRequired()) {
+                                        new AlertDialog.Builder(EventDetailsView.this)
+                                                .setTitle("Geolocation Required")
+                                                .setMessage("This event requires your location to join the waitlist. Your current location will be used to verify you are within the allowed radius.")
+                                                .setPositiveButton("Join", (dialog, which) -> checkLocationPermissionAndJoin())
+                                                .setNegativeButton("Cancel", null)
+                                                .show();
+                                    } else {
+                                        performJoinWaitlist(null, null);
+                                    }
                                 }
                             }
                         });
@@ -299,6 +323,72 @@ public class EventDetailsView extends AppCompatActivity {
                     Toast.makeText(this, "Failed to post comment", Toast.LENGTH_SHORT).show();
                 }
             });
+        });
+    }
+
+    private void checkLocationPermissionAndJoin() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            locationPermissionLauncher.launch(new String[]{
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+            });
+        } else {
+            attemptJoinWithLocation();
+        }
+    }
+
+    private void attemptJoinWithLocation() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+        Toast.makeText(this, "Fetching current location...", Toast.LENGTH_SHORT).show();
+
+        CurrentLocationRequest locationRequest = new CurrentLocationRequest.Builder()
+                .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+                .build();
+
+        CancellationTokenSource cts = new CancellationTokenSource();
+
+        fusedLocationClient.getCurrentLocation(locationRequest, cts.getToken()).addOnSuccessListener(this, location -> {
+            if (location != null) {
+                if (isWithinRadius(location)) {
+                    performJoinWaitlist(location.getLatitude(), location.getLongitude());
+                } else {
+                    Toast.makeText(this, "You do not meet the location requirement for this event.", Toast.LENGTH_LONG).show();
+                }
+            } else {
+                Toast.makeText(this, "Could not get your current location. Please try again.", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private boolean isWithinRadius(Location userLocation) {
+        if (currentEvent == null) return false;
+        float[] results = new float[1];
+        Location.distanceBetween(userLocation.getLatitude(), userLocation.getLongitude(),
+                currentEvent.getLatitude(), currentEvent.getLongitude(), results);
+        float distanceInKm = results[0] / 1000;
+        return distanceInKm <= currentEvent.getRadius();
+    }
+
+    private void performJoinWaitlist(Double lat, Double lon) {
+        eventViewModel.joinWaitlist(currentUser, eventId, lat, lon, new ModelCallback<Boolean>() {
+            @Override
+            public void onCallback(Boolean success) {
+                if (success != null && success) {
+                    isOnWaitlist = true;
+                    Toast.makeText(EventDetailsView.this,
+                            "You have joined the waitlist",
+                            Toast.LENGTH_SHORT).show();
+                    updateWaitlistButton();
+                } else {
+                    Toast.makeText(EventDetailsView.this,
+                            "Failed to join waitlist, try again",
+                            Toast.LENGTH_SHORT).show();
+                }
+            }
         });
     }
 

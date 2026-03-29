@@ -76,6 +76,8 @@ public class CreateEventView extends AppCompatActivity {
     private EditText winnersToDrawInput;
     private EditText waitlistCapInput;
     private MaterialSwitch geoSwitch;
+    private MaterialCardView radiusCard;
+    private TextInputEditText radiusInput;
     private MaterialButton publishButton;
     private AutoCompleteTextView coOrganizerInput;
     private User selectedCoOrganizer;
@@ -84,6 +86,9 @@ public class CreateEventView extends AppCompatActivity {
     private UserViewModel userViewModel;
     private NotificationRepository notificationRepository;
     private Uri selectedImageUri;
+
+    private double eventLatitude = 0;
+    private double eventLongitude = 0;
 
     private final ActivityResultLauncher<Intent> imagePickerLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -132,8 +137,18 @@ public class CreateEventView extends AppCompatActivity {
         winnersToDrawInput = findViewById(R.id.winnersToDrawInput);
         waitlistCapInput = findViewById(R.id.waitlistCapInput);
         geoSwitch = findViewById(R.id.geoSwitch);
+        radiusCard = findViewById(R.id.radiusCard);
+        radiusInput = findViewById(R.id.radiusInput);
         publishButton = findViewById(R.id.publishButton);
         coOrganizerInput = findViewById(R.id.autoCompleteTextView);
+
+        geoSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                radiusCard.setVisibility(View.VISIBLE);
+            } else {
+                radiusCard.setVisibility(View.GONE);
+            }
+        });
 
         setupDateTimePicker(eventDateInput);
         setupDateTimePicker(regStartInput);
@@ -177,7 +192,7 @@ public class CreateEventView extends AppCompatActivity {
                 getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment);
 
         if (autocompleteFragment != null) {
-            autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.DISPLAY_NAME, Place.Field.FORMATTED_ADDRESS));
+            autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.DISPLAY_NAME, Place.Field.FORMATTED_ADDRESS, Place.Field.LOCATION));
             autocompleteFragment.setHint("Location");
             View view = autocompleteFragment.getView();
             if (view != null) {
@@ -212,6 +227,11 @@ public class CreateEventView extends AppCompatActivity {
                 @Override
                 public void onPlaceSelected(@NonNull Place place) {
                     selectedLocationAddress = place.getFormattedAddress();
+                    if (place.getLocation() != null) {
+                        eventLatitude = place.getLocation().latitude;
+                        eventLongitude = place.getLocation().longitude;
+                        Log.d(TAG, "Event location set: " + eventLatitude + ", " + eventLongitude);
+                    }
                 }
 
                 @Override
@@ -232,9 +252,15 @@ public class CreateEventView extends AppCompatActivity {
         String regEnd = regEndInput.getText().toString().trim();
         String winnersStr = winnersToDrawInput.getText().toString().trim();
         String capStr = waitlistCapInput.getText().toString().trim();
+        String radiusStr = radiusInput.getText().toString().trim();
 
         if (name.isEmpty()) {
             Toast.makeText(this, "Please enter an event name", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (geoSwitch.isChecked() && radiusStr.isEmpty()) {
+            Toast.makeText(this, "Please enter a radius limit", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -254,7 +280,7 @@ public class CreateEventView extends AppCompatActivity {
             publishButton.setText("Uploading...");
             eventRepository.uploadEventPoster(selectedImageUri, url -> {
                 if (url != null) {
-                    completeSaveEvent(name, description, category, location, dateStr, regStart, regEnd, winnersStr, capStr, url);
+                    completeSaveEvent(name, description, category, location, dateStr, regStart, regEnd, winnersStr, capStr, radiusStr, url);
                 } else {
                     publishButton.setEnabled(true);
                     publishButton.setText("Publish Event");
@@ -262,13 +288,13 @@ public class CreateEventView extends AppCompatActivity {
                 }
             });
         } else {
-            completeSaveEvent(name, description, category, location, dateStr, regStart, regEnd, winnersStr, capStr, null);
+            completeSaveEvent(name, description, category, location, dateStr, regStart, regEnd, winnersStr, capStr, radiusStr, null);
         }
     }
 
     private void completeSaveEvent(String name, String description, String category, String location, 
                                    String dateStr, String regStart, String regEnd, String winnersStr, 
-                                   String capStr, String posterUrl) {
+                                   String capStr, String radiusStr, String posterUrl) {
         Event newEvent = new Event();
         newEvent.setName(name);
         newEvent.setDescription(description);
@@ -283,7 +309,7 @@ public class CreateEventView extends AppCompatActivity {
         if (selectedCoOrganizer != null) {
             newEvent.setCoOrganizerId(selectedCoOrganizer.getUserId());
         }
-        
+
         try {
             if (winnersStr.isEmpty() || Integer.parseInt(winnersStr) <= 0) {
                 Toast.makeText(this, "Invalid number of winners", Toast.LENGTH_SHORT).show();
@@ -292,13 +318,21 @@ public class CreateEventView extends AppCompatActivity {
             }
             newEvent.setWinnersToDraw(Integer.parseInt(winnersStr));
             newEvent.setWaitlistCap(capStr.isEmpty() ? 0 : Integer.parseInt(capStr));
+
+            if (geoSwitch.isChecked()) {
+                newEvent.setGeolocationRequired(true);
+                newEvent.setLatitude(eventLatitude);
+                newEvent.setLongitude(eventLongitude);
+                newEvent.setRadius(Double.parseDouble(radiusStr));
+            } else {
+                newEvent.setGeolocationRequired(false);
+            }
+
         } catch (NumberFormatException e) {
             Toast.makeText(this, "Invalid number format", Toast.LENGTH_SHORT).show();
             publishButton.setEnabled(true);
             return;
         }
-        
-        newEvent.setGeolocationRequired(geoSwitch.isChecked());
 
         eventRepository.addEvent(newEvent, success -> {
             if (success) {

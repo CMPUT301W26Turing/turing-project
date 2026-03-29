@@ -1,21 +1,25 @@
 package com.example.turing_eventlottery.view;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.content.ContentValues;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.util.Log;
+import android.view.View;
 import android.view.Window;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,13 +27,20 @@ import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
 import com.bumptech.glide.Glide;
 import com.example.turing_eventlottery.R;
 import com.example.turing_eventlottery.model.Event;
 import com.example.turing_eventlottery.model.EventRepository;
 import com.example.turing_eventlottery.model.QRCodeModel;
+import com.google.android.gms.location.CurrentLocationRequest;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.Priority;
+import com.google.android.gms.tasks.CancellationTokenSource;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.materialswitch.MaterialSwitch;
 
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
@@ -49,6 +60,14 @@ public class EditEventView extends AppCompatActivity {
     private EditText eventNameInput, eventDescriptionInput;
     private TextView startDateText, endDateText, drawDateText, maxEntrantsValue;
     private ImageView eventPosterImage;
+    
+    private MaterialSwitch geoSwitch;
+    private LinearLayout radiusLayout;
+    private EditText radiusInput;
+    
+    private FusedLocationProviderClient fusedLocationClient;
+    private double eventLatitude = 0;
+    private double eventLongitude = 0;
 
     private final ActivityResultLauncher<String> imagePickerLauncher = registerForActivityResult(
             new ActivityResultContracts.GetContent(),
@@ -56,6 +75,22 @@ public class EditEventView extends AppCompatActivity {
                 if (uri != null) {
                     selectedImageUri = uri;
                     eventPosterImage.setImageURI(uri);
+                }
+            }
+    );
+    
+    private final ActivityResultLauncher<String[]> locationPermissionLauncher = registerForActivityResult(
+            new ActivityResultContracts.RequestMultiplePermissions(),
+            result -> {
+                Boolean fineLocationGranted = result.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false);
+                Boolean coarseLocationGranted = result.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false);
+                if (fineLocationGranted != null && fineLocationGranted) {
+                    getCurrentLocation();
+                } else if (coarseLocationGranted != null && coarseLocationGranted) {
+                    getCurrentLocation();
+                } else {
+                    geoSwitch.setChecked(false);
+                    Toast.makeText(this, "Location permission required for geolocation requirement.", Toast.LENGTH_SHORT).show();
                 }
             }
     );
@@ -68,6 +103,7 @@ public class EditEventView extends AppCompatActivity {
 
         eventId = getIntent().getStringExtra("EVENT_ID");
         eventRepository = new EventRepository();
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         initViews();
         loadEventData();
@@ -81,6 +117,10 @@ public class EditEventView extends AppCompatActivity {
         drawDateText = findViewById(R.id.drawDateText);
         maxEntrantsValue = findViewById(R.id.maxEntrantsValue);
         eventPosterImage = findViewById(R.id.eventPosterImage);
+        
+        geoSwitch = findViewById(R.id.geoSwitch);
+        radiusLayout = findViewById(R.id.radiusLayout);
+        radiusInput = findViewById(R.id.radiusInput);
 
         findViewById(R.id.cancelButton).setOnClickListener(v -> finish());
         findViewById(R.id.saveButton).setOnClickListener(v -> saveChanges());
@@ -107,6 +147,17 @@ public class EditEventView extends AppCompatActivity {
                 showQRCodeDialog(eventId);
             }
         });
+        
+        geoSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                radiusLayout.setVisibility(View.VISIBLE);
+                checkLocationPermission();
+            } else {
+                radiusLayout.setVisibility(View.GONE);
+                eventLatitude = 0;
+                eventLongitude = 0;
+            }
+        });
     }
 
     private void loadEventData() {
@@ -121,10 +172,54 @@ public class EditEventView extends AppCompatActivity {
                 endDateText.setText(event.getRegEnd());
                 drawDateText.setText(event.getDate());
                 maxEntrantsValue.setText(String.valueOf(event.getWaitlistCap()));
+                
+                geoSwitch.setChecked(event.isGeolocationRequired());
+                if (event.isGeolocationRequired()) {
+                    radiusLayout.setVisibility(View.VISIBLE);
+                    radiusInput.setText(String.valueOf(event.getRadius()));
+                    eventLatitude = event.getLatitude();
+                    eventLongitude = event.getLongitude();
+                }
 
                 if (event.getPosterUrl() != null && !event.getPosterUrl().isEmpty()) {
                     Glide.with(this).load(event.getPosterUrl()).into(eventPosterImage);
                 }
+            }
+        });
+    }
+
+    private void checkLocationPermission() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            locationPermissionLauncher.launch(new String[]{
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+            });
+        } else {
+            getCurrentLocation();
+        }
+    }
+
+    private void getCurrentLocation() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+        Toast.makeText(this, "Fetching current location...", Toast.LENGTH_SHORT).show();
+
+        CurrentLocationRequest locationRequest = new CurrentLocationRequest.Builder()
+                .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+                .build();
+
+        CancellationTokenSource cts = new CancellationTokenSource();
+
+        fusedLocationClient.getCurrentLocation(locationRequest, cts.getToken()).addOnSuccessListener(this, location -> {
+            if (location != null) {
+                eventLatitude = location.getLatitude();
+                eventLongitude = location.getLongitude();
+                Toast.makeText(this, "Real-time event location captured.", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Could not get current location.", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -155,6 +250,18 @@ public class EditEventView extends AppCompatActivity {
         currentEvent.setRegEnd(endDateText.getText().toString());
         currentEvent.setDate(drawDateText.getText().toString());
         currentEvent.setWaitlistCap(Integer.parseInt(maxEntrantsValue.getText().toString()));
+        
+        currentEvent.setGeolocationRequired(geoSwitch.isChecked());
+        if (geoSwitch.isChecked()) {
+            String radiusStr = radiusInput.getText().toString().trim();
+            if (radiusStr.isEmpty()) {
+                Toast.makeText(this, "Please enter a radius limit", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            currentEvent.setRadius(Double.parseDouble(radiusStr));
+            currentEvent.setLatitude(eventLatitude);
+            currentEvent.setLongitude(eventLongitude);
+        }
 
         if (selectedImageUri != null) {
             eventRepository.uploadEventPoster(selectedImageUri, url -> {

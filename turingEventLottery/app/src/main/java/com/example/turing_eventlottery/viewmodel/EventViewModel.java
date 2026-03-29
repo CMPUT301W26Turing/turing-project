@@ -124,12 +124,25 @@ public class EventViewModel {
      * @param callback callback returning {@code true} if added successfully
      */
     public void joinWaitlist(User user, String eventId, ModelCallback<Boolean> callback) {
+        joinWaitlist(user, eventId, null, null, callback);
+    }
+
+    /**
+     * Adds a user to the event's waitlist with location.
+     *
+     * @param user The user to add
+     * @param eventId The event ID
+     * @param latitude The latitude of the user
+     * @param longitude The longitude of the user
+     * @param callback callback returning {@code true} if added successfully
+     */
+    public void joinWaitlist(User user, String eventId, Double latitude, Double longitude, ModelCallback<Boolean> callback) {
         if ("Guest".equals(user.getUserName())) {
             callback.onCallback(false);
             return;
         }
 
-        eventRepository.addUserToWaitList(eventId, user, success -> {
+        eventRepository.addUserToWaitList(eventId, user, latitude, longitude, success -> {
             callback.onCallback(success);
 
             // debug in Logcat

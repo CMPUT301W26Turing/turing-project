@@ -6,6 +6,8 @@
         android:name="android.hardware.camera"
         android:required="false" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -80,6 +82,9 @@
             android:exported="false" />
         <activity
             android:name=".view.QRCodeScanActivity"
+            android:exported="false" />
+        <activity
+            android:name=".view.EntrantMapView"
             android:exported="false" />
         <meta-data
             android:name="preloaded_fonts"

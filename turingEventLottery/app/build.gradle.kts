@@ -1,7 +1,15 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     id("com.google.gms.google-services")
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
+}
+
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.inputStream().use { localProperties.load(it) }
 }
 
 android {
@@ -16,6 +24,9 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        val mapsApiKey = localProperties.getProperty("MAPS_API_KEY") ?: ""
+        manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
     }
 
     buildFeatures {
@@ -40,6 +51,8 @@ android {
 
 dependencies {
     implementation("com.github.bumptech.glide:glide:4.16.0")
+    implementation(libs.play.services.location)
+    implementation(libs.gms.play.services.maps)
     implementation(libs.places)
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
     implementation("com.google.zxing:core:3.5.3")
