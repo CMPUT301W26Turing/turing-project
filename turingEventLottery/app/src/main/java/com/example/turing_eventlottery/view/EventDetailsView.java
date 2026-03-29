@@ -1,10 +1,14 @@
 package com.example.turing_eventlottery.view;
 
+import android.Manifest;
 import android.app.AlertDialog;
+import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
+import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -14,7 +18,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.bumptech.glide.Glide;
 import com.example.turing_eventlottery.R;
@@ -25,7 +33,18 @@ import com.example.turing_eventlottery.model.ModelCallback;
 import com.example.turing_eventlottery.model.User;
 import com.example.turing_eventlottery.viewmodel.EventViewModel;
 import com.example.turing_eventlottery.viewmodel.UserViewModel;
+import com.google.android.gms.location.CurrentLocationRequest;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.Priority;
+import com.google.android.gms.tasks.CancellationTokenSource;
 import com.google.android.material.button.MaterialButton;
+import com.google.firebase.Timestamp;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * View for displaying a specific event's details.
@@ -53,18 +72,43 @@ public class EventDetailsView extends AppCompatActivity {
     private LinearLayout commentsList;
     private EditText commentInput;
     private ImageButton postCommentButton;
+    
+    private View replyPreviewArea;
+    private TextView replyingToText;
+    private ImageButton cancelReplyButton;
 
     private boolean isOnWaitlist;
     private String eventId;
     private boolean fromAdmin;
     private User currentUser;
     private Event currentEvent;
+    
+    private String currentParentId = null;
+
+    private FusedLocationProviderClient fusedLocationClient;
+
+    private final ActivityResultLauncher<String[]> locationPermissionLauncher = registerForActivityResult(
+            new ActivityResultContracts.RequestMultiplePermissions(),
+            result -> {
+                Boolean fineLocationGranted = result.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false);
+                Boolean coarseLocationGranted = result.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false);
+                if (fineLocationGranted != null && fineLocationGranted) {
+                    attemptJoinWithLocation();
+                } else if (coarseLocationGranted != null && coarseLocationGranted) {
+                    attemptJoinWithLocation();
+                } else {
+                    Toast.makeText(this, "Location permission is required to join this event.", Toast.LENGTH_SHORT).show();
+                }
+            }
+    );
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.event_details);
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         // Bind views
         posterView = findViewById(R.id.eventPoster);
@@ -82,6 +126,10 @@ public class EventDetailsView extends AppCompatActivity {
         commentsList = findViewById(R.id.commentsList);
         commentInput = findViewById(R.id.commentInput);
         postCommentButton = findViewById(R.id.postCommentButton);
+        
+        replyPreviewArea = findViewById(R.id.replyPreviewArea);
+        replyingToText = findViewById(R.id.replyingToText);
+        cancelReplyButton = findViewById(R.id.cancelReplyButton);
 
         eventViewModel = new EventViewModel();
         userViewModel = new UserViewModel(this);
@@ -162,6 +210,15 @@ public class EventDetailsView extends AppCompatActivity {
                             return;
                         }
 
+                        // Check if current user is the organizer or co-organizer
+                        if (currentEvent != null && (loadedUser.getUserId().equals(currentEvent.getOrganizerId()) || 
+                            loadedUser.getUserId().equals(currentEvent.getCoOrganizerId()))) {
+                            Toast.makeText(EventDetailsView.this, 
+                                "Organizers and Co-Organizers cannot join their own events.", 
+                                Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+
                         // Re-check status to prevent race conditions
                         eventViewModel.getUserEventStatus(eventId, loadedUser.getUserId(), new ModelCallback<String>() {
                             @Override
@@ -225,28 +282,27 @@ public class EventDetailsView extends AppCompatActivity {
                                 }
                                 //CASE: Join waitlist (existing functionality)
                                 else {
-                                    eventViewModel.joinWaitlist(loadedUser, eventId, new ModelCallback<Boolean>() {
-                                        @Override
-                                        public void onCallback(Boolean success) {
-                                            if (success != null && success) {
-                                                isOnWaitlist = true;
-                                                Toast.makeText(EventDetailsView.this,
-                                                        "You have joined the waitlist",
-                                                        Toast.LENGTH_SHORT).show();
-                                                updateWaitlistButton();
-                                            } else {
-                                                Toast.makeText(EventDetailsView.this,
-                                                        "Failed to join waitlist, try again",
-                                                        Toast.LENGTH_SHORT).show();
-                                            }
-                                        }
-                                    });
+                                    if (currentEvent != null && currentEvent.isGeolocationRequired()) {
+                                        new AlertDialog.Builder(EventDetailsView.this)
+                                                .setTitle("Geolocation Required")
+                                                .setMessage("This event requires your location to join the waitlist. Your current location will be used to verify you are within the allowed radius.")
+                                                .setPositiveButton("Join", (dialog, which) -> checkLocationPermissionAndJoin())
+                                                .setNegativeButton("Cancel", null)
+                                                .show();
+                                    } else {
+                                        performJoinWaitlist(null, null);
+                                    }
                                 }
                             }
                         });
                     });
                 }
             });
+        });
+
+        cancelReplyButton.setOnClickListener(v -> {
+            currentParentId = null;
+            replyPreviewArea.setVisibility(View.GONE);
         });
 
         postCommentButton.setOnClickListener(v -> {
@@ -257,9 +313,11 @@ public class EventDetailsView extends AppCompatActivity {
                 return;
             }
 
-            commentRepository.addComment(currentUser.getUserId(), currentUser.getUserName(), eventId, text, success -> {
+            commentRepository.addComment(currentUser.getUserId(), currentUser.getUserName(), eventId, text, currentParentId, success -> {
                 if (success) {
                     commentInput.setText("");
+                    currentParentId = null;
+                    replyPreviewArea.setVisibility(View.GONE);
                     loadComments();
                 } else {
                     Toast.makeText(this, "Failed to post comment", Toast.LENGTH_SHORT).show();
@@ -268,28 +326,129 @@ public class EventDetailsView extends AppCompatActivity {
         });
     }
 
-    private void loadComments() {
-        commentRepository.getCommentsByEvent(eventId, comments -> {
-            commentsList.removeAllViews();
-            if (comments != null) {
-                for (Comment comment : comments) {
-                    addCommentToView(comment);
+    private void checkLocationPermissionAndJoin() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            locationPermissionLauncher.launch(new String[]{
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+            });
+        } else {
+            attemptJoinWithLocation();
+        }
+    }
+
+    private void attemptJoinWithLocation() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+        Toast.makeText(this, "Fetching current location...", Toast.LENGTH_SHORT).show();
+
+        CurrentLocationRequest locationRequest = new CurrentLocationRequest.Builder()
+                .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+                .build();
+
+        CancellationTokenSource cts = new CancellationTokenSource();
+
+        fusedLocationClient.getCurrentLocation(locationRequest, cts.getToken()).addOnSuccessListener(this, location -> {
+            if (location != null) {
+                if (isWithinRadius(location)) {
+                    performJoinWaitlist(location.getLatitude(), location.getLongitude());
+                } else {
+                    Toast.makeText(this, "You do not meet the location requirement for this event.", Toast.LENGTH_LONG).show();
+                }
+            } else {
+                Toast.makeText(this, "Could not get your current location. Please try again.", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private boolean isWithinRadius(Location userLocation) {
+        if (currentEvent == null) return false;
+        float[] results = new float[1];
+        Location.distanceBetween(userLocation.getLatitude(), userLocation.getLongitude(),
+                currentEvent.getLatitude(), currentEvent.getLongitude(), results);
+        float distanceInKm = results[0] / 1000;
+        return distanceInKm <= currentEvent.getRadius();
+    }
+
+    private void performJoinWaitlist(Double lat, Double lon) {
+        eventViewModel.joinWaitlist(currentUser, eventId, lat, lon, new ModelCallback<Boolean>() {
+            @Override
+            public void onCallback(Boolean success) {
+                if (success != null && success) {
+                    isOnWaitlist = true;
+                    Toast.makeText(EventDetailsView.this,
+                            "You have joined the waitlist",
+                            Toast.LENGTH_SHORT).show();
+                    updateWaitlistButton();
+                } else {
+                    Toast.makeText(EventDetailsView.this,
+                            "Failed to join waitlist, try again",
+                            Toast.LENGTH_SHORT).show();
                 }
             }
         });
     }
 
-    private void addCommentToView(Comment comment) {
+    private void loadComments() {
+        commentRepository.getCommentsByEvent(eventId, comments -> {
+            commentsList.removeAllViews();
+            if (comments != null && !comments.isEmpty()) {
+                Map<String, List<Comment>> childrenMap = new HashMap<>();
+                List<Comment> rootComments = new ArrayList<>();
+                
+                for (Comment c : comments) {
+                    if (c.getParentId() == null) {
+                        rootComments.add(c);
+                    } else {
+                        if (!childrenMap.containsKey(c.getParentId())) {
+                            childrenMap.put(c.getParentId(), new ArrayList<>());
+                        }
+                        childrenMap.get(c.getParentId()).add(c);
+                    }
+                }
+                
+                for (Comment root : rootComments) {
+                    renderCommentAndChildren(root, childrenMap, 0);
+                }
+            }
+        });
+    }
+
+    private void renderCommentAndChildren(Comment comment, Map<String, List<Comment>> childrenMap, int depth) {
+        addCommentToView(comment, depth);
+        
+        List<Comment> children = childrenMap.get(comment.getCommentId());
+        if (children != null) {
+            for (Comment child : children) {
+                renderCommentAndChildren(child, childrenMap, Math.min(depth + 1, 3));
+            }
+        }
+    }
+
+    private void addCommentToView(Comment comment, int depth) {
         View view = getLayoutInflater().inflate(R.layout.item_comment, null);
+        
+        int indentPx = (int) (depth * 24 * getResources().getDisplayMetrics().density);
+        ConstraintLayout container = view.findViewById(R.id.commentContainer);
+        container.setPadding(container.getPaddingLeft() + indentPx, container.getPaddingTop(), 
+                           container.getPaddingRight(), container.getPaddingBottom());
+
         TextView nameView = view.findViewById(R.id.commentUserName);
         TextView textView = view.findViewById(R.id.commentText);
         TextView avatarText = view.findViewById(R.id.commentAvatarText);
         ImageView menuButton = view.findViewById(R.id.commentMenu);
-        
+        TextView replyButton = view.findViewById(R.id.replyButton);
+        TextView timestampView = view.findViewById(R.id.commentTimestamp);
+
         nameView.setText(comment.getUserName());
         textView.setText(comment.getText());
-        
-        // Handle Initials
+        if (comment.getTimestamp() != null) {
+            timestampView.setText(formatTimestamp(comment.getTimestamp()));
+        }
+
         String initials = "";
         String username = comment.getUserName();
         if (username != null && !username.isEmpty()) {
@@ -303,11 +462,18 @@ public class EventDetailsView extends AppCompatActivity {
         }
         avatarText.setText(initials);
 
-        // Show menu if it's the current user's comment OR if current user is the organizer
+        replyButton.setOnClickListener(v -> {
+            currentParentId = comment.getCommentId();
+            replyingToText.setText("Replying to " + comment.getUserName());
+            replyPreviewArea.setVisibility(View.VISIBLE);
+            commentInput.requestFocus();
+        });
+
         boolean isOwner = currentUser != null && comment.getUserId().equals(currentUser.getUserId());
         boolean isOrganizer = currentUser != null && currentEvent != null && currentUser.getUserId().equals(currentEvent.getOrganizerId());
+        boolean isAdmin = currentUser != null && currentUser.isAdmin();
 
-        if (isOwner || isOrganizer) {
+        if (isOwner || isOrganizer || isAdmin) {
             menuButton.setVisibility(View.VISIBLE);
             menuButton.setOnClickListener(v -> {
                 PopupMenu popup = new PopupMenu(this, v);
@@ -324,6 +490,14 @@ public class EventDetailsView extends AppCompatActivity {
         }
 
         commentsList.addView(view);
+    }
+
+    private String formatTimestamp(Timestamp timestamp) {
+        long seconds = Timestamp.now().getSeconds() - timestamp.getSeconds();
+        if (seconds < 60) return "Just now";
+        if (seconds < 3600) return (seconds / 60) + "m ago";
+        if (seconds < 86400) return (seconds / 3600) + "h ago";
+        return (seconds / 86400) + "d ago";
     }
 
     private void showDeleteCommentConfirmation(Comment comment) {

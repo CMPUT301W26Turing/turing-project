@@ -6,6 +6,9 @@
         android:name="android.hardware.camera"
         android:required="false" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="true"
@@ -16,6 +19,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.TuringEventLottery">
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="${MAPS_API_KEY}" />
+
         <activity
             android:name=".view.UserDashboardView"
             android:exported="true">
@@ -41,6 +49,9 @@
             android:exported="false" />
         <activity 
             android:name=".view.ManageEventView"
+            android:exported="false" />
+        <activity
+            android:name=".view.EditEventView"
             android:exported="false" />
         <activity 
             android:name=".view.MyNotificationsView"
@@ -71,6 +82,9 @@
             android:exported="false" />
         <activity
             android:name=".view.QRCodeScanActivity"
+            android:exported="false" />
+        <activity
+            android:name=".view.EntrantMapView"
             android:exported="false" />
         <meta-data
             android:name="preloaded_fonts"

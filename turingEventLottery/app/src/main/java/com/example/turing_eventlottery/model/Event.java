@@ -19,6 +19,7 @@ import com.google.firebase.firestore.Exclude;
 public class Event {
     private String id;
     private String organizerId;
+    private String coOrganizerId;
     private String name;
     private String category;
     private String location;
@@ -30,6 +31,9 @@ public class Event {
     private int winnersToDraw;
     private int waitlistCap;
     private boolean geolocationRequired;
+    private double latitude;
+    private double longitude;
+    private double radius;
 
     /**
      * A default constructor required for Firebase Firestore.
@@ -43,6 +47,7 @@ public class Event {
      *
      * @param id unique event ID
      * @param organizerId ID of the organizer
+     * @param coOrganizerId ID of the co-organizer (optional)
      * @param name event name
      * @param category event category
      * @param location event location
@@ -55,12 +60,13 @@ public class Event {
      * @param waitlistCap event waitlist limit
      * @param geolocationRequired event region where to accept entrants
      */
-    public Event(String id, String organizerId, String name, String category,
+    public Event(String id, String organizerId, String coOrganizerId, String name, String category,
                  String location, String date, String posterUrl,
                  String description, String regStart, String regEnd,
                  int winnersToDraw, int waitlistCap, boolean geolocationRequired) {
         this.id = id;
         this.organizerId = organizerId;
+        this.coOrganizerId = coOrganizerId;
         this.name = name;
         this.category = category;
         this.location = location;
@@ -74,12 +80,29 @@ public class Event {
         this.geolocationRequired = geolocationRequired;
     }
 
+    /**
+     * Constructs an Event with geolocation fields.
+     */
+    public Event(String id, String organizerId, String name, String category,
+                 String location, String date, String posterUrl,
+                 String description, String regStart, String regEnd,
+                 int winnersToDraw, int waitlistCap, boolean geolocationRequired,
+                 double latitude, double longitude, double radius) {
+        this(id, organizerId, null, name, category, location, date, posterUrl, description, regStart, regEnd, winnersToDraw, waitlistCap, geolocationRequired);
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.radius = radius;
+    }
+
     @Exclude
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
 
     public String getOrganizerId() { return organizerId; }
     public void setOrganizerId(String organizerId) { this.organizerId = organizerId; }
+
+    public String getCoOrganizerId() { return coOrganizerId; }
+    public void setCoOrganizerId(String coOrganizerId) { this.coOrganizerId = coOrganizerId; }
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
@@ -113,4 +136,13 @@ public class Event {
 
     public boolean isGeolocationRequired() { return geolocationRequired; }
     public void setGeolocationRequired(boolean geolocationRequired) { this.geolocationRequired = geolocationRequired; }
+
+    public double getLatitude() { return latitude; }
+    public void setLatitude(double latitude) { this.latitude = latitude; }
+
+    public double getLongitude() { return longitude; }
+    public void setLongitude(double longitude) { this.longitude = longitude; }
+
+    public double getRadius() { return radius; }
+    public void setRadius(double radius) { this.radius = radius; }
 }

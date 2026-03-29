@@ -86,6 +86,32 @@ public class UserRepository {
     }
 
     /**
+     * Searches for users whose usernames start with the given query.
+     *
+     * @param query the username prefix to search for
+     * @param callback callback returning the list of matching users
+     */
+    public void searchUsersByUsername(String query, ModelCallback<List<User>> callback) {
+        usersCollection.orderBy("userName")
+                .startAt(query)
+                .endAt(query + "\uf8ff")
+                .limit(10)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<User> users = new ArrayList<>();
+                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                        User user = document.toObject(User.class);
+                        users.add(user);
+                    }
+                    callback.onCallback(users);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error searching users by username", e);
+                    callback.onCallback(new ArrayList<>());
+                });
+    }
+
+    /**
      * Deletes a user from the database and performs a cascading delete.
      * Deletes events organized by the user and removes the user from
      * events they have joined.
@@ -106,7 +132,7 @@ public class UserRepository {
             }
 
             commentRepository.deleteAllUserComments(userId, commentSuccess -> {
-                
+
                 String[] associatedEvents = user.getAssociatedEvents();
                 if (associatedEvents == null || associatedEvents.length == 0) {
                     usersCollection.document(userId).delete()

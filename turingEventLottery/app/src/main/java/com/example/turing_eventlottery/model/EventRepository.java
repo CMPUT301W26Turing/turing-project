@@ -51,7 +51,7 @@ public class EventRepository {
      */
     public EventRepository() {
         eventsCollection = FirebaseFirestore.getInstance().collection(COLLECTION_NAME);
-        storageReference = FirebaseStorage.getInstance().getReference().child("event_posters");
+        storageReference = FirebaseStorage.getInstance("gs://turingeventlottery.firebasestorage.app").getReference().child("event_posters");
         userRepository = new UserRepository();
     }
 
@@ -78,6 +78,25 @@ public class EventRepository {
                 })
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Error adding event", e);
+                    callback.onCallback(false);
+                });
+    }
+
+    /**
+     * Updates an existing event in the database.
+     *
+     * @param event the Event to update
+     * @param callback callback returning true if successful, false otherwise
+     */
+    public void updateEvent(Event event, ModelCallback<Boolean> callback) {
+        if (event.getId() == null) {
+            callback.onCallback(false);
+            return;
+        }
+        eventsCollection.document(event.getId()).set(event)
+                .addOnSuccessListener(v -> callback.onCallback(true))
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error updating event", e);
                     callback.onCallback(false);
                 });
     }
@@ -226,6 +245,19 @@ public class EventRepository {
      * @param callback callback returning {@code true} if successful, {@code false} otherwise
      */
     public void addUserToWaitList(String eventId, User user, ModelCallback<Boolean> callback) {
+        addUserToWaitList(eventId, user, null, null, callback);
+    }
+
+    /**
+     * Adds a user to the waitlist for an event with geolocation data.
+     *
+     * @param eventId the event ID
+     * @param user the user to add
+     * @param latitude user's latitude
+     * @param longitude user's longitude
+     * @param callback callback returning {@code true} if successful, {@code false} otherwise
+     */
+    public void addUserToWaitList(String eventId, User user, Double latitude, Double longitude, ModelCallback<Boolean> callback) {
         if ("Guest".equals(user.getUserName())) {
             callback.onCallback(false);
             return;
@@ -236,6 +268,11 @@ public class EventRepository {
         waitlistEntry.put("username", user.getUserName());
         waitlistEntry.put("timestamp", Timestamp.now());
         waitlistEntry.put("status", "Waiting");
+        
+        if (latitude != null && longitude != null) {
+            waitlistEntry.put("latitude", latitude);
+            waitlistEntry.put("longitude", longitude);
+        }
 
         eventRef.collection("waitlist")
                 .document(user.getUserId())
@@ -491,6 +528,8 @@ public class EventRepository {
                             .document(user.getUserId())
                             .delete()
                             .addOnCompleteListener(wTask -> {
+                                user.removeAssociatedEvent(eventId);
+                                userRepository.addOrUpdateUser(user);
                                 callback.onCallback(pTask.isSuccessful() || wTask.isSuccessful());
                             });
                 });
