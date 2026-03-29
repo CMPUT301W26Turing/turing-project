@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/commentContainer"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:padding="12dp">
@@ -63,16 +64,35 @@
         app:layout_constraintStart_toStartOf="@id/commentUserName"
         app:layout_constraintTop_toBottomOf="@id/commentUserName" />
 
-    <TextView
-        android:id="@+id/commentTimestamp"
-        android:layout_width="0dp"
+    <LinearLayout
+        android:id="@+id/commentActions"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:text="Just now"
-        android:textColor="@color/headerSubtext"
-        android:textSize="11sp"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
         app:layout_constraintStart_toStartOf="@id/commentUserName"
-        app:layout_constraintTop_toBottomOf="@id/commentText" />
+        app:layout_constraintTop_toBottomOf="@id/commentText">
+
+        <TextView
+            android:id="@+id/commentTimestamp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Just now"
+            android:textColor="@color/headerSubtext"
+            android:textSize="11sp" />
+
+        <TextView
+            android:id="@+id/replyButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="Reply"
+            android:textColor="@color/primaryBlue"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:clickable="true"
+            android:focusable="true" />
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

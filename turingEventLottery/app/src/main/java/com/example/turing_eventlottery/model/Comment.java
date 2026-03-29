@@ -8,7 +8,7 @@ import com.google.firebase.Timestamp;
  * to facilitate efficient querying and cascading deletes.
  *
  * @author Miro Straszynski
- * @version 1.0
+ * @version 1.1
  * @since 1.0
  */
 public class Comment {
@@ -17,6 +17,7 @@ public class Comment {
     private String userName;
     private String eventId;
     private String text;
+    private String parentId;
     private Timestamp timestamp;
 
     /**
@@ -35,11 +36,19 @@ public class Comment {
      * @param timestamp the time the comment was created
      */
     public Comment(String commentId, String userId, String userName, String eventId, String text, Timestamp timestamp) {
+        this(commentId, userId, userName, eventId, text, null, timestamp);
+    }
+
+    /**
+     * Constructs a new Comment with a parent ID for threading.
+     */
+    public Comment(String commentId, String userId, String userName, String eventId, String text, String parentId, Timestamp timestamp) {
         this.commentId = commentId;
         this.userId = userId;
         this.userName = userName;
         this.eventId = eventId;
         this.text = text;
+        this.parentId = parentId;
         this.timestamp = timestamp;
     }
 
@@ -81,6 +90,14 @@ public class Comment {
 
     public void setText(String text) {
         this.text = text;
+    }
+
+    public String getParentId() {
+        return parentId;
+    }
+
+    public void setParentId(String parentId) {
+        this.parentId = parentId;
     }
 
     public Timestamp getTimestamp() {

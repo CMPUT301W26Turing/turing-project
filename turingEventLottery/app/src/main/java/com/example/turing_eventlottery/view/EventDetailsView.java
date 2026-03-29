@@ -22,6 +22,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.bumptech.glide.Glide;
 import com.example.turing_eventlottery.R;
@@ -38,8 +39,12 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.Priority;
 import com.google.android.gms.tasks.CancellationTokenSource;
 import com.google.android.material.button.MaterialButton;
+import com.google.firebase.Timestamp;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * View for displaying a specific event's details.
@@ -67,12 +72,18 @@ public class EventDetailsView extends AppCompatActivity {
     private LinearLayout commentsList;
     private EditText commentInput;
     private ImageButton postCommentButton;
+    
+    private View replyPreviewArea;
+    private TextView replyingToText;
+    private ImageButton cancelReplyButton;
 
     private boolean isOnWaitlist;
     private String eventId;
     private boolean fromAdmin;
     private User currentUser;
     private Event currentEvent;
+    
+    private String currentParentId = null;
 
     private FusedLocationProviderClient fusedLocationClient;
 
@@ -115,6 +126,10 @@ public class EventDetailsView extends AppCompatActivity {
         commentsList = findViewById(R.id.commentsList);
         commentInput = findViewById(R.id.commentInput);
         postCommentButton = findViewById(R.id.postCommentButton);
+        
+        replyPreviewArea = findViewById(R.id.replyPreviewArea);
+        replyingToText = findViewById(R.id.replyingToText);
+        cancelReplyButton = findViewById(R.id.cancelReplyButton);
 
         eventViewModel = new EventViewModel();
         userViewModel = new UserViewModel(this);
@@ -276,6 +291,11 @@ public class EventDetailsView extends AppCompatActivity {
             });
         });
 
+        cancelReplyButton.setOnClickListener(v -> {
+            currentParentId = null;
+            replyPreviewArea.setVisibility(View.GONE);
+        });
+
         postCommentButton.setOnClickListener(v -> {
             String text = commentInput.getText().toString().trim();
             if (text.isEmpty()) return;
@@ -284,9 +304,11 @@ public class EventDetailsView extends AppCompatActivity {
                 return;
             }
 
-            commentRepository.addComment(currentUser.getUserId(), currentUser.getUserName(), eventId, text, success -> {
+            commentRepository.addComment(currentUser.getUserId(), currentUser.getUserName(), eventId, text, currentParentId, success -> {
                 if (success) {
                     commentInput.setText("");
+                    currentParentId = null;
+                    replyPreviewArea.setVisibility(View.GONE);
                     loadComments();
                 } else {
                     Toast.makeText(this, "Failed to post comment", Toast.LENGTH_SHORT).show();
@@ -364,25 +386,60 @@ public class EventDetailsView extends AppCompatActivity {
     private void loadComments() {
         commentRepository.getCommentsByEvent(eventId, comments -> {
             commentsList.removeAllViews();
-            if (comments != null) {
-                for (Comment comment : comments) {
-                    addCommentToView(comment);
+            if (comments != null && !comments.isEmpty()) {
+                Map<String, List<Comment>> childrenMap = new HashMap<>();
+                List<Comment> rootComments = new ArrayList<>();
+                
+                for (Comment c : comments) {
+                    if (c.getParentId() == null) {
+                        rootComments.add(c);
+                    } else {
+                        if (!childrenMap.containsKey(c.getParentId())) {
+                            childrenMap.put(c.getParentId(), new ArrayList<>());
+                        }
+                        childrenMap.get(c.getParentId()).add(c);
+                    }
+                }
+                
+                for (Comment root : rootComments) {
+                    renderCommentAndChildren(root, childrenMap, 0);
                 }
             }
         });
     }
 
-    private void addCommentToView(Comment comment) {
+    private void renderCommentAndChildren(Comment comment, Map<String, List<Comment>> childrenMap, int depth) {
+        addCommentToView(comment, depth);
+        
+        List<Comment> children = childrenMap.get(comment.getCommentId());
+        if (children != null) {
+            for (Comment child : children) {
+                renderCommentAndChildren(child, childrenMap, Math.min(depth + 1, 3));
+            }
+        }
+    }
+
+    private void addCommentToView(Comment comment, int depth) {
         View view = getLayoutInflater().inflate(R.layout.item_comment, null);
+        
+        int indentPx = (int) (depth * 24 * getResources().getDisplayMetrics().density);
+        ConstraintLayout container = view.findViewById(R.id.commentContainer);
+        container.setPadding(container.getPaddingLeft() + indentPx, container.getPaddingTop(), 
+                           container.getPaddingRight(), container.getPaddingBottom());
+
         TextView nameView = view.findViewById(R.id.commentUserName);
         TextView textView = view.findViewById(R.id.commentText);
         TextView avatarText = view.findViewById(R.id.commentAvatarText);
         ImageView menuButton = view.findViewById(R.id.commentMenu);
+        TextView replyButton = view.findViewById(R.id.replyButton);
+        TextView timestampView = view.findViewById(R.id.commentTimestamp);
 
         nameView.setText(comment.getUserName());
         textView.setText(comment.getText());
+        if (comment.getTimestamp() != null) {
+            timestampView.setText(formatTimestamp(comment.getTimestamp()));
+        }
 
-        // Handle Initials
         String initials = "";
         String username = comment.getUserName();
         if (username != null && !username.isEmpty()) {
@@ -395,6 +452,13 @@ public class EventDetailsView extends AppCompatActivity {
             }
         }
         avatarText.setText(initials);
+
+        replyButton.setOnClickListener(v -> {
+            currentParentId = comment.getCommentId();
+            replyingToText.setText("Replying to " + comment.getUserName());
+            replyPreviewArea.setVisibility(View.VISIBLE);
+            commentInput.requestFocus();
+        });
 
         boolean isOwner = currentUser != null && comment.getUserId().equals(currentUser.getUserId());
         boolean isOrganizer = currentUser != null && currentEvent != null && currentUser.getUserId().equals(currentEvent.getOrganizerId());
@@ -417,6 +481,14 @@ public class EventDetailsView extends AppCompatActivity {
         }
 
         commentsList.addView(view);
+    }
+
+    private String formatTimestamp(Timestamp timestamp) {
+        long seconds = Timestamp.now().getSeconds() - timestamp.getSeconds();
+        if (seconds < 60) return "Just now";
+        if (seconds < 3600) return (seconds / 60) + "m ago";
+        if (seconds < 86400) return (seconds / 3600) + "h ago";
+        return (seconds / 86400) + "d ago";
     }
 
     private void showDeleteCommentConfirmation(Comment comment) {

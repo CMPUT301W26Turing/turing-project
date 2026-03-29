@@ -19,12 +19,22 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Comments are stored redundantly under both users and events.
  *
  * @author Miro Straszynski
- * @version 1.0
+ * @version 1.1
  * @since 1.0
  */
 public class CommentRepository {
     private static final String TAG = "CommentRepository";
     private final FirebaseFirestore db;
+
+    public ModelCallback<Boolean> getCallback() {
+        return callback;
+    }
+
+    public void setCallback(ModelCallback<Boolean> callback) {
+        this.callback = callback;
+    }
+
+    private ModelCallback<Boolean> callback;
 
     public CommentRepository() {
         this.db = FirebaseFirestore.getInstance();
@@ -40,8 +50,22 @@ public class CommentRepository {
      * @param callback callback returning true if successful
      */
     public void addComment(String userId, String userName, String eventId, String text, ModelCallback<Boolean> callback) {
+        addComment(userId, userName, eventId, text, null, callback);
+    }
+
+    /**
+     * Adds a comment with a parent ID for threading.
+     *
+     * @param userId the ID of the user
+     * @param userName the name of the user
+     * @param eventId the ID of the event
+     * @param text the comment text
+     * @param parentId the ID of the parent comment
+     * @param callback callback returning true if successful
+     */
+    public void addComment(String userId, String userName, String eventId, String text, String parentId, ModelCallback<Boolean> callback) {
         String commentId = UUID.randomUUID().toString();
-        Comment comment = new Comment(commentId, userId, userName, eventId, text, Timestamp.now());
+        Comment comment = new Comment(commentId, userId, userName, eventId, text, parentId, Timestamp.now());
 
         WriteBatch batch = db.batch();
 
@@ -84,7 +108,7 @@ public class CommentRepository {
      */
     public void getCommentsByEvent(String eventId, ModelCallback<List<Comment>> callback) {
         db.collection("events").document(eventId).collection("comments")
-                .orderBy("timestamp", Query.Direction.DESCENDING)
+                .orderBy("timestamp", Query.Direction.ASCENDING)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     List<Comment> comments = new ArrayList<>();
