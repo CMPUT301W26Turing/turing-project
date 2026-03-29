@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -52,6 +53,7 @@ public class BrowseEventsView extends AppCompatActivity {
     private EventRepository eventRepository;
     private UserViewModel userViewModel;
     private boolean fromAdmin;
+    private List<String> selectedAvailability = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,18 +89,32 @@ public class BrowseEventsView extends AppCompatActivity {
     }
 
     private void setupSpinners() {
-        Spinner interestsSpinner = findViewById(R.id.browseEventsInterestsSpinner);
         Spinner availabilitySpinner = findViewById(R.id.browseEventsAvailabilitySpinner);
-
-        ArrayAdapter<CharSequence> interestsAdapter = ArrayAdapter.createFromResource(this,
-                R.array.browse_events_interests_spinner, R.layout.custom_spinner_item);
-        interestsAdapter.setDropDownViewResource(R.layout.custom_spinner_dropdown_item);
-        interestsSpinner.setAdapter(interestsAdapter);
 
         ArrayAdapter<CharSequence> availabilityAdapter = ArrayAdapter.createFromResource(this,
                 R.array.browse_events_availability_spinner, R.layout.custom_spinner_item);
         availabilityAdapter.setDropDownViewResource(R.layout.custom_spinner_dropdown_item);
         availabilitySpinner.setAdapter(availabilityAdapter);
+
+        availabilitySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String selected = parent.getItemAtPosition(position).toString();
+                if (selected.equals("All")) {
+                    selectedAvailability.clear(); // no filter
+                } else {
+                    selectedAvailability.clear();
+                    selectedAvailability.add(selected);
+                }
+                loadFilteredEvents();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                selectedAvailability.clear();
+                loadFilteredEvents();
+            }
+        });
     }
 
     private void setupNavigation() {
@@ -189,6 +205,15 @@ public class BrowseEventsView extends AppCompatActivity {
                 myEventsAdapter.updateEvents(events);
             } else {
                 Toast.makeText(this, "Failed to load events", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void loadFilteredEvents() {
+        // Get current user first
+        userViewModel.loadUser(user -> {
+            if (user != null) {
+                eventViewModel.getFilteredEvents(user, selectedAvailability, this::displayEvents);
             }
         });
     }
