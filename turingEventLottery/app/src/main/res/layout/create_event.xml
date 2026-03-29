@@ -157,7 +157,7 @@
                     android:id="@+id/eventNameInput"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="e.g. Summer Lottery Bash"
+                    android:hint="Event Name"
                     android:inputType="text" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -247,24 +247,12 @@
                         android:textColor="@color/headerText"
                         android:textSize="14sp" />
 
-                    <com.google.android.material.textfield.TextInputLayout
-                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                    <androidx.fragment.app.FragmentContainerView
+                        android:id="@+id/autocomplete_fragment"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        app:boxCornerRadiusBottomEnd="12dp"
-                        app:boxCornerRadiusBottomStart="12dp"
-                        app:boxCornerRadiusTopEnd="12dp"
-                        app:boxCornerRadiusTopStart="12dp"
-                        app:hintEnabled="false">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/eventLocationInput"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:hint="e.g. Toronto"
-                            android:inputType="text" />
-                    </com.google.android.material.textfield.TextInputLayout>
+                        android:name="com.google.android.libraries.places.widget.AutocompleteSupportFragment" />
                 </LinearLayout>
             </LinearLayout>
 
@@ -495,8 +483,8 @@
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:layout_marginStart="8dp"
+                    android:layout_weight="1"
                     app:cardBackgroundColor="#F9FAFF"
                     app:cardCornerRadius="12dp"
                     app:strokeColor="#E0E4FF"
@@ -562,7 +550,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:fontFamily="@font/poppins_semibold"
-                    android:text="Restrictions"
+                    android:text="Options"
                     android:textColor="@color/headerText"
                     android:textSize="16sp" />
             </LinearLayout>
@@ -675,6 +663,66 @@
                             android:inputType="numberDecimal" />
                     </com.google.android.material.textfield.TextInputLayout>
                 </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                app:cardBackgroundColor="@color/white"
+                app:cardCornerRadius="16dp"
+                app:strokeColor="#EEEEEE"
+                app:strokeWidth="1dp">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="16dp">
+
+                    <FrameLayout
+                        android:id="@+id/profileIcon"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:background="@drawable/blue_icon_background"
+                        android:padding="8dp"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent">
+
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:src="@drawable/baseline_person_24"
+                            app:tint="@color/primaryBlue" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:id="@+id/addOrganizerTitle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:fontFamily="@font/poppins_semibold"
+                        android:text="Add a Co-Organizer"
+                        android:textColor="@color/headerText"
+                        android:textSize="14sp"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toEndOf="@id/profileIcon"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <AutoCompleteTextView
+                        android:id="@+id/autoCompleteTextView"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/poppins_semibold"
+                        android:hint="Co-Organizer Username"
+                        android:textColorHint="@color/headerSubtext"
+                        android:textSize="12sp"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="@id/addOrganizerTitle"
+                        app:layout_constraintTop_toBottomOf="@id/addOrganizerTitle" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
             </com.google.android.material.card.MaterialCardView>
 
             <com.google.android.material.button.MaterialButton

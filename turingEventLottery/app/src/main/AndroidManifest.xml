@@ -20,9 +20,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TuringEventLottery">
 
-
-        <!--the real API is safely stored in the local properties file-->
-        <!--you can access it on Google console under API key 3-->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="${MAPS_API_KEY}" />
