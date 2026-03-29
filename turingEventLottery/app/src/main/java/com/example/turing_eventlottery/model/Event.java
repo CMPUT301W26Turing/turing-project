@@ -88,7 +88,7 @@ public class Event {
                  String description, String regStart, String regEnd,
                  int winnersToDraw, int waitlistCap, boolean geolocationRequired,
                  double latitude, double longitude, double radius) {
-        this(id, organizerId, name, category, location, date, posterUrl, description, regStart, regEnd, winnersToDraw, waitlistCap, geolocationRequired);
+        this(id, organizerId, null, name, category, location, date, posterUrl, description, regStart, regEnd, winnersToDraw, waitlistCap, geolocationRequired);
         this.latitude = latitude;
         this.longitude = longitude;
         this.radius = radius;
