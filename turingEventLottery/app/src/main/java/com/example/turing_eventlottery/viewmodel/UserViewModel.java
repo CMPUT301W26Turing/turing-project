@@ -77,6 +77,16 @@ public class UserViewModel {
     }
 
     /**
+     * Searches for users by username.
+     *
+     * @param query the username prefix to search for
+     * @param callback callback returning the list of matching users
+     */
+    public void searchUsersByUsername(String query, ModelCallback<List<User>> callback) {
+        userRepository.searchUsersByUsername(query, callback);
+    }
+
+    /**
      * Loads a user by their ID (for admin viewing other profiles).
      *
      * @param userId the ID of the user to load
