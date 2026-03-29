@@ -66,7 +66,7 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
     private MaterialSwitch geoSwitch;
     private TabLayout statusTabs;
     private RecyclerView entrantsRecyclerView;
-    private MaterialButton runLotteryButton, drawSingleButton;
+    private MaterialButton runLotteryButton, drawSingleButton, viewMapButton;
     private WaitingEntrantsAdapter entrantsAdapter;
 
     private List<Map<String, Object>> waitingList = new ArrayList<>();
@@ -109,6 +109,7 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
         entrantsRecyclerView = findViewById(R.id.entrantsRecyclerView);
         runLotteryButton = findViewById(R.id.runLotteryButton);
         drawSingleButton = findViewById(R.id.drawSingleButton);
+        viewMapButton = findViewById(R.id.viewMapButton);
         exportButton = findViewById(R.id.exportButton);
         editButton = findViewById(R.id.editButton);
         sortText = findViewById(R.id.sortText);
@@ -137,6 +138,14 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
             startActivity(intent);
         });
 
+        if (viewMapButton != null) {
+            viewMapButton.setOnClickListener(v -> {
+                Intent intent = new Intent(this, EntrantMapView.class);
+                intent.putExtra("EVENT_ID", eventId);
+                startActivity(intent);
+            });
+        }
+
         runLotteryButton.setOnClickListener(v -> runLottery());
         drawSingleButton.setOnClickListener(v -> drawSingle());
         if (sortText != null) {
@@ -160,6 +169,9 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
             @Override
             public void onTabReselected(TabLayout.Tab tab) {}
         });
+        
+        // Disable geoSwitch interaction in dashboard, it should be changed via Edit
+        geoSwitch.setEnabled(false);
     }
 
     private void loadEventDetails() {
