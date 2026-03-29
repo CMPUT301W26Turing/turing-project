@@ -19,6 +19,7 @@ import com.google.firebase.firestore.Exclude;
 public class Event {
     private String id;
     private String organizerId;
+    private String coOrganizerId;
     private String name;
     private String category;
     private String location;
@@ -43,6 +44,7 @@ public class Event {
      *
      * @param id unique event ID
      * @param organizerId ID of the organizer
+     * @param coOrganizerId ID of the co-organizer (optional)
      * @param name event name
      * @param category event category
      * @param location event location
@@ -55,12 +57,13 @@ public class Event {
      * @param waitlistCap event waitlist limit
      * @param geolocationRequired event region where to accept entrants
      */
-    public Event(String id, String organizerId, String name, String category,
+    public Event(String id, String organizerId, String coOrganizerId, String name, String category,
                  String location, String date, String posterUrl,
                  String description, String regStart, String regEnd,
                  int winnersToDraw, int waitlistCap, boolean geolocationRequired) {
         this.id = id;
         this.organizerId = organizerId;
+        this.coOrganizerId = coOrganizerId;
         this.name = name;
         this.category = category;
         this.location = location;
@@ -80,6 +83,9 @@ public class Event {
 
     public String getOrganizerId() { return organizerId; }
     public void setOrganizerId(String organizerId) { this.organizerId = organizerId; }
+
+    public String getCoOrganizerId() { return coOrganizerId; }
+    public void setCoOrganizerId(String coOrganizerId) { this.coOrganizerId = coOrganizerId; }
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }

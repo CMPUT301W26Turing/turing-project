@@ -180,6 +180,15 @@ public class EventDetailsView extends AppCompatActivity {
                             return;
                         }
 
+                        // Check if current user is the organizer or co-organizer
+                        if (currentEvent != null && (loadedUser.getUserId().equals(currentEvent.getOrganizerId()) || 
+                            loadedUser.getUserId().equals(currentEvent.getCoOrganizerId()))) {
+                            Toast.makeText(EventDetailsView.this, 
+                                "Organizers and Co-Organizers cannot join their own events.", 
+                                Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+
                         // Re-check status to prevent race conditions
                         eventViewModel.getUserEventStatus(eventId, loadedUser.getUserId(), new ModelCallback<String>() {
                             @Override

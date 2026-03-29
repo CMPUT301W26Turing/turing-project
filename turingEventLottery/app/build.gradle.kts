@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     id("com.google.gms.google-services")
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
 android {
@@ -19,6 +20,7 @@ android {
 
     buildFeatures {
         dataBinding = true
+        buildConfig = true
     }
 
     buildTypes {
@@ -38,6 +40,7 @@ android {
 
 dependencies {
     implementation("com.github.bumptech.glide:glide:4.16.0")
+    implementation(libs.places)
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
     implementation("com.google.zxing:core:3.5.3")
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
