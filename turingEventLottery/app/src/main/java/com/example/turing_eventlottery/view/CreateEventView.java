@@ -1,11 +1,8 @@
 package com.example.turing_eventlottery.view;
 
-import android.Manifest;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -22,7 +19,6 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 
 import com.bumptech.glide.Glide;
 import com.example.turing_eventlottery.BuildConfig;
@@ -38,11 +34,6 @@ import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
-import com.google.android.gms.location.CurrentLocationRequest;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.Priority;
-import com.google.android.gms.tasks.CancellationTokenSource;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.materialswitch.MaterialSwitch;
@@ -96,7 +87,6 @@ public class CreateEventView extends AppCompatActivity {
     private NotificationRepository notificationRepository;
     private Uri selectedImageUri;
 
-    private FusedLocationProviderClient fusedLocationClient;
     private double eventLatitude = 0;
     private double eventLongitude = 0;
 
@@ -114,22 +104,6 @@ public class CreateEventView extends AppCompatActivity {
             }
     );
 
-    private final ActivityResultLauncher<String[]> locationPermissionLauncher = registerForActivityResult(
-            new ActivityResultContracts.RequestMultiplePermissions(),
-            result -> {
-                Boolean fineLocationGranted = result.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false);
-                Boolean coarseLocationGranted = result.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false);
-                if (fineLocationGranted != null && fineLocationGranted) {
-                    getCurrentLocation();
-                } else if (coarseLocationGranted != null && coarseLocationGranted) {
-                    getCurrentLocation();
-                } else {
-                    geoSwitch.setChecked(false);
-                    Toast.makeText(this, "Location permission required for geolocation requirement.", Toast.LENGTH_SHORT).show();
-                }
-            }
-    );
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -143,7 +117,6 @@ public class CreateEventView extends AppCompatActivity {
         eventRepository = new EventRepository();
         userViewModel = new UserViewModel(this);
         notificationRepository = new NotificationRepository();
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         ImageView closeButton = findViewById(R.id.closeButton);
         if (closeButton != null) {
@@ -172,11 +145,8 @@ public class CreateEventView extends AppCompatActivity {
         geoSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
                 radiusCard.setVisibility(View.VISIBLE);
-                checkLocationPermission();
             } else {
                 radiusCard.setVisibility(View.GONE);
-                eventLatitude = 0;
-                eventLongitude = 0;
             }
         });
 
@@ -222,7 +192,7 @@ public class CreateEventView extends AppCompatActivity {
                 getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment);
 
         if (autocompleteFragment != null) {
-            autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.DISPLAY_NAME, Place.Field.FORMATTED_ADDRESS));
+            autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.DISPLAY_NAME, Place.Field.FORMATTED_ADDRESS, Place.Field.LOCATION));
             autocompleteFragment.setHint("Location");
             View view = autocompleteFragment.getView();
             if (view != null) {
@@ -257,6 +227,11 @@ public class CreateEventView extends AppCompatActivity {
                 @Override
                 public void onPlaceSelected(@NonNull Place place) {
                     selectedLocationAddress = place.getFormattedAddress();
+                    if (place.getLocation() != null) {
+                        eventLatitude = place.getLocation().latitude;
+                        eventLongitude = place.getLocation().longitude;
+                        Log.d(TAG, "Event location set: " + eventLatitude + ", " + eventLongitude);
+                    }
                 }
 
                 @Override
@@ -265,43 +240,6 @@ public class CreateEventView extends AppCompatActivity {
                 }
             });
         }
-    }
-
-    private void checkLocationPermission() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            locationPermissionLauncher.launch(new String[]{
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-            });
-        } else {
-            getCurrentLocation();
-        }
-    }
-
-    private void getCurrentLocation() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
-
-        Toast.makeText(this, "Fetching current location...", Toast.LENGTH_SHORT).show();
-
-        CurrentLocationRequest locationRequest = new CurrentLocationRequest.Builder()
-                .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
-                .build();
-
-        CancellationTokenSource cts = new CancellationTokenSource();
-
-        fusedLocationClient.getCurrentLocation(locationRequest, cts.getToken()).addOnSuccessListener(this, location -> {
-            if (location != null) {
-                eventLatitude = location.getLatitude();
-                eventLongitude = location.getLongitude();
-                Toast.makeText(this, "Real-time event location captured.", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(this, "Could not get current location. Geolocation requirement disabled.", Toast.LENGTH_SHORT).show();
-                geoSwitch.setChecked(false);
-            }
-        });
     }
 
     private void saveEvent() {
