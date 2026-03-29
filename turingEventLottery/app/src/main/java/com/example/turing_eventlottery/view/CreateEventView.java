@@ -1,8 +1,11 @@
 package com.example.turing_eventlottery.view;
 
+import android.Manifest;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -15,14 +18,20 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-
+import androidx.core.app.ActivityCompat;
 
 import com.bumptech.glide.Glide;
 import com.example.turing_eventlottery.R;
 import com.example.turing_eventlottery.model.Event;
 import com.example.turing_eventlottery.model.EventRepository;
 import com.example.turing_eventlottery.viewmodel.UserViewModel;
+import com.google.android.gms.location.CurrentLocationRequest;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.Priority;
+import com.google.android.gms.tasks.CancellationTokenSource;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.materialswitch.MaterialSwitch;
@@ -38,12 +47,6 @@ import java.util.Locale;
  *     and publish the event. Validates input fields and handles asynchronous poster upload
  *     before saving the event.
  * </p>
- */
-
-/*
-Currently, this class does not follow proper MVVM architecture and fill be fixed for part 4.
-(Repository -> Model) -> ViewModel -> View.
-View should not know anything about the Repository. (Should not directly access EventRepository)
  */
 public class CreateEventView extends AppCompatActivity {
 
@@ -62,11 +65,17 @@ public class CreateEventView extends AppCompatActivity {
     private EditText winnersToDrawInput;
     private EditText waitlistCapInput;
     private MaterialSwitch geoSwitch;
+    private MaterialCardView radiusCard;
+    private TextInputEditText radiusInput;
     private MaterialButton publishButton;
 
     private EventRepository eventRepository;
     private UserViewModel userViewModel;
     private Uri selectedImageUri;
+    
+    private FusedLocationProviderClient fusedLocationClient;
+    private double eventLatitude = 0;
+    private double eventLongitude = 0;
 
     private final ActivityResultLauncher<Intent> imagePickerLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -82,6 +91,22 @@ public class CreateEventView extends AppCompatActivity {
             }
     );
 
+    private final ActivityResultLauncher<String[]> locationPermissionLauncher = registerForActivityResult(
+            new ActivityResultContracts.RequestMultiplePermissions(),
+            result -> {
+                Boolean fineLocationGranted = result.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false);
+                Boolean coarseLocationGranted = result.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false);
+                if (fineLocationGranted != null && fineLocationGranted) {
+                    getCurrentLocation();
+                } else if (coarseLocationGranted != null && coarseLocationGranted) {
+                    getCurrentLocation();
+                } else {
+                    geoSwitch.setChecked(false);
+                    Toast.makeText(this, "Location permission required for geolocation requirement.", Toast.LENGTH_SHORT).show();
+                }
+            }
+    );
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -90,6 +115,7 @@ public class CreateEventView extends AppCompatActivity {
 
         eventRepository = new EventRepository();
         userViewModel = new UserViewModel(this);
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         ImageView closeButton = findViewById(R.id.closeButton);
         if (closeButton != null) {
@@ -111,8 +137,20 @@ public class CreateEventView extends AppCompatActivity {
         winnersToDrawInput = findViewById(R.id.winnersToDrawInput);
         waitlistCapInput = findViewById(R.id.waitlistCapInput);
         geoSwitch = findViewById(R.id.geoSwitch);
+        radiusCard = findViewById(R.id.radiusCard);
+        radiusInput = findViewById(R.id.radiusInput);
         publishButton = findViewById(R.id.publishButton);
 
+        geoSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                radiusCard.setVisibility(View.VISIBLE);
+                checkLocationPermission();
+            } else {
+                radiusCard.setVisibility(View.GONE);
+                eventLatitude = 0;
+                eventLongitude = 0;
+            }
+        });
 
         setupDateTimePicker(eventDateInput);
         setupDateTimePicker(regStartInput);
@@ -138,6 +176,43 @@ public class CreateEventView extends AppCompatActivity {
         }
     }
 
+    private void checkLocationPermission() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            locationPermissionLauncher.launch(new String[]{
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+            });
+        } else {
+            getCurrentLocation();
+        }
+    }
+
+    private void getCurrentLocation() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        
+        Toast.makeText(this, "Fetching current location...", Toast.LENGTH_SHORT).show();
+        
+        CurrentLocationRequest locationRequest = new CurrentLocationRequest.Builder()
+                .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+                .build();
+        
+        CancellationTokenSource cts = new CancellationTokenSource();
+
+        fusedLocationClient.getCurrentLocation(locationRequest, cts.getToken()).addOnSuccessListener(this, location -> {
+            if (location != null) {
+                eventLatitude = location.getLatitude();
+                eventLongitude = location.getLongitude();
+                Toast.makeText(this, "Real-time event location captured.", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Could not get current location. Geolocation requirement disabled.", Toast.LENGTH_SHORT).show();
+                geoSwitch.setChecked(false);
+            }
+        });
+    }
+
     private void saveEvent() {
         String name = eventNameInput.getText().toString().trim();
         String description = eventDescriptionInput.getText().toString().trim();
@@ -148,9 +223,15 @@ public class CreateEventView extends AppCompatActivity {
         String regEnd = regEndInput.getText().toString().trim();
         String winnersStr = winnersToDrawInput.getText().toString().trim();
         String capStr = waitlistCapInput.getText().toString().trim();
+        String radiusStr = radiusInput.getText().toString().trim();
 
         if (name.isEmpty()) {
             Toast.makeText(this, "Please enter an event name", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (geoSwitch.isChecked() && radiusStr.isEmpty()) {
+            Toast.makeText(this, "Please enter a radius limit", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -159,7 +240,7 @@ public class CreateEventView extends AppCompatActivity {
             publishButton.setText("Uploading...");
             eventRepository.uploadEventPoster(selectedImageUri, url -> {
                 if (url != null) {
-                    completeSaveEvent(name, description, category, location, dateStr, regStart, regEnd, winnersStr, capStr, url);
+                    completeSaveEvent(name, description, category, location, dateStr, regStart, regEnd, winnersStr, capStr, radiusStr, url);
                 } else {
                     publishButton.setEnabled(true);
                     publishButton.setText("Publish Event");
@@ -167,13 +248,13 @@ public class CreateEventView extends AppCompatActivity {
                 }
             });
         } else {
-            completeSaveEvent(name, description, category, location, dateStr, regStart, regEnd, winnersStr, capStr, null);
+            completeSaveEvent(name, description, category, location, dateStr, regStart, regEnd, winnersStr, capStr, radiusStr, null);
         }
     }
 
     private void completeSaveEvent(String name, String description, String category, String location, 
                                    String dateStr, String regStart, String regEnd, String winnersStr, 
-                                   String capStr, String posterUrl) {
+                                   String capStr, String radiusStr, String posterUrl) {
         Event newEvent = new Event();
         newEvent.setName(name);
         newEvent.setDescription(description);
@@ -192,12 +273,20 @@ public class CreateEventView extends AppCompatActivity {
             }
             newEvent.setWinnersToDraw(Integer.parseInt(winnersStr));
             newEvent.setWaitlistCap(capStr.isEmpty() ? 0 : Integer.parseInt(capStr));
+            
+            if (geoSwitch.isChecked()) {
+                newEvent.setGeolocationRequired(true);
+                newEvent.setLatitude(eventLatitude);
+                newEvent.setLongitude(eventLongitude);
+                newEvent.setRadius(Double.parseDouble(radiusStr));
+            } else {
+                newEvent.setGeolocationRequired(false);
+            }
+            
         } catch (NumberFormatException e) {
             Toast.makeText(this, "Invalid number format", Toast.LENGTH_SHORT).show();
             return;
         }
-        
-        newEvent.setGeolocationRequired(geoSwitch.isChecked());
 
         eventRepository.addEvent(newEvent, success -> {
             if (success) {
