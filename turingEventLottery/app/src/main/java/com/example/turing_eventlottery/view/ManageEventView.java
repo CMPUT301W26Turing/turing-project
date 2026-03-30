@@ -96,13 +96,6 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
         userViewModel = new UserViewModel(this);
         notificationRepository = new NotificationRepository();
 
-        eventViewModel.getEventById(eventId, event -> {
-            thisEvent = event;
-            if (thisEvent != null && addToWaitlistButton != null) {
-                addToWaitlistButton.setVisibility(thisEvent.isPrivate() ? View.VISIBLE : View.GONE);
-            }
-        });
-
         initViews();
         loadEventDetails();
     }
@@ -282,6 +275,9 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
                 thisEvent = event;
                 if (addToWaitlistButton != null) {
                     addToWaitlistButton.setVisibility(thisEvent.isPrivate() ? View.VISIBLE : View.GONE);
+                }
+                if (exportButton != null) {
+                    exportButton.setVisibility(thisEvent.isPrivate() ? View.GONE : View.VISIBLE);
                 }
                 loadAllParticipants();
                 displayEvent(event);

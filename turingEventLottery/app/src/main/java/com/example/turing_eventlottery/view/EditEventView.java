@@ -184,6 +184,11 @@ public class EditEventView extends AppCompatActivity {
                 if (event.getPosterUrl() != null && !event.getPosterUrl().isEmpty()) {
                     Glide.with(this).load(event.getPosterUrl()).into(eventPosterImage);
                 }
+
+                View manageQrCard = findViewById(R.id.manageQrCard);
+                if (manageQrCard != null) {
+                    manageQrCard.setVisibility(event.isPrivate() ? View.GONE : View.VISIBLE);
+                }
             }
         });
     }
