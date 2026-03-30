@@ -280,6 +280,19 @@
                 app:icon="@drawable/baseline_download_24"
                 app:iconGravity="textStart" />
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/addToWaitlistButton"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Add Users to Waitlist"
+                android:textColor="@color/primaryBlue"
+                android:textSize="14sp"
+                android:visibility="gone"
+                app:icon="@drawable/baseline_add_24"
+                app:iconGravity="textStart" />
+
             <com.google.android.material.tabs.TabLayout
                 android:id="@+id/statusTabs"
                 android:layout_width="match_parent"

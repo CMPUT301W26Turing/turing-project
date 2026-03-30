@@ -76,6 +76,7 @@ public class CreateEventView extends AppCompatActivity {
     private EditText winnersToDrawInput;
     private EditText waitlistCapInput;
     private MaterialSwitch geoSwitch;
+    private MaterialSwitch privateSwitch;
     private MaterialCardView radiusCard;
     private TextInputEditText radiusInput;
     private MaterialButton publishButton;
@@ -137,6 +138,7 @@ public class CreateEventView extends AppCompatActivity {
         winnersToDrawInput = findViewById(R.id.winnersToDrawInput);
         waitlistCapInput = findViewById(R.id.waitlistCapInput);
         geoSwitch = findViewById(R.id.geoSwitch);
+        privateSwitch = findViewById(R.id.privateSwitch);
         radiusCard = findViewById(R.id.radiusCard);
         radiusInput = findViewById(R.id.radiusInput);
         publishButton = findViewById(R.id.publishButton);
@@ -305,6 +307,7 @@ public class CreateEventView extends AppCompatActivity {
         newEvent.setRegEnd(regEnd);
         newEvent.setPosterUrl(posterUrl);
         newEvent.setOrganizerId(userViewModel.getDeviceId());
+        newEvent.setPrivate(privateSwitch.isChecked());
 
         if (selectedCoOrganizer != null) {
             newEvent.setCoOrganizerId(selectedCoOrganizer.getUserId());

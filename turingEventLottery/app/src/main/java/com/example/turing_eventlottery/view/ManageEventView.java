@@ -13,6 +13,8 @@ import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
+import android.view.WindowManager;
+import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
@@ -30,6 +32,9 @@ import com.example.turing_eventlottery.model.EventRepository;
 import com.example.turing_eventlottery.model.Notification;
 import com.example.turing_eventlottery.model.NotificationRepository;
 import com.example.turing_eventlottery.model.QRCodeModel;
+import com.example.turing_eventlottery.model.User;
+import com.example.turing_eventlottery.viewmodel.EventViewModel;
+import com.example.turing_eventlottery.viewmodel.UserViewModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.materialswitch.MaterialSwitch;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
@@ -57,7 +62,10 @@ Also accesses repositories directly, will be fixed for part 4.
 public class ManageEventView extends AppCompatActivity implements WaitingEntrantsAdapter.OnEntrantActionListener {
 
     private String eventId;
+    private Event thisEvent;
     private EventRepository eventRepository;
+    private EventViewModel eventViewModel;
+    private UserViewModel userViewModel;
     private NotificationRepository notificationRepository;
 
     private TextView eventName, eventDateTime, capacityValue, spotsRemaining, sortText;
@@ -66,7 +74,7 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
     private MaterialSwitch geoSwitch;
     private TabLayout statusTabs;
     private RecyclerView entrantsRecyclerView;
-    private MaterialButton runLotteryButton, drawSingleButton, viewMapButton;
+    private MaterialButton runLotteryButton, drawSingleButton, viewMapButton, addToWaitlistButton;
     private WaitingEntrantsAdapter entrantsAdapter;
 
     private List<Map<String, Object>> waitingList = new ArrayList<>();
@@ -84,7 +92,16 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
 
         eventId = getIntent().getStringExtra("EVENT_ID");
         eventRepository = new EventRepository();
+        eventViewModel = new EventViewModel();
+        userViewModel = new UserViewModel(this);
         notificationRepository = new NotificationRepository();
+
+        eventViewModel.getEventById(eventId, event -> {
+            thisEvent = event;
+            if (thisEvent != null && addToWaitlistButton != null) {
+                addToWaitlistButton.setVisibility(thisEvent.isPrivate() ? View.VISIBLE : View.GONE);
+            }
+        });
 
         initViews();
         loadEventDetails();
@@ -112,6 +129,7 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
         viewMapButton = findViewById(R.id.viewMapButton);
         exportButton = findViewById(R.id.exportButton);
         editButton = findViewById(R.id.editButton);
+        addToWaitlistButton = findViewById(R.id.addToWaitlistButton);
         sortText = findViewById(R.id.sortText);
         emptyStateText = findViewById(R.id.emptyStateText);
         listTitle = findViewById(R.id.listTitle);
@@ -146,6 +164,10 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
             });
         }
 
+        if (addToWaitlistButton != null) {
+            addToWaitlistButton.setOnClickListener(v -> showAddToWaitlistDialog());
+        }
+
         runLotteryButton.setOnClickListener(v -> runLottery());
         drawSingleButton.setOnClickListener(v -> drawSingle());
         if (sortText != null) {
@@ -174,11 +196,93 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
         geoSwitch.setEnabled(false);
     }
 
+    private void showAddToWaitlistDialog() {
+        Dialog dialog = new Dialog(this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_add_to_waitlist);
+        
+        Window window = dialog.getWindow();
+        if (window != null) {
+            window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
+            window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
+
+        AutoCompleteTextView userSearchInput = dialog.findViewById(R.id.userSearchInput);
+        RecyclerView selectedUsersRecyclerView = dialog.findViewById(R.id.selectedUsersRecyclerView);
+        TextView selectedTitle = dialog.findViewById(R.id.selectedTitle);
+        MaterialButton addSelectedButton = dialog.findViewById(R.id.addSelectedButton);
+        MaterialButton cancelButton = dialog.findViewById(R.id.cancelButton);
+
+        List<User> selectedUsers = new ArrayList<>();
+        SelectedUsersAdapter selectedAdapter = new SelectedUsersAdapter(selectedUsers, user -> {
+            selectedUsers.remove(user);
+        });
+        refreshSelectedUsersList(selectedUsers, selectedAdapter, selectedTitle);
+
+        selectedUsersRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        selectedUsersRecyclerView.setAdapter(selectedAdapter);
+
+        UserAutocompleteAdapter autocompleteAdapter = new UserAutocompleteAdapter(this, userViewModel);
+        userSearchInput.setAdapter(autocompleteAdapter);
+        userSearchInput.setThreshold(1);
+
+        userSearchInput.setOnItemClickListener((parent, view, position, id) -> {
+            User user = (User) parent.getItemAtPosition(position);
+            boolean alreadySelected = false;
+            for (User u : selectedUsers) {
+                if (u.getUserId().equals(user.getUserId())) {
+                    alreadySelected = true;
+                    break;
+                }
+            }
+            
+            if (!alreadySelected) {
+                selectedUsers.add(user);
+                refreshSelectedUsersList(selectedUsers, selectedAdapter, selectedTitle);
+            }
+            userSearchInput.setText("");
+        });
+
+        cancelButton.setOnClickListener(v -> dialog.dismiss());
+
+        addSelectedButton.setOnClickListener(v -> {
+            if (selectedUsers.isEmpty()) {
+                Toast.makeText(this, "Please select at least one user", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            for (User user : selectedUsers) {
+                Notification waitlistInvite = new Notification(
+                    user.getUserId(),
+                    eventId,
+                    thisEvent.getName(),
+                    thisEvent.getDate(),
+                    "You have been invited to join the waitlist for: " + thisEvent.getName(),
+                    "Waitlist Invitation"
+                );
+                notificationRepository.addNotification(waitlistInvite);
+            }
+            Toast.makeText(this, "Invitations sent to users", Toast.LENGTH_SHORT).show();
+            dialog.dismiss();
+        });
+
+        dialog.show();
+    }
+
+    private void refreshSelectedUsersList(List<User> selectedUsers, SelectedUsersAdapter adapter, TextView selectedTitle) {
+        adapter.notifyDataSetChanged();
+        selectedTitle.setVisibility(selectedUsers.isEmpty() ? View.GONE : View.VISIBLE);
+    }
+
     private void loadEventDetails() {
         if (eventId == null) return;
 
         eventRepository.getEventById(eventId, event -> {
             if (event != null) {
+                thisEvent = event;
+                if (addToWaitlistButton != null) {
+                    addToWaitlistButton.setVisibility(thisEvent.isPrivate() ? View.VISIBLE : View.GONE);
+                }
                 loadAllParticipants();
                 displayEvent(event);
             } else {
@@ -353,8 +457,6 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
             if (success) {
                 Toast.makeText(this, "Invitation cancelled", Toast.LENGTH_SHORT).show();
 
-                NotificationRepository notificationRepository = getNotificationRepositoryFromUserId(userId);
-
                 notificationRepository.getNotificationsByUserId(userId, notifications -> {
                     if (notifications != null && !notifications.isEmpty()) {
                         for (Notification notification : notifications)
@@ -363,32 +465,46 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
                     }
                 });
 
+                eventRepository.getEventById(eventId, event -> {
+                    if (event == null) return;
+                    String eventName = event.getName();
+                    String eventDateTime = event.getDate();
+                    notificationRepository.addNotification(new Notification(
+                            userId,
+                            eventId,
+                            eventName,
+                            eventDateTime,
+                            "Cancelled"
+                    ));
+                });
+
                 loadAllParticipants();
             } else {
                 Toast.makeText(this, "Failed to cancel invitation", Toast.LENGTH_SHORT).show();
             }
         });
     }
-
-    @NonNull
-    private NotificationRepository getNotificationRepositoryFromUserId(String userId) {
-        EventRepository eventRepository = new EventRepository();
-        NotificationRepository notificationRepository = new NotificationRepository();
-
-        eventRepository.getEventById(eventId, event -> {
-            if (event == null) return;
-            String eventName = event.getName();
-            String eventDateTime = event.getDate();
-            notificationRepository.addNotification(new Notification(
-                    userId,
-                    eventId,
-                    eventName,
-                    eventDateTime,
-                    "Cancelled"
-            ));
-        });
-        return notificationRepository;
-    }
+// This is a confusing method... the name doesn't make any sense, and doesn't
+// reveal that it's actually creating a notification too!
+//    @NonNull
+//    private NotificationRepository getNotificationRepositoryFromUserId(String userId) {
+//        EventRepository eventRepository = new EventRepository();
+//        NotificationRepository notificationRepository = new NotificationRepository();
+//
+//        eventRepository.getEventById(eventId, event -> {
+//            if (event == null) return;
+//            String eventName = event.getName();
+//            String eventDateTime = event.getDate();
+//            notificationRepository.addNotification(new Notification(
+//                    userId,
+//                    eventId,
+//                    eventName,
+//                    eventDateTime,
+//                    "Cancelled"
+//            ));
+//        });
+//        return notificationRepository;
+//    }
 
 
     private void runLottery() {

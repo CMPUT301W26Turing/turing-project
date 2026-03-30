@@ -2,6 +2,7 @@ package com.example.turing_eventlottery.view;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -137,40 +138,66 @@ public class MyNotificationsView extends AppCompatActivity implements Notificati
 
     @Override
     public void onAccept(Notification notification) {
-        eventRepository.registerParticipant(notification.getEventId(), notification.getUserId(), success -> {
-            if (success) {
-                notificationRepository.updateNotificationStatus(notification.getId(), "Accepted", result -> {
-                    Toast.makeText(this, "Invitation Accepted!", Toast.LENGTH_SHORT).show();
-                    loadNotifications();
-                });
-            } else {
-                Toast.makeText(this, "Failed to accept invitation", Toast.LENGTH_SHORT).show();
-            }
-        });
+        if ("Waitlist Invitation".equals(notification.getStatus())) {
+            userRepository.getUser(notification.getUserId(), user -> {
+                if (user != null) {
+                    eventRepository.addUserToWaitList(notification.getEventId(), user, success -> {
+                        if (success) {
+                            notificationRepository.updateNotificationStatus(notification.getId(), "Accepted", result -> {
+                                Log.d("MyNotificationsView", "Joined waitlist!!");
+                                Toast.makeText(this, "Joined Waitlist!", Toast.LENGTH_SHORT).show();
+                                loadNotifications();
+                            });
+                        } else {
+                            Log.d("MyNotificationsView", "Failed to join waitlist");
+                            Toast.makeText(this, "Failed to join waitlist", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+            });
+        } else {
+            eventRepository.registerParticipant(notification.getEventId(), notification.getUserId(), success -> {
+                if (success) {
+                    notificationRepository.updateNotificationStatus(notification.getId(), "Accepted", result -> {
+                        Toast.makeText(this, "Invitation Accepted!", Toast.LENGTH_SHORT).show();
+                        loadNotifications();
+                    });
+                } else {
+                    Toast.makeText(this, "Failed to accept invitation", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
     }
 
     @Override
     public void onDecline(Notification notification) {
-        userRepository.getUser(notification.getUserId(), new ModelCallback<User>() {
-            @Override
-            public void onCallback(User user) {
-                if (user != null) {
-                    eventRepository.removeUserFromWaitlist(notification.getEventId(), user, success -> {
-                        if (success) {
-                            notificationRepository.updateNotificationStatus(notification.getId(), "Declined", result -> {
-                                Toast.makeText(MyNotificationsView.this, "Invitation Declined", Toast.LENGTH_SHORT).show();
-                                triggerNewLotteryDraw(notification.getEventId());
-                                loadNotifications();
-                            });
-                        } else {
-                            Toast.makeText(MyNotificationsView.this, "Failed to decline invitation", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                } else {
-                    Toast.makeText(MyNotificationsView.this, "User not found", Toast.LENGTH_SHORT).show();
+        if ("Waitlist Invitation".equals(notification.getStatus())) {
+            notificationRepository.updateNotificationStatus(notification.getId(), "Declined", result -> {
+                Toast.makeText(MyNotificationsView.this, "Invitation Declined", Toast.LENGTH_SHORT).show();
+                loadNotifications();
+            });
+        } else {
+            userRepository.getUser(notification.getUserId(), new ModelCallback<User>() {
+                @Override
+                public void onCallback(User user) {
+                    if (user != null) {
+                        eventRepository.removeUserFromWaitlist(notification.getEventId(), user, success -> {
+                            if (success) {
+                                notificationRepository.updateNotificationStatus(notification.getId(), "Declined", result -> {
+                                    Toast.makeText(MyNotificationsView.this, "Invitation Declined", Toast.LENGTH_SHORT).show();
+                                    triggerNewLotteryDraw(notification.getEventId());
+                                    loadNotifications();
+                                });
+                            } else {
+                                Toast.makeText(MyNotificationsView.this, "Failed to decline invitation", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    } else {
+                        Toast.makeText(MyNotificationsView.this, "User not found", Toast.LENGTH_SHORT).show();
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     private void triggerNewLotteryDraw(String eventId) {

@@ -113,14 +113,29 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             holder.statusIndicator.setVisibility(View.GONE);
             holder.actionButtonsLayout.setVisibility(View.GONE);
             holder.subtitle.setText("Status Update");
-            
+
             int neutralColor = ContextCompat.getColor(context, R.color.headerSubtext);
-            
+
             holder.statusBadge.setTextColor(neutralColor);
             holder.iconContainer.setCardBackgroundColor(context.getResources().getColor(R.color.secondaryBackground));
             holder.notificationIcon.setImageResource(R.drawable.baseline_cancel_24);
             holder.notificationIcon.setColorFilter(neutralColor);
-            
+        } else if ("Waitlist Invitation".equalsIgnoreCase(status)) {
+            holder.statusIndicator.setVisibility(View.GONE);
+            holder.actionButtonsLayout.setVisibility(View.VISIBLE);
+            holder.subtitle.setText("Event Update");
+
+            holder.statusBadge.setTextColor(ContextCompat.getColor(context, R.color.primaryBlue));
+            holder.iconContainer.setCardBackgroundColor(ContextCompat.getColor(context, R.color.primaryBackground));
+            holder.notificationIcon.setImageResource(R.drawable.baseline_notifications_24);
+            holder.notificationIcon.setColorFilter(ContextCompat.getColor(context, R.color.primaryBlue));
+
+            holder.acceptButton.setOnClickListener(v -> {
+                if (listener != null) listener.onAccept(notification);
+            });
+            holder.declineButton.setOnClickListener(v -> {
+                if (listener != null) listener.onDecline(notification);
+            });
         } else {
             holder.statusIndicator.setVisibility(View.GONE);
             holder.actionButtonsLayout.setVisibility(View.GONE);

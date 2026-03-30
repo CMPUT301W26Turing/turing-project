@@ -34,6 +34,7 @@ public class Event {
     private double latitude;
     private double longitude;
     private double radius;
+    private boolean isPrivate;
 
     /**
      * A default constructor required for Firebase Firestore.
@@ -145,4 +146,7 @@ public class Event {
 
     public double getRadius() { return radius; }
     public void setRadius(double radius) { this.radius = radius; }
+
+    public boolean isPrivate() { return isPrivate; }
+    public void setPrivate(boolean aPrivate) { isPrivate = aPrivate; }
 }

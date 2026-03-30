@@ -680,6 +680,70 @@
                     android:padding="16dp">
 
                     <FrameLayout
+                        android:id="@+id/privateIcon"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:background="@drawable/blue_icon_background"
+                        android:padding="8dp"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent">
+
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:src="@drawable/baseline_lock_24"
+                            app:tint="@color/primaryBlue" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:id="@+id/privateTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:fontFamily="@font/poppins_semibold"
+                        android:text="Private Event"
+                        android:textColor="@color/headerText"
+                        android:textSize="14sp"
+                        app:layout_constraintStart_toEndOf="@id/privateIcon"
+                        app:layout_constraintTop_toTopOf="@id/privateIcon" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="Only invited users can see and join this event"
+                        android:textColor="@color/headerSubtext"
+                        android:textSize="11sp"
+                        app:layout_constraintEnd_toStartOf="@+id/privateSwitch"
+                        app:layout_constraintStart_toStartOf="@id/privateTitle"
+                        app:layout_constraintTop_toBottomOf="@id/privateTitle" />
+
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/privateSwitch"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                app:cardBackgroundColor="@color/white"
+                app:cardCornerRadius="16dp"
+                app:strokeColor="#EEEEEE"
+                app:strokeWidth="1dp">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="16dp">
+
+                    <FrameLayout
                         android:id="@+id/profileIcon"
                         android:layout_width="40dp"
                         android:layout_height="40dp"

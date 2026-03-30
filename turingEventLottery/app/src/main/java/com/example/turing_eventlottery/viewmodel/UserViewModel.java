@@ -83,7 +83,7 @@ public class UserViewModel {
      * @param callback callback returning the list of matching users
      */
     public void searchUsersByUsername(String query, ModelCallback<List<User>> callback) {
-        userRepository.searchUsersByUsername(query, callback);
+        userRepository.searchUsersByDetails(query, callback);
     }
 
     /**
