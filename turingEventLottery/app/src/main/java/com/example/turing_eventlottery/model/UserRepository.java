@@ -2,12 +2,17 @@ package com.example.turing_eventlottery.model;
 
 import android.util.Log;
 
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -86,29 +91,43 @@ public class UserRepository {
     }
 
     /**
-     * Searches for users whose usernames start with the given query.
+     * Searches for users whose username, email, or phone number start with the given query.
      *
-     * @param query the username prefix to search for
-     * @param callback callback returning the list of matching users
+     * @param query the search string to match against user details
+     * @param callback callback returning the list of merged matching users
      */
-    public void searchUsersByUsername(String query, ModelCallback<List<User>> callback) {
-        usersCollection.orderBy("userName")
-                .startAt(query)
-                .endAt(query + "\uf8ff")
-                .limit(10)
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    List<User> users = new ArrayList<>();
-                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
-                        User user = document.toObject(User.class);
-                        users.add(user);
-                    }
-                    callback.onCallback(users);
-                })
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "Error searching users by username", e);
-                    callback.onCallback(new ArrayList<>());
-                });
+    public void searchUsersByDetails(String query, ModelCallback<List<User>> callback) {
+        Task<QuerySnapshot> nameTask = usersCollection.orderBy("userName")
+                .startAt(query).endAt(query + "\uf8ff").limit(10).get();
+        
+        Task<QuerySnapshot> emailTask = usersCollection.orderBy("userEmail")
+                .startAt(query).endAt(query + "\uf8ff").limit(10).get();
+        
+        Task<QuerySnapshot> phoneTask = usersCollection.orderBy("userPhoneNumber")
+                .startAt(query).endAt(query + "\uf8ff").limit(10).get();
+
+        Tasks.whenAllComplete(nameTask, emailTask, phoneTask).addOnCompleteListener(task -> {
+            List<User> results = new ArrayList<>();
+            Map<String, User> uniqueUsers = new HashMap<>();
+
+            addResultsFromTask(nameTask, uniqueUsers, results);
+            addResultsFromTask(emailTask, uniqueUsers, results);
+            addResultsFromTask(phoneTask, uniqueUsers, results);
+
+            callback.onCallback(results);
+        });
+    }
+
+    private void addResultsFromTask(Task<QuerySnapshot> task, Map<String, User> uniqueUsers, List<User> resultsList) {
+        if (task.isSuccessful() && task.getResult() != null) {
+            for (QueryDocumentSnapshot doc : task.getResult()) {
+                User user = doc.toObject(User.class);
+                if (!uniqueUsers.containsKey(user.getUserId())) {
+                    uniqueUsers.put(user.getUserId(), user);
+                    resultsList.add(user);
+                }
+            }
+        }
     }
 
     /**
@@ -133,8 +152,8 @@ public class UserRepository {
 
             commentRepository.deleteAllUserComments(userId, commentSuccess -> {
 
-                String[] associatedEvents = user.getAssociatedEvents();
-                if (associatedEvents == null || associatedEvents.length == 0) {
+                List<String> associatedEvents = user.getAssociatedEvents();
+                if (associatedEvents == null || associatedEvents.isEmpty()) {
                     usersCollection.document(userId).delete()
                             .addOnSuccessListener(v -> callback.onCallback(true))
                             .addOnFailureListener(e -> callback.onCallback(false));
@@ -142,7 +161,7 @@ public class UserRepository {
                 }
 
                 AtomicInteger completedCount = new AtomicInteger(0);
-                int totalEvents = associatedEvents.length;
+                int totalEvents = associatedEvents.size();
 
                 for (String eventId : associatedEvents) {
                     eventRepository.getEventById(eventId, event -> {

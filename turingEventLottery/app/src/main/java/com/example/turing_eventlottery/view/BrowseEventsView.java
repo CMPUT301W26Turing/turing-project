@@ -200,6 +200,9 @@ public class BrowseEventsView extends AppCompatActivity {
         upcomingLotteries.setText("Upcoming Lotteries");
 
         for (Event event : events) {
+            if (event.isPrivate() && !fromAdmin) // allow admins to see all events
+                continue;
+
             MaterialCardView card = (MaterialCardView) LayoutInflater.from(this)
                     .inflate(R.layout.browse_events_card, eventsContainer, false);
 
