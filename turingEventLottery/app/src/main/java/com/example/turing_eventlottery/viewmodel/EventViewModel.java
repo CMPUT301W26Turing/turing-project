@@ -6,9 +6,16 @@ import com.example.turing_eventlottery.model.EventRepository;
 import com.example.turing_eventlottery.model.User;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
+
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 
 /**
  * Manages event-related operations
@@ -26,12 +33,62 @@ import java.util.Locale;
  */
 public class EventViewModel {
     private EventRepository eventRepository;
+    private MutableLiveData<List<Event>> filteredEventsLiveData = new MutableLiveData<>();
+    private MutableLiveData<List<Event>> allEventsLiveData = new MutableLiveData<>();
+    private boolean matchesAvailability(Event event, Calendar start, Calendar end) {
+        if (start == null || end == null) return true;
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy, HH:mm", Locale.getDefault());
+            Date eventDate = sdf.parse(event.getDate());
+            if (eventDate == null) return true;
+
+            Calendar eventCal = Calendar.getInstance();
+            eventCal.setTime(eventDate);
+
+            // compare only year, month, day
+            Calendar startCopy = (Calendar) start.clone();
+            Calendar endCopy = (Calendar) end.clone();
+            clearTime(eventCal);
+            clearTime(startCopy);
+            clearTime(endCopy);
+
+            return !eventCal.before(start) && !eventCal.after(end);
+        } catch (Exception e) {
+            return true;
+        }
+    }
+
+    private void clearTime(Calendar cal) {
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+    }
 
     /**
      * Initializes the repository for the eventViewModel.
      */
     public EventViewModel() {
         this.eventRepository = new EventRepository();
+    }
+
+    // Dependency injection for mock database testing
+    public EventViewModel(EventRepository repository) {
+        this.eventRepository = repository;
+    }
+
+    public LiveData<List<Event>> getFilteredEventsLiveData() {
+        return filteredEventsLiveData;
+    }
+
+    public LiveData<List<Event>> getAllEventsLiveData() {
+        return allEventsLiveData;
+    }
+
+    public void loadAllEvents() {
+        eventRepository.getEvents(events -> {
+            allEventsLiveData.setValue(events);
+        });
     }
 
     /**
@@ -88,6 +145,10 @@ public class EventViewModel {
      */
     public void getUserEventStatus(String eventId, String userId, ModelCallback<String> callback) {
         eventRepository.getUserEventStatus(eventId, userId, callback);
+    }
+
+    public String getSearchQuery() {
+        return searchQuery;
     }
 
     /**
@@ -219,5 +280,81 @@ public class EventViewModel {
         eventRepository.getWaitlistCount(eventId, count -> {
             callback.onCallback(count);
         });
+    }
+
+    private boolean isRegOpen(Event event) {
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy, HH:mm", Locale.getDefault());
+            Date regStart = sdf.parse(event.getRegStart());
+            Date regEnd = sdf.parse(event.getRegEnd());
+            if (regStart == null || regEnd == null) return false;
+            Date now = new Date();
+            return now.after(regStart) && now.before(regEnd);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public void filterEvents(User user, Calendar startRange, Calendar endRange, boolean onlyWithOpenWaitlist) {
+        List<Event> allEvents = allEventsLiveData.getValue();
+        if (allEvents == null) return;
+
+        List<Event> filtered = Collections.synchronizedList(new ArrayList<>());
+
+        if (!onlyWithOpenWaitlist) {
+            // purely local filter (availability)
+            for (Event event : allEvents) {
+                if (matchesAvailability(event, startRange, endRange) && matchesSearch(event)) {
+                    filtered.add(event);
+                }
+            }
+            filteredEventsLiveData.postValue(filtered);
+            return;
+        }
+
+        // Waitlist filtering: asynchronous
+        final int total = allEvents.size();
+        final int[] completed = {0};
+
+        for (Event event : allEvents) {
+            if (!matchesAvailability(event, startRange, endRange) || !isRegOpen(event) || !matchesSearch(event)) {
+                completed[0]++;
+                if (completed[0] == total) filteredEventsLiveData.postValue(new ArrayList<>(filtered));
+                continue;
+            }
+
+            // check waitlist size asynchronously
+            getWaitlistCount(event.getId(), count -> {
+                if (count != null && count < event.getWaitlistCap()) {
+                    filtered.add(event);
+                }
+
+                completed[0]++;
+                if (completed[0] == total) {
+                    // all events processed
+                    filteredEventsLiveData.postValue(new ArrayList<>(filtered));
+                }
+            });
+        }
+    }
+
+    private String searchQuery = "";
+
+    public void setSearchQuery(String query) {
+        this.searchQuery = query == null ? "" : query.trim().toLowerCase();
+    }
+
+    private boolean matchesSearch(Event event) {
+        if (searchQuery.isEmpty()) return true;
+
+        String name = event.getName() != null ? event.getName().toLowerCase() : "";
+        String location = event.getLocation() != null ? event.getLocation().toLowerCase() : "";
+        String category = event.getCategory() != null ? event.getCategory().toLowerCase() : "";
+        String description = event.getDescription() != null ? event.getDescription().toLowerCase() : "";
+
+        return name.contains(searchQuery)
+                || location.contains(searchQuery)
+                || category.contains(searchQuery)
+                ||description.contains(searchQuery);
     }
 }

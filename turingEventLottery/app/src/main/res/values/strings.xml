@@ -5,4 +5,6 @@
     <string name="who_are_you">Who are you?</string>
     <string name="select_your_role">Select your role to continue</string>
     <string name="profile_amp_preferences"><![CDATA[Profile & Preferences]]></string>
+    <string name="search_icon_for_keyword_search">Search icon for Keyword Search</string>
+    <string name="keyword_search">Keyword Search...</string>
 </resources>

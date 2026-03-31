@@ -49,6 +49,7 @@ public class OrganizerTest {
         organizerEvent = new Event(
                 "event1",
                 "org1",
+                null,
                 "Community Meetup",
                 "Social",
                 "Edmonton",
@@ -165,13 +166,13 @@ public class OrganizerTest {
     @Test
     public void testOrganizerCanCreateMultipleEvents() {
         Event event1 = new Event(
-                "e1", "org1", "Event One", "Tech",
+                "e1", "org1", null, "Event One", "Tech",
                 "Calgary", "05/01/2026", null,
                 "First event", "04/20/2026, 09:00",
                 "04/28/2026, 17:00", 2, 30, false
         );
         Event event2 = new Event(
-                "e2", "org1", "Event Two", "Music",
+                "e2", "org1", null, "Event Two", "Music",
                 "Edmonton", "06/01/2026", null,
                 "Second event", "05/20/2026, 09:00",
                 "05/28/2026, 17:00", 5, 100, true

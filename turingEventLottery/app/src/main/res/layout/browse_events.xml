@@ -75,6 +75,7 @@
                         android:textColor="@color/headerText" />
 
                     <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/searchButtonCard"
                         android:layout_width="36dp"
                         android:layout_height="36dp"
                         app:cardBackgroundColor="@color/secondaryBackground"
@@ -85,12 +86,27 @@
                             android:id="@+id/searchButton"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
+                            android:contentDescription="@string/search_icon_for_keyword_search"
                             android:scaleType="centerInside"
                             android:padding="8dp"
                             android:src="@drawable/baseline_search_24"
                             app:tint="@color/headerText" />
                     </com.google.android.material.card.MaterialCardView>
                 </LinearLayout>
+
+                <EditText
+                    android:id="@+id/searchEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginTop="4dp"
+                    android:background="@drawable/custom_background_box"
+                    android:hint="@string/keyword_search"
+                    android:inputType="text"
+                    android:imeOptions="actionSearch"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:singleLine="true"
+                    android:visibility="gone" />
 
                 <LinearLayout
                     android:id="@+id/spinnersBar"
@@ -102,29 +118,43 @@
                     android:paddingEnd="8dp"
                     android:weightSum="2">
 
-                    <Spinner
-                        android:id="@+id/browseEventsInterestsSpinner"
-                        android:layout_width="0dp"
-                        android:layout_height="40dp"
-                        android:layout_marginEnd="12dp"
-                        android:layout_weight="1"
-                        android:background="@drawable/custom_spinner_background"
-                        android:entries="@array/browse_events_interests_spinner"
-                        android:paddingStart="12dp"
-                        android:paddingEnd="32dp"
-                        android:spinnerMode="dropdown" />
-
-                    <Spinner
+                    <TextView
                         android:id="@+id/browseEventsAvailabilitySpinner"
-                        android:layout_width="0dp"
+                        android:text="Select Availability"
+                        android:layout_width="wrap_content"
                         android:layout_height="40dp"
-                        android:layout_weight="1"
+                        android:layout_weight="2"
+                        android:gravity="center_vertical"
                         android:background="@drawable/custom_spinner_background"
                         android:entries="@array/browse_events_availability_spinner"
                         android:paddingStart="12dp"
-                        android:paddingEnd="32dp"
-                        android:spinnerMode="dropdown" />
+                        android:paddingEnd="32dp" />
+
+                    <CheckBox
+                        android:id="@+id/openWaitlistCheckbox"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Open Waitlists"
+                        android:textSize="13sp"
+                        android:layout_marginStart="12dp" />
+
                 </LinearLayout>
+
+                <TextView
+                    android:id="@+id/clearFilterButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="4dp"
+                    android:background="@drawable/custom_background_box"
+                    android:text="X Clear Availability Filter"
+                    android:textSize="12sp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:paddingTop="6dp"
+                    android:visibility="gone"/>
             </LinearLayout>
 
             <LinearLayout
@@ -157,7 +187,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:clipToPadding="false"
-                android:paddingBottom="80dp"
+                android:paddingBottom="120dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
