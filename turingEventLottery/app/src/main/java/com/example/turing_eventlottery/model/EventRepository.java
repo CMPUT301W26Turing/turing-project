@@ -5,6 +5,9 @@ import android.util.Log;
 import android.util.Pair;
 import android.net.Uri;
 
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -326,6 +329,23 @@ public class EventRepository {
                         callback.onCallback(null);
                     }
                 });
+    }
+
+    public LiveData<Integer> getWaitlistSize(String eventId) {
+        MutableLiveData<Integer> waitlistSize = new MutableLiveData<>();
+
+        eventsCollection
+                .document(eventId)
+                .collection("waitlist")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    int size = queryDocumentSnapshots.size();
+                    waitlistSize.setValue(size);
+                })
+                .addOnFailureListener(e -> {
+                    waitlistSize.setValue(0);
+                });
+        return waitlistSize;
     }
 
     /**

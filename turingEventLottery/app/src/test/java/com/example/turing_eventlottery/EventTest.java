@@ -19,6 +19,7 @@ public class EventTest {
         event = new Event(
                 "event1",
                 "organizer1",
+                null,
                 "Test Event",
                 "Technology",
                 "Edmonton",
