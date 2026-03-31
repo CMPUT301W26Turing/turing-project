@@ -147,6 +147,10 @@ public class EventViewModel {
         eventRepository.getUserEventStatus(eventId, userId, callback);
     }
 
+    public String getSearchQuery() {
+        return searchQuery;
+    }
+
     /**
      * Accepts an invitation by registering the user as a participant
      */
@@ -300,7 +304,7 @@ public class EventViewModel {
         if (!onlyWithOpenWaitlist) {
             // purely local filter (availability)
             for (Event event : allEvents) {
-                if (matchesAvailability(event, startRange, endRange)) {
+                if (matchesAvailability(event, startRange, endRange) && matchesSearch(event)) {
                     filtered.add(event);
                 }
             }
@@ -313,7 +317,7 @@ public class EventViewModel {
         final int[] completed = {0};
 
         for (Event event : allEvents) {
-            if (!matchesAvailability(event, startRange, endRange) || !isRegOpen(event)) {
+            if (!matchesAvailability(event, startRange, endRange) || !isRegOpen(event) || !matchesSearch(event)) {
                 completed[0]++;
                 if (completed[0] == total) filteredEventsLiveData.postValue(new ArrayList<>(filtered));
                 continue;
@@ -332,5 +336,25 @@ public class EventViewModel {
                 }
             });
         }
+    }
+
+    private String searchQuery = "";
+
+    public void setSearchQuery(String query) {
+        this.searchQuery = query == null ? "" : query.trim().toLowerCase();
+    }
+
+    private boolean matchesSearch(Event event) {
+        if (searchQuery.isEmpty()) return true;
+
+        String name = event.getName() != null ? event.getName().toLowerCase() : "";
+        String location = event.getLocation() != null ? event.getLocation().toLowerCase() : "";
+        String category = event.getCategory() != null ? event.getCategory().toLowerCase() : "";
+        String description = event.getDescription() != null ? event.getDescription().toLowerCase() : "";
+
+        return name.contains(searchQuery)
+                || location.contains(searchQuery)
+                || category.contains(searchQuery)
+                ||description.contains(searchQuery);
     }
 }

@@ -47,6 +47,7 @@ public class EventViewModelTest {
     public void setUp() {
         MockitoAnnotations.openMocks(this);
         eventViewModel = new EventViewModel(mockRepository);
+        eventViewModel.setSearchQuery(""); // resets the searchQuery before each test
     }
 
     // Helper to build Calendar date at UTC midnight
@@ -221,5 +222,142 @@ public class EventViewModelTest {
         List<Event> result = eventViewModel.getFilteredEventsLiveData().getValue();
         assertNotNull(result);
         assertEquals(1, result.size());
+    }
+
+    // Tests for Search Query
+    @Test
+    public void testFilterEventsSearchQueryMatchesName() {
+        Event event = makeEvent("03/25/2026, 10:00", "01/01/2026, 00:00", "12/31/2026, 00:00", 10);
+        event.setName("Music Festival");
+        List<Event> events = Arrays.asList(event);
+
+        doAnswer(invocation -> {
+            ModelCallback<List<Event>> callback = invocation.getArgument(0);
+            callback.onCallback(events);
+            return null;
+        }).when(mockRepository).getEvents(any());
+
+        eventViewModel.loadAllEvents();
+        eventViewModel.setSearchQuery("music");
+        eventViewModel.filterEvents(mockUser, null, null, false);
+
+        List<Event> result = eventViewModel.getFilteredEventsLiveData().getValue();
+        assertNotNull(result);
+        assertEquals(1, result.size());
+    }
+
+    @Test
+    public void testFilterEventsSearchQueryMatchesLocation() {
+        Event event = makeEvent("03/25/2026, 10:00", "01/01/2026, 00:00", "12/31/2026, 00:00", 10);
+        event.setLocation("Edmonton");
+        List<Event> events = Arrays.asList(event);
+
+        doAnswer(invocation -> {
+            ModelCallback<List<Event>> callback = invocation.getArgument(0);
+            callback.onCallback(events);
+            return null;
+        }).when(mockRepository).getEvents(any());
+
+        eventViewModel.loadAllEvents();
+        eventViewModel.setSearchQuery("edmonton");
+        eventViewModel.filterEvents(mockUser, null, null, false);
+
+        List<Event> result = eventViewModel.getFilteredEventsLiveData().getValue();
+        assertNotNull(result);
+        assertEquals(1, result.size());
+    }
+
+    @Test
+    public void testFilterEventsSearchQueryMatchesCategory() {
+        Event event = makeEvent("03/25/2026, 10:00", "01/01/2026, 00:00", "12/31/2026, 00:00", 10);
+        event.setCategory("Technology");
+        List<Event> events = Arrays.asList(event);
+
+        doAnswer(invocation -> {
+            ModelCallback<List<Event>> callback = invocation.getArgument(0);
+            callback.onCallback(events);
+            return null;
+        }).when(mockRepository).getEvents(any());
+
+        eventViewModel.loadAllEvents();
+        eventViewModel.setSearchQuery("technology");
+        eventViewModel.filterEvents(mockUser, null, null, false);
+
+        List<Event> result = eventViewModel.getFilteredEventsLiveData().getValue();
+        assertNotNull(result);
+        assertEquals(1, result.size());
+    }
+
+    @Test
+    public void testFilterEventsSearchQueryNoMatchIsExcluded() {
+        Event event = makeEvent("03/25/2026, 10:00", "01/01/2026, 00:00", "12/31/2026, 00:00", 10);
+        event.setName("Music Festival");
+        event.setLocation("Edmonton");
+        event.setCategory("Music");
+        List<Event> events = Arrays.asList(event);
+
+        doAnswer(invocation -> {
+            ModelCallback<List<Event>> callback = invocation.getArgument(0);
+            callback.onCallback(events);
+            return null;
+        }).when(mockRepository).getEvents(any());
+
+        eventViewModel.loadAllEvents();
+        eventViewModel.setSearchQuery("basketball");
+        eventViewModel.filterEvents(mockUser, null, null, false);
+
+        List<Event> result = eventViewModel.getFilteredEventsLiveData().getValue();
+        assertNotNull(result);
+        assertEquals(0, result.size());
+    }
+
+    @Test
+    public void testFilterEventsSearchAndAvailabilityCombined() {
+        Event event = makeEvent("03/25/2026, 10:00", "01/01/2026, 00:00", "12/31/2026, 00:00", 10);
+        event.setName("Music Festival");
+        List<Event> events = Arrays.asList(event);
+
+        doAnswer(invocation -> {
+            ModelCallback<List<Event>> callback = invocation.getArgument(0);
+            callback.onCallback(events);
+            return null;
+        }).when(mockRepository).getEvents(any());
+
+        eventViewModel.loadAllEvents();
+        eventViewModel.setSearchQuery("music");
+
+        Calendar start = makeCalendar(2026, 3, 23);
+        Calendar end = makeCalendar(2026, 3, 28);
+
+        eventViewModel.filterEvents(mockUser, start, end, false);
+
+        List<Event> result = eventViewModel.getFilteredEventsLiveData().getValue();
+        assertNotNull(result);
+        assertEquals(1, result.size());
+    }
+
+    @Test
+    public void testFilterEventsSearchAndAvailabilityNoMatch() {
+        Event event = makeEvent("03/25/2026, 10:00", "01/01/2026, 00:00", "12/31/2026, 00:00", 10);
+        event.setName("Music Festival");
+        List<Event> events = Arrays.asList(event);
+
+        doAnswer(invocation -> {
+            ModelCallback<List<Event>> callback = invocation.getArgument(0);
+            callback.onCallback(events);
+            return null;
+        }).when(mockRepository).getEvents(any());
+
+        eventViewModel.loadAllEvents();
+        eventViewModel.setSearchQuery("basketball");
+
+        Calendar start = makeCalendar(2026, 3, 23);
+        Calendar end = makeCalendar(2026, 3, 28);
+
+        eventViewModel.filterEvents(mockUser, start, end, false);
+
+        List<Event> result = eventViewModel.getFilteredEventsLiveData().getValue();
+        assertNotNull(result);
+        assertEquals(0, result.size());
     }
 }

@@ -2,11 +2,14 @@ package com.example.turing_eventlottery.view;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
@@ -54,6 +57,7 @@ public class BrowseEventsView extends AppCompatActivity {
     private TextView availabilitySpinner;
     private TextView clearFilterButton;
     private CheckBox openWaitlistCheckbox;
+    private EditText searchEditText;
 
     private View manageContainer;
     private RecyclerView myEventsRecyclerView;
@@ -141,6 +145,30 @@ public class BrowseEventsView extends AppCompatActivity {
         openWaitlistCheckbox.setOnCheckedChangeListener((buttonView, isChecked) -> {
             onlyWithOpenWaitlists = isChecked;
             loadFilteredEvents();
+        });
+        searchEditText = findViewById(R.id.searchEditText);
+        findViewById(R.id.searchButtonCard).setOnClickListener(v -> {
+            if (searchEditText.getVisibility() == View.GONE) {
+                searchEditText.setVisibility(View.VISIBLE);
+                searchEditText.requestFocus();
+            } else {
+                searchEditText.setVisibility(View.GONE);
+                searchEditText.setText("");
+                eventViewModel.setSearchQuery("");
+                loadFilteredEvents();
+            }
+        });
+
+        searchEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                eventViewModel.setSearchQuery(s.toString());
+                loadFilteredEvents();
+            }
+            @Override
+            public void afterTextChanged(Editable s) {}
         });
 
         availabilitySpinner = findViewById(R.id.browseEventsAvailabilitySpinner);
@@ -249,7 +277,7 @@ public class BrowseEventsView extends AppCompatActivity {
     private void loadFilteredEvents() {
         // Get current user first
         userViewModel.loadUser(user -> {
-            if (user != null && availabilityStart != null && availabilityEnd != null || onlyWithOpenWaitlists) {
+            if (user != null && availabilityStart != null && availabilityEnd != null || onlyWithOpenWaitlists || !eventViewModel.getSearchQuery().isEmpty()) {
                 eventViewModel.filterEvents(user, availabilityStart, availabilityEnd, onlyWithOpenWaitlists);
             } else {
                 loadAllEvents();

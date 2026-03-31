@@ -75,6 +75,7 @@
                         android:textColor="@color/headerText" />
 
                     <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/searchButtonCard"
                         android:layout_width="36dp"
                         android:layout_height="36dp"
                         app:cardBackgroundColor="@color/secondaryBackground"
@@ -85,12 +86,27 @@
                             android:id="@+id/searchButton"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
+                            android:contentDescription="@string/search_icon_for_keyword_search"
                             android:scaleType="centerInside"
                             android:padding="8dp"
                             android:src="@drawable/baseline_search_24"
                             app:tint="@color/headerText" />
                     </com.google.android.material.card.MaterialCardView>
                 </LinearLayout>
+
+                <EditText
+                    android:id="@+id/searchEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginTop="4dp"
+                    android:background="@drawable/custom_background_box"
+                    android:hint="@string/keyword_search"
+                    android:inputType="text"
+                    android:imeOptions="actionSearch"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:singleLine="true"
+                    android:visibility="gone" />
 
                 <LinearLayout
                     android:id="@+id/spinnersBar"
