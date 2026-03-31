@@ -30,7 +30,7 @@ jobs:
         run: chmod +x turingEventLottery/gradlew
 
       - name: Run unit tests
-        run: ./gradlew test
+        run: ./gradlew testDebugUnitTest
         working-directory: turingEventLottery
 
       - name: Upload test results
