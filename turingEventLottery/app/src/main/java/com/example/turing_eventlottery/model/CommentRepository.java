@@ -7,6 +7,7 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.WriteBatch;
@@ -183,6 +184,35 @@ public class CommentRepository {
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Error getting comments", e);
                     callback.onCallback(null);
+                });
+    }
+
+    /**
+     * Sets up a real-time listener for comments of a specific event.
+     *
+     * @param eventId the event ID
+     * @param sortBy the field to sort by
+     * @param direction the sort direction
+     * @param callback callback returning an updated list of comments
+     * @return a ListenerRegistration to be cleared when no longer needed
+     */
+    public ListenerRegistration listenForComments(String eventId, String sortBy, Query.Direction direction, ModelCallback<List<Comment>> callback) {
+        return db.collection("events").document(eventId).collection("comments")
+                .orderBy(sortBy, direction)
+                .addSnapshotListener((value, error) -> {
+                    if (error != null) {
+                        Log.e(TAG, "Listen failed.", error);
+                        callback.onCallback(null);
+                        return;
+                    }
+
+                    List<Comment> comments = new ArrayList<>();
+                    if (value != null) {
+                        for (QueryDocumentSnapshot document : value) {
+                            comments.add(document.toObject(Comment.class));
+                        }
+                    }
+                    callback.onCallback(comments);
                 });
     }
 

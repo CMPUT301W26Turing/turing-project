@@ -4,6 +4,7 @@ import com.example.turing_eventlottery.model.Event;
 import com.example.turing_eventlottery.model.ModelCallback;
 import com.example.turing_eventlottery.model.EventRepository;
 import com.example.turing_eventlottery.model.User;
+import com.google.firebase.firestore.ListenerRegistration;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -51,6 +52,16 @@ public class EventViewModel {
      */
     public void getEvents(ModelCallback<List<Event>> callback) {
         eventRepository.getEvents(callback);
+    }
+
+    /**
+     * Sets up a real-time listener for all events.
+     *
+     * @param callback callback returning an updated list of events
+     * @return a ListenerRegistration to be cleared when no longer needed
+     */
+    public ListenerRegistration listenForEvents(ModelCallback<List<Event>> callback) {
+        return eventRepository.listenForEvents(callback);
     }
 
     /**

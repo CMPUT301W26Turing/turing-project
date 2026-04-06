@@ -40,6 +40,7 @@ import com.google.android.gms.location.Priority;
 import com.google.android.gms.tasks.CancellationTokenSource;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
@@ -88,6 +89,8 @@ public class EventDetailsView extends AppCompatActivity {
     private String currentParentId = null;
     private String currentSortBy = "timestamp";
     private Query.Direction currentSortDirection = Query.Direction.ASCENDING;
+
+    private ListenerRegistration commentsListener;
 
     private FusedLocationProviderClient fusedLocationClient;
 
@@ -155,7 +158,7 @@ public class EventDetailsView extends AppCompatActivity {
             eventViewModel.getEventById(eventId, event -> {
                 this.currentEvent = event;
                 displayEvent(event);
-                loadComments();
+                startListeningForComments();
             });
 
             // Enable waitlist button only if registration is open
@@ -323,7 +326,6 @@ public class EventDetailsView extends AppCompatActivity {
                     commentInput.setText("");
                     currentParentId = null;
                     replyPreviewArea.setVisibility(View.GONE);
-                    loadComments();
                 } else {
                     Toast.makeText(this, "Failed to post comment", Toast.LENGTH_SHORT).show();
                 }
@@ -356,7 +358,7 @@ public class EventDetailsView extends AppCompatActivity {
                     currentSortDirection = Query.Direction.DESCENDING;
                     break;
             }
-            loadComments();
+            startListeningForComments();
             return true;
         });
         popup.show();
@@ -428,29 +430,40 @@ public class EventDetailsView extends AppCompatActivity {
         });
     }
 
-    private void loadComments() {
-        commentRepository.getCommentsByEvent(eventId, currentSortBy, currentSortDirection, comments -> {
-            commentsList.removeAllViews();
-            if (comments != null && !comments.isEmpty()) {
-                Map<String, List<Comment>> childrenMap = new HashMap<>();
-                List<Comment> rootComments = new ArrayList<>();
-                
-                for (Comment c : comments) {
-                    if (c.getParentId() == null) {
-                        rootComments.add(c);
-                    } else {
-                        if (!childrenMap.containsKey(c.getParentId())) {
-                            childrenMap.put(c.getParentId(), new ArrayList<>());
-                        }
-                        childrenMap.get(c.getParentId()).add(c);
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (commentsListener != null) {
+            commentsListener.remove();
+        }
+    }
+
+    private void startListeningForComments() {
+        if (commentsListener != null) commentsListener.remove();
+        commentsListener = commentRepository.listenForComments(eventId, currentSortBy, currentSortDirection, this::displayComments);
+    }
+
+    private void displayComments(List<Comment> comments) {
+        commentsList.removeAllViews();
+        if (comments != null && !comments.isEmpty()) {
+            Map<String, List<Comment>> childrenMap = new HashMap<>();
+            List<Comment> rootComments = new ArrayList<>();
+            
+            for (Comment c : comments) {
+                if (c.getParentId() == null) {
+                    rootComments.add(c);
+                } else {
+                    if (!childrenMap.containsKey(c.getParentId())) {
+                        childrenMap.put(c.getParentId(), new ArrayList<>());
                     }
-                }
-                
-                for (Comment root : rootComments) {
-                    renderCommentAndChildren(root, childrenMap, 0);
+                    childrenMap.get(c.getParentId()).add(c);
                 }
             }
-        });
+            
+            for (Comment root : rootComments) {
+                renderCommentAndChildren(root, childrenMap, 0);
+            }
+        }
     }
 
     private void renderCommentAndChildren(Comment comment, Map<String, List<Comment>> childrenMap, int depth) {
@@ -521,47 +534,12 @@ public class EventDetailsView extends AppCompatActivity {
 
         likeButton.setOnClickListener(v -> {
             if (currentUser == null || "Guest".equals(currentUser.getUserName())) return;
-            commentRepository.toggleLikeComment(currentUser.getUserId(), comment, success -> {
-                if (success) {
-                    boolean nowLiked = !comment.getLikedBy().contains(currentUser.getUserId());
-                    if (nowLiked) {
-                        if (comment.getDislikedBy().contains(currentUser.getUserId())) {
-                            comment.getDislikedBy().remove(currentUser.getUserId());
-                            dislikeButton.setImageTintList(ColorStateList.valueOf(getColor(R.color.headerSubtext)));
-                        }
-                        comment.getLikedBy().add(currentUser.getUserId());
-                        comment.setLikes(comment.getLikes() + 1);
-                        likeButton.setImageTintList(ColorStateList.valueOf(getColor(R.color.primaryBlue)));
-                    } else {
-                        comment.getLikedBy().remove(currentUser.getUserId());
-                        comment.setLikes(comment.getLikes() == 0 ? 0 : comment.getLikes() - 1);
-                        likeButton.setImageTintList(ColorStateList.valueOf(getColor(R.color.headerSubtext)));
-                    }
-                    likeCountView.setText(String.valueOf(comment.getLikes()));
-                }
-            });
+            commentRepository.toggleLikeComment(currentUser.getUserId(), comment, success -> { });
         });
 
         dislikeButton.setOnClickListener(v -> {
             if (currentUser == null || "Guest".equals(currentUser.getUserName())) return;
-            commentRepository.toggleDislikeComment(currentUser.getUserId(), comment, success -> {
-                if (success) {
-                    boolean nowDisliked = !comment.getDislikedBy().contains(currentUser.getUserId());
-                    if (nowDisliked) {
-                        if (comment.getLikedBy().contains(currentUser.getUserId())) {
-                            comment.getLikedBy().remove(currentUser.getUserId());
-                            comment.setLikes(comment.getLikes() == 0 ? 0 : comment.getLikes() - 1);
-                            likeButton.setImageTintList(ColorStateList.valueOf(getColor(R.color.headerSubtext)));
-                            likeCountView.setText(String.valueOf(comment.getLikes()));
-                        }
-                        comment.getDislikedBy().add(currentUser.getUserId());
-                        dislikeButton.setImageTintList(ColorStateList.valueOf(getColor(R.color.red)));
-                    } else {
-                        comment.getDislikedBy().remove(currentUser.getUserId());
-                        dislikeButton.setImageTintList(ColorStateList.valueOf(getColor(R.color.headerSubtext)));
-                    }
-                }
-            });
+            commentRepository.toggleDislikeComment(currentUser.getUserId(), comment, success -> { });
         });
 
         boolean isOwner = currentUser != null && comment.getUserId().equals(currentUser.getUserId());
@@ -603,7 +581,6 @@ public class EventDetailsView extends AppCompatActivity {
                     commentRepository.deleteComment(comment, success -> {
                         if (success) {
                             Toast.makeText(this, "Comment deleted", Toast.LENGTH_SHORT).show();
-                            loadComments();
                         } else {
                             Toast.makeText(this, "Failed to delete comment", Toast.LENGTH_SHORT).show();
                         }
