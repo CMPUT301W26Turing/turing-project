@@ -13,13 +13,14 @@ import com.example.turing_eventlottery.R;
 import com.example.turing_eventlottery.model.User;
 import com.example.turing_eventlottery.viewmodel.UserViewModel;
 import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.chip.Chip;
 
 import java.util.List;
 
 /**
- * Activity for browsing all user profiles/
+ * Activity for browsing all user profiles.
  * <p>
- *     Displays a list of all users with basic information (name/email/ID).
+ *     Displays a list of all users with basic information (name, ID, role).
  *     Supports navigation to detailed profile view.
  * </p>
  */
@@ -63,21 +64,22 @@ public class BrowseProfilesView extends AppCompatActivity {
 
         LayoutInflater inflater = LayoutInflater.from(this);
         for (User user : users) {
-            MaterialCardView card = (MaterialCardView) inflater.inflate(R.layout.browse_events_card, profilesContainer, false);
-            
-            // Reusing browse_events_card but mapping fields to user data
-            TextView nameText = card.findViewById(R.id.eventName);
-            TextView infoText = card.findViewById(R.id.locationText);
-            TextView subInfoText = card.findViewById(R.id.dateTimeText);
-            
+            MaterialCardView card = (MaterialCardView) inflater.inflate(
+                    R.layout.browse_organizers_card, profilesContainer, false);
+
+            TextView nameText = card.findViewById(R.id.organizerCardName);
+            TextView emailText = card.findViewById(R.id.organizerCardEmail);
+            Chip roleChip = card.findViewById(R.id.organizerCardStatus);
+
+            // Fallback if missing name/ID
             String displayName = user.getUserName();
             if (displayName == null || displayName.isEmpty()) {
                 displayName = "Anonymous User";
             }
             nameText.setText(displayName);
-            infoText.setText("ID: " + user.getUserId());
-            subInfoText.setText(user.isAdmin() ? "Role: Admin" : "Role: Entrant");
-            
+            emailText.setText("ID: " + user.getUserId());
+            roleChip.setText(user.isAdmin() ? "Role: Admin" : "Role: Entrant");
+
             card.setOnClickListener(v -> {
                 Intent intent = new Intent(this, ProfileDetailsView.class);
                 intent.putExtra("USER_ID", user.getUserId());
