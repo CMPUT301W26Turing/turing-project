@@ -133,10 +133,10 @@ public class UserDashboardView extends AppCompatActivity {
             Intent intent = new Intent(UserDashboardView.this, MyNotificationsView.class);
             startActivity(intent);
         });
-//        myHistory.setOnClickListener(v -> {
-//            Intent intent = new Intent(this, MyHistory.class);
-//            startActivity(intent);
-//        });
+        myHistory.setOnClickListener(v -> {
+            Intent intent = new Intent(this, MyHistory.class);
+            startActivity(intent);
+        });
         myProfile.setOnClickListener(v -> {
             Intent intent = new Intent(UserDashboardView.this, MyProfileView.class);
             startActivity(intent);
