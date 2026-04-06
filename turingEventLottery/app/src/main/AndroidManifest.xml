@@ -42,6 +42,9 @@
             android:name=".view.MyEventsView"
             android:exported="false" />
         <activity
+            android:name=".view.MyHistory"
+            android:exported="false" />
+        <activity
             android:name=".view.EventDetailsView"
             android:exported="false" />
         <activity

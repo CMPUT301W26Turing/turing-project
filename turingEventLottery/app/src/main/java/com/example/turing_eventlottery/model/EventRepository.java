@@ -326,7 +326,6 @@ public class EventRepository {
     public void removeUserFromWaitlist(String eventId, User user, ModelCallback<Boolean> callback) {
         eventsCollection.document(eventId).collection("waitlist").document(user.getUserId()).delete()
                 .addOnSuccessListener(v -> {
-                    user.removeAssociatedEvent(eventId);
                     userRepository.addOrUpdateUser(user);
                     callback.onCallback(true);
                 })
