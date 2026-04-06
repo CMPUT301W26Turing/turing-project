@@ -2,17 +2,20 @@ package com.example.turing_eventlottery.view;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.util.Pair;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -24,12 +27,17 @@ import com.example.turing_eventlottery.viewmodel.UserViewModel;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.card.MaterialCardView;
 import com.bumptech.glide.Glide;
+import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.firestore.ListenerRegistration;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
 
 /**
  * View class for browsing and managing events.
@@ -44,6 +52,10 @@ public class BrowseEventsView extends AppCompatActivity {
     private LinearLayout eventsContainer;
     private TextView resultsText;
     private TextView upcomingLotteries;
+    private TextView availabilitySpinner;
+    private TextView clearFilterButton;
+    private CheckBox openWaitlistCheckbox;
+    private EditText searchEditText;
 
     private View manageContainer;
     private RecyclerView myEventsRecyclerView;
@@ -53,6 +65,9 @@ public class BrowseEventsView extends AppCompatActivity {
     private EventRepository eventRepository;
     private UserViewModel userViewModel;
     private boolean fromAdmin;
+    private Calendar availabilityStart = null;
+    private Calendar availabilityEnd = null;
+    private boolean onlyWithOpenWaitlists = false;
 
     private ListenerRegistration eventsListener;
 
@@ -68,16 +83,96 @@ public class BrowseEventsView extends AppCompatActivity {
         fromAdmin = getIntent().getBooleanExtra("fromAdmin", false);
 
         initViews();
-        setupSpinners();
         setupTabs();
         setupNavigation();
         startListeningForEvents();
+
+        // Observe LiveData
+        eventViewModel.getAllEventsLiveData().observe(this, this::displayEvents);
+        eventViewModel.getFilteredEventsLiveData().observe(this, events -> {
+            if (events != null) {
+                displayEvents(events);
+            } else {
+                Toast.makeText(this, "Failed to load events", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        // Availability Date Picker
+        availabilitySpinner.setOnClickListener(v -> {
+            MaterialDatePicker<Pair<Long, Long>> picker = MaterialDatePicker.Builder.dateRangePicker()
+                    .setTitleText("Select your availability")
+                    .setNegativeButtonText("Clear")
+                    .build();
+            picker.show(getSupportFragmentManager(), "DATE_RANGE_PICKER");
+
+            picker.addOnNegativeButtonClickListener(cleared -> clearAvailabilityFilter());
+            picker.addOnPositiveButtonClickListener((Pair<Long, Long> dateSelection) -> {
+                if (dateSelection != null) {
+                    availabilityStart = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+                    availabilityStart.setTimeInMillis(dateSelection.first);
+
+                    availabilityEnd = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+                    availabilityEnd.setTimeInMillis(dateSelection.second);
+
+                    clearFilterButton.setVisibility(View.VISIBLE);
+
+                    // Update UI
+                    SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy", Locale.getDefault());
+                    availabilitySpinner.setText(
+                            formatter.format(availabilityStart.getTime()) + " - " +
+                                    formatter.format(availabilityEnd.getTime())
+                    );
+
+                    userViewModel.loadUser(user -> {
+                        if (user != null) {
+                            eventViewModel.filterEvents(user, availabilityStart, availabilityEnd, onlyWithOpenWaitlists);
+                        }
+                    });
+                }
+            });
+        });
     }
 
     private void initViews() {
         browseContainer = findViewById(R.id.browseContainer);
         manageContainer = findViewById(R.id.manageContainer);
 
+        clearFilterButton = findViewById(R.id.clearFilterButton);
+        clearFilterButton.setOnClickListener(v -> {
+            clearAvailabilityFilter();
+            clearFilterButton.setVisibility(View.GONE);
+        });
+        openWaitlistCheckbox = findViewById(R.id.openWaitlistCheckbox);
+        openWaitlistCheckbox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            onlyWithOpenWaitlists = isChecked;
+            loadFilteredEvents();
+        });
+        searchEditText = findViewById(R.id.searchEditText);
+        findViewById(R.id.searchButtonCard).setOnClickListener(v -> {
+            if (searchEditText.getVisibility() == View.GONE) {
+                searchEditText.setVisibility(View.VISIBLE);
+                searchEditText.requestFocus();
+            } else {
+                searchEditText.setVisibility(View.GONE);
+                searchEditText.setText("");
+                eventViewModel.setSearchQuery("");
+                loadFilteredEvents();
+            }
+        });
+
+        searchEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                eventViewModel.setSearchQuery(s.toString());
+                loadFilteredEvents();
+            }
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+
+        availabilitySpinner = findViewById(R.id.browseEventsAvailabilitySpinner);
         eventsContainer = findViewById(R.id.eventsContainer);
         resultsText = findViewById(R.id.resultsText);
         upcomingLotteries = findViewById(R.id.upcomingText);
@@ -88,21 +183,6 @@ public class BrowseEventsView extends AppCompatActivity {
         myEventsRecyclerView.setAdapter(myEventsAdapter);
 
         findViewById(R.id.backButton).setOnClickListener(v -> finish());
-    }
-
-    private void setupSpinners() {
-        Spinner interestsSpinner = findViewById(R.id.browseEventsInterestsSpinner);
-        Spinner availabilitySpinner = findViewById(R.id.browseEventsAvailabilitySpinner);
-
-        ArrayAdapter<CharSequence> interestsAdapter = ArrayAdapter.createFromResource(this,
-                R.array.browse_events_interests_spinner, R.layout.custom_spinner_item);
-        interestsAdapter.setDropDownViewResource(R.layout.custom_spinner_dropdown_item);
-        interestsSpinner.setAdapter(interestsAdapter);
-
-        ArrayAdapter<CharSequence> availabilityAdapter = ArrayAdapter.createFromResource(this,
-                R.array.browse_events_availability_spinner, R.layout.custom_spinner_item);
-        availabilityAdapter.setDropDownViewResource(R.layout.custom_spinner_dropdown_item);
-        availabilitySpinner.setAdapter(availabilityAdapter);
     }
 
     private void setupNavigation() {
@@ -160,7 +240,6 @@ public class BrowseEventsView extends AppCompatActivity {
     private void showBrowseView() {
         browseContainer.setVisibility(View.VISIBLE);
         manageContainer.setVisibility(View.GONE);
-        loadAllEvents();
     }
 
     private void showManageView() {
@@ -218,6 +297,24 @@ public class BrowseEventsView extends AppCompatActivity {
                 Toast.makeText(this, "Failed to load events", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void loadFilteredEvents() {
+        // Get current user first
+        userViewModel.loadUser(user -> {
+            if (user != null && availabilityStart != null && availabilityEnd != null || onlyWithOpenWaitlists || !eventViewModel.getSearchQuery().isEmpty()) {
+                eventViewModel.filterEvents(user, availabilityStart, availabilityEnd, onlyWithOpenWaitlists);
+            } else {
+                loadAllEvents();
+            }
+        });
+    }
+
+    private void clearAvailabilityFilter() {
+        availabilityStart = null;
+        availabilityEnd = null;
+        availabilitySpinner.setText("Select Availability");
+        loadAllEvents();
     }
 
     private void displayEvents(List<Event> events) {

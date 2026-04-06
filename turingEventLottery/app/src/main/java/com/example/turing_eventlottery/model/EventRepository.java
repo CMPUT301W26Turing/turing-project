@@ -5,6 +5,9 @@ import android.util.Log;
 import android.util.Pair;
 import android.net.Uri;
 
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -355,6 +358,23 @@ public class EventRepository {
                 });
     }
 
+    public LiveData<Integer> getWaitlistSize(String eventId) {
+        MutableLiveData<Integer> waitlistSize = new MutableLiveData<>();
+
+        eventsCollection
+                .document(eventId)
+                .collection("waitlist")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    int size = queryDocumentSnapshots.size();
+                    waitlistSize.setValue(size);
+                })
+                .addOnFailureListener(e -> {
+                    waitlistSize.setValue(0);
+                });
+        return waitlistSize;
+    }
+
     /**
      * Updates the waitlist status of a specific user for an event.
      *
@@ -598,7 +618,38 @@ public class EventRepository {
                 .addOnFailureListener(e -> callback.onCallback("None"));
     }
 
-
+    /**
+     * Deletes an event poster image from Firebase Storage and removes the URL from the event document.
+     *
+     * @param eventId the ID of the event whose poster is being deleted
+     * @param posterUrl the URL of the poster to delete
+     * @param callback callback returning true if successful, false otherwise
+     */
+    public void deleteEventPoster(String eventId, String posterUrl, ModelCallback<Boolean> callback) {
+        try {
+            StorageReference imageRef = FirebaseStorage.getInstance("gs://turingeventlottery.firebasestorage.app")
+                    .getReferenceFromUrl(posterUrl);
+            imageRef.delete()
+                    .addOnSuccessListener(v -> {
+                        eventsCollection.document(eventId).update("posterUrl", null)
+                                .addOnSuccessListener(u -> callback.onCallback(true))
+                                .addOnFailureListener(e -> {
+                                    Log.e(TAG, "Error removing poster URL from event", e);
+                                    callback.onCallback(true);
+                                });
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e(TAG, "Error deleting image from storage", e);
+                        eventsCollection.document(eventId).update("posterUrl", null)
+                                .addOnSuccessListener(u -> callback.onCallback(true))
+                                .addOnFailureListener(e2 -> callback.onCallback(false));
+                    });
+        } catch (IllegalArgumentException e) {
+            eventsCollection.document(eventId).update("posterUrl", null)
+                    .addOnSuccessListener(u -> callback.onCallback(true))
+                    .addOnFailureListener(e2 -> callback.onCallback(false));
+        }
+    }
 
 
 

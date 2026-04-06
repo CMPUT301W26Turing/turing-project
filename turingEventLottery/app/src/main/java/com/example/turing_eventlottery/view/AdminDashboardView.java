@@ -67,6 +67,12 @@ public class AdminDashboardView extends AppCompatActivity {
             startActivity(intent);
         });
 
+        MaterialCardView browseImagesButton = findViewById(R.id.sendNotificationButton);
+        browseImagesButton.setOnClickListener(v -> {
+            Intent intent = new Intent(AdminDashboardView.this, BrowseImagesView.class);
+            startActivity(intent);
+        });
+
         MaterialCardView notificationLogsButton = findViewById(R.id.notificationLogsButton);
         notificationLogsButton.setOnClickListener(v -> {
             Intent intent = new Intent(AdminDashboardView.this, BrowseNotificationLogsView.class);

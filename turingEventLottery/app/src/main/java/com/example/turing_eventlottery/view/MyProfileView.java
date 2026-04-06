@@ -2,12 +2,16 @@ package com.example.turing_eventlottery.view;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.example.turing_eventlottery.R;
 import com.example.turing_eventlottery.model.User;
@@ -30,6 +34,7 @@ public class MyProfileView extends AppCompatActivity {
     private ImageView profilePicture;
 
     private User currentUser;
+    private UserViewModel userViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +46,8 @@ public class MyProfileView extends AppCompatActivity {
         emailText = findViewById(R.id.emailValue);
         phoneText = findViewById(R.id.phoneValue);
         profilePicture = findViewById(R.id.profilePicture);
+        MaterialButton deleteProfileButton = findViewById(R.id.deleteProfileButton);
+        deleteProfileButton.setOnClickListener(v -> showDeleteProfileConfirmation());
 
         UserViewModel userViewModel = new UserViewModel(this);
         userViewModel.loadUser(user -> {
@@ -48,6 +55,12 @@ public class MyProfileView extends AppCompatActivity {
             fullNameText.setText(user.getUserName());
             emailText.setText(user.getUserEmail());
             phoneText.setText(user.getUserPhoneNumber());
+
+            if ("Guest".equals(user.getUserName())) {
+                deleteProfileButton.setVisibility(View.GONE);
+            } else {
+                deleteProfileButton.setVisibility(View.VISIBLE);
+            }
 
             // TODO: load profile picture from stored URL with glide
         });
@@ -106,6 +119,57 @@ public class MyProfileView extends AppCompatActivity {
         fabCreate.setOnClickListener(v -> {
             Intent intent = new Intent(this, CreateEventView.class);
             startActivity(intent);
+        });
+    }
+
+    private void showDeleteProfileConfirmation() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this)
+                .setTitle("Delete Profile")
+                .setMessage("Are you sure you want to delete your Profile? This action cannot be undone.")
+                .setNegativeButton("Cancel", null)
+                .setPositiveButton("Confirm", null);
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+
+        android.widget.Button confirmButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+        confirmButton.setEnabled(false);
+        confirmButton.setText("Delete (5)");
+
+        new android.os.CountDownTimer(5000, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                confirmButton.setText("Delete (" + (millisUntilFinished / 1000) + ")");
+            }
+
+            @Override
+            public void onFinish() {
+                confirmButton.setEnabled(true);
+                confirmButton.setText("Delete");
+            }
+        }.start();
+
+        confirmButton.setOnClickListener(V -> {
+            dialog.dismiss();
+            confirmButton.setEnabled(false);
+
+            if (currentUser == null) {
+                Toast.makeText(this, "User not loaded, please try again", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            userViewModel.deleteUser(currentUser.getUserId(), success -> {
+                if (success) {
+                    Toast.makeText(this, "Profile deleted successfully", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(this, UserDashboardView.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    Toast.makeText(this, "Failed to delete profile, please try again", Toast.LENGTH_SHORT).show();
+                    confirmButton.setEnabled(true);
+                }
+            });
         });
     }
 }

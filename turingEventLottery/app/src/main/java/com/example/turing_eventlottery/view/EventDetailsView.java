@@ -8,7 +8,6 @@ import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -21,6 +20,7 @@ import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
@@ -80,6 +80,10 @@ public class EventDetailsView extends AppCompatActivity {
     private TextView replyingToText;
     private ImageButton cancelReplyButton;
 
+    private LinearLayout drawInfoTrigger;
+    private CardView drawInfoCard;
+    private ImageButton drawInfoCloseButton;
+
     private boolean isOnWaitlist;
     private String eventId;
     private boolean fromAdmin;
@@ -138,6 +142,21 @@ public class EventDetailsView extends AppCompatActivity {
         replyPreviewArea = findViewById(R.id.replyPreviewArea);
         replyingToText = findViewById(R.id.replyingToText);
         cancelReplyButton = findViewById(R.id.cancelReplyButton);
+
+        drawInfoTrigger = findViewById(R.id.drawInfoTrigger);
+        drawInfoCard = findViewById(R.id.drawInfoCard);
+        drawInfoCloseButton = findViewById(R.id.drawInfoCloseButton);
+
+        drawInfoTrigger.setOnClickListener(v -> {
+            drawInfoCard.setVisibility(View.VISIBLE);
+            drawInfoCard.setAlpha(0f);
+            drawInfoCard.animate().alpha(1f).setDuration(200).start();
+        });
+
+        drawInfoCloseButton.setOnClickListener(v -> {
+            drawInfoCard.animate().alpha(0f).setDuration(150).withEndAction(() -> drawInfoCard.setVisibility(View.GONE)).start();
+        });
+
 
         eventViewModel = new EventViewModel();
         userViewModel = new UserViewModel(this);
