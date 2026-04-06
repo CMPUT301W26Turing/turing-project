@@ -293,6 +293,13 @@ public class EventViewModel {
         });
     }
 
+    /**
+     * Checks whether registration for the given event is currently open.
+     * Parses the event's registration start and end times and compares them with the current time.
+     *
+     * @param event the Event object to check
+     * @return true if the current time is within the registration start and end times; false otherwise
+     */
     private boolean isRegOpen(Event event) {
         try {
             SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy, HH:mm", Locale.getDefault());
@@ -306,6 +313,21 @@ public class EventViewModel {
         }
     }
 
+    /**
+     * Filters the list of events based on the given criteria and posts the results to {@link #filteredEventsLiveData}.
+     * The filtering logic is:
+     * <ul>
+     *     <li>Matches events within the specified date range</li>
+     *     <li>Matches events based on the search query (see {@link #matchesSearch(Event)})</li>
+     *     <li>If {@code onlyWithOpenWaitlist} is true, only includes events whose waitlist
+     *         is not full and registration is currently open (checked asynchronously)</li>
+     * </ul>
+     *
+     * @param user the User for whom events are being filtered (may be used for additional logic)
+     * @param startRange the start of the date range to filter events
+     * @param endRange the end of the date range to filter events
+     * @param onlyWithOpenWaitlist true to only include events with open waitlists; false to include all matching events
+     */
     public void filterEvents(User user, Calendar startRange, Calendar endRange, boolean onlyWithOpenWaitlist) {
         List<Event> allEvents = allEventsLiveData.getValue();
         if (allEvents == null) return;
@@ -351,6 +373,14 @@ public class EventViewModel {
 
     private String searchQuery = "";
 
+    /**
+     * Sets the search query used to filter events.
+     *
+     * This query is used in {@link #matchesSearch(Event)} to determine if an event matches
+     * the user's search criteria.
+     *
+     * @param query the search query string; null values are treated as an empty string
+     */
     public void setSearchQuery(String query) {
         this.searchQuery = query == null ? "" : query.trim().toLowerCase();
     }

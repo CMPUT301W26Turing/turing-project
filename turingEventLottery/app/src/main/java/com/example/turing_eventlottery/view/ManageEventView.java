@@ -37,7 +37,7 @@ import com.example.turing_eventlottery.model.NotificationRepository;
 import com.example.turing_eventlottery.model.QRCodeModel;
 import com.example.turing_eventlottery.model.User;
 import com.example.turing_eventlottery.viewmodel.EventViewModel;
-import com.example.turing_eventlottery.viewmodel.ExportCSV;
+import com.example.turing_eventlottery.utility.ExportCSV;
 import com.example.turing_eventlottery.viewmodel.UserViewModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.materialswitch.MaterialSwitch;
