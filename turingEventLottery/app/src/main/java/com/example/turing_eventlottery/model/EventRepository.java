@@ -326,6 +326,7 @@ public class EventRepository {
     public void removeUserFromWaitlist(String eventId, User user, ModelCallback<Boolean> callback) {
         eventsCollection.document(eventId).collection("waitlist").document(user.getUserId()).delete()
                 .addOnSuccessListener(v -> {
+                    user.removeAssociatedEvent(eventId);
                     userRepository.addOrUpdateUser(user);
                     callback.onCallback(true);
                 })
@@ -415,10 +416,11 @@ public class EventRepository {
                         .document(userId)
                         .set(data)
                         .addOnSuccessListener(v -> {
-                            // After adding to participants, try to remove from waitlist
-                            removeUserFromWaitlist(eventId, user, removed -> {
-                                Log.d(TAG, "User enrolled. Removed from waitlist: " + removed);
-                            });
+                            // After adding to participants, try to remove from waitlist collection ONLY
+                            eventsCollection.document(eventId).collection("waitlist").document(userId).delete()
+                                    .addOnSuccessListener(v2 -> Log.d(TAG, "User moved from waitlist to participants collection"))
+                                    .addOnFailureListener(e -> Log.e(TAG, "Error removing from waitlist sub-collection", e));
+
                             callback.onCallback(true);
                         })
                         .addOnFailureListener(e -> {

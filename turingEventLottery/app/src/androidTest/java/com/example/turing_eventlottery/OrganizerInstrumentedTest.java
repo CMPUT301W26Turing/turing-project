@@ -35,10 +35,10 @@ public class OrganizerInstrumentedTest {
                 "1112223333", false, true, true
         );
         organizerEvent = new Event(
-                "event1", "org1", "Community Meetup", "Social",
-                "Edmonton", "04/01/2026", "https://example.com/poster.jpg",
+                "event1", "org1", "org2", "Community Meetup",
+                "Social", "Edmonton", "https://example.com/poster.jpg",
                 "A community gathering", "03/20/2026, 09:00",
-                "03/28/2026, 17:00", 3, 50, false
+                "03/28/2026, 17:00", "03/30/2026, 17:00", 3, 50, false
         );
     }
 
@@ -130,10 +130,10 @@ public class OrganizerInstrumentedTest {
     @Test
     public void testOrganizerCanCreateMultipleEvents() {
         Event event1 = new Event("e1", "org1", "Event One", "Tech",
-                "Calgary", "05/01/2026", null, "First event",
-                "04/20/2026, 09:00", "04/28/2026, 17:00", 2, 30, false);
+                "Calgary", "05/01/2026", null, "url",
+                "description", "04/20/2026, 09:00", "04/28/2026, 17:00", 2, 30, false);
         Event event2 = new Event("e2", "org1", "Event Two", "Music",
-                "Edmonton", "06/01/2026", null, "Second event",
+                "Edmonton", "06/01/2026", null, "Second event", "description",
                 "05/20/2026, 09:00", "05/28/2026, 17:00", 5, 100, true);
         assertEquals("org1", event1.getOrganizerId());
         assertEquals("org1", event2.getOrganizerId());

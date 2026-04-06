@@ -36,9 +36,6 @@ public class CreateEventViewTest {
 
         onView(withId(R.id.eventCategoryInput))
                 .perform(scrollTo(), replaceText("Testing"), closeSoftKeyboard());
-        
-        onView(withId(R.id.eventLocationInput))
-                .perform(scrollTo(), replaceText("None!"), closeSoftKeyboard());
 
         onView(withId(R.id.winnersToDrawInput))
                 .perform(scrollTo(), replaceText("5"), closeSoftKeyboard());
