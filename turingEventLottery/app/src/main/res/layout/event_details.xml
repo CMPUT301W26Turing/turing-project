@@ -468,15 +468,32 @@
                 android:layout_marginEnd="16dp"
                 android:background="#DDDDDD" />
 
-            <TextView
-                android:id="@+id/commentsTitle"
-                android:layout_width="wrap_content"
+            <RelativeLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Comments"
-                android:textSize="18sp"
-                android:paddingLeft="16dp"
                 android:layout_marginTop="16dp"
-                android:textStyle="bold"/>
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp">
+
+                <TextView
+                    android:id="@+id/commentsTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Comments"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_centerVertical="true"/>
+
+                <ImageButton
+                    android:id="@+id/sortCommentsButton"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/outline_filter_list_24"
+                    app:tint="@color/darkGray" />
+            </RelativeLayout>
 
             <LinearLayout
                 android:id="@+id/commentsList"

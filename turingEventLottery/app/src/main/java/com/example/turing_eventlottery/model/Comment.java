@@ -2,13 +2,16 @@ package com.example.turing_eventlottery.model;
 
 import com.google.firebase.Timestamp;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Represents a comment made by a user on an event.
  * Comments are stored redundantly in both the user's and the event's sub-collections
  * to facilitate efficient querying and cascading deletes.
  *
  * @author Miro Straszynski
- * @version 1.1
+ * @version 1.2
  * @since 1.0
  */
 public class Comment {
@@ -18,12 +21,19 @@ public class Comment {
     private String eventId;
     private String text;
     private String parentId;
+    private int likes;
+    private int dislikes;
+    private List<String> likedBy;
+    private List<String> dislikedBy;
     private Timestamp timestamp;
 
     /**
      * Default constructor for Firebase Firestore.
      */
-    public Comment() {}
+    public Comment() {
+        this.likedBy = new ArrayList<>();
+        this.dislikedBy = new ArrayList<>();
+    }
 
     /**
      * Constructs a new Comment.
@@ -49,6 +59,10 @@ public class Comment {
         this.eventId = eventId;
         this.text = text;
         this.parentId = parentId;
+        this.likes = 0;
+        this.dislikes = 0;
+        this.likedBy = new ArrayList<>();
+        this.dislikedBy = new ArrayList<>();
         this.timestamp = timestamp;
     }
 
@@ -98,6 +112,30 @@ public class Comment {
 
     public void setParentId(String parentId) {
         this.parentId = parentId;
+    }
+
+    public int getLikes() { return likes; }
+    public void setLikes(int likes) { this.likes = likes; }
+
+    public int getDislikes() { return dislikes; }
+    public void setDislikes(int dislikes) { this.dislikes = dislikes; }
+
+    public List<String> getLikedBy() {
+        if (likedBy == null) likedBy = new ArrayList<>();
+        return likedBy;
+    }
+
+    public void setLikedBy(List<String> likedBy) {
+        this.likedBy = likedBy;
+    }
+
+    public List<String> getDislikedBy() {
+        if (dislikedBy == null) dislikedBy = new ArrayList<>();
+        return dislikedBy;
+    }
+
+    public void setDislikedBy(List<String> dislikedBy) {
+        this.dislikedBy = dislikedBy;
     }
 
     public Timestamp getTimestamp() {

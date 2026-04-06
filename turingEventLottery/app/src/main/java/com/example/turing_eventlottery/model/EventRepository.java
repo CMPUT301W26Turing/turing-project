@@ -11,6 +11,7 @@ import androidx.lifecycle.MutableLiveData;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.storage.FirebaseStorage;
@@ -143,6 +144,32 @@ public class EventRepository {
                 Log.e(TAG, "Error getting events", task.getException());
                 callback.onCallback(null);
             }
+        });
+    }
+
+    /**
+     * Sets up a real-time listener for all events in the database.
+     *
+     * @param callback callback returning an updated list of events whenever changes occur
+     * @return a ListenerRegistration that should be removed when no longer needed
+     */
+    public ListenerRegistration listenForEvents(ModelCallback<List<Event>> callback) {
+        return eventsCollection.addSnapshotListener((value, error) -> {
+            if (error != null) {
+                Log.e(TAG, "Listen failed.", error);
+                callback.onCallback(null);
+                return;
+            }
+
+            List<Event> events = new ArrayList<>();
+            if (value != null) {
+                for (QueryDocumentSnapshot document : value) {
+                    Event event = document.toObject(Event.class);
+                    event.setId(document.getId());
+                    events.add(event);
+                }
+            }
+            callback.onCallback(events);
         });
     }
 

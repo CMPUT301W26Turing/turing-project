@@ -30,6 +30,7 @@ import com.bumptech.glide.Glide;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
+import com.google.firebase.firestore.ListenerRegistration;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -68,6 +69,8 @@ public class BrowseEventsView extends AppCompatActivity {
     private Calendar availabilityEnd = null;
     private boolean onlyWithOpenWaitlists = false;
 
+    private ListenerRegistration eventsListener;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -82,6 +85,7 @@ public class BrowseEventsView extends AppCompatActivity {
         initViews();
         setupTabs();
         setupNavigation();
+        startListeningForEvents();
 
         // Observe LiveData
         eventViewModel.getAllEventsLiveData().observe(this, this::displayEvents);
@@ -256,8 +260,32 @@ public class BrowseEventsView extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (eventsListener != null) {
+            eventsListener.remove();
+        }
+    }
+
+    private void startListeningForEvents() {
+        if (eventsListener != null) eventsListener.remove();
+        eventsListener = eventViewModel.listenForEvents(events -> {
+            if (events != null) {
+                TabLayout tabs = findViewById(R.id.dashboardTabs);
+                if (tabs.getSelectedTabPosition() == 0) {
+                    displayEvents(events);
+                } else {
+                    loadOrganizerEvents();
+                }
+            }
+        });
+    }
+
     private void loadAllEvents() {
-        eventViewModel.loadAllEvents();
+        if (eventsListener == null) {
+            eventViewModel.getEvents(this::displayEvents);
+        }
     }
 
     private void loadOrganizerEvents() {
