@@ -591,7 +591,38 @@ public class EventRepository {
                 .addOnFailureListener(e -> callback.onCallback("None"));
     }
 
-
+    /**
+     * Deletes an event poster image from Firebase Storage and removes the URL from the event document.
+     *
+     * @param eventId the ID of the event whose poster is being deleted
+     * @param posterUrl the URL of the poster to delete
+     * @param callback callback returning true if successful, false otherwise
+     */
+    public void deleteEventPoster(String eventId, String posterUrl, ModelCallback<Boolean> callback) {
+        try {
+            StorageReference imageRef = FirebaseStorage.getInstance("gs://turingeventlottery.firebasestorage.app")
+                    .getReferenceFromUrl(posterUrl);
+            imageRef.delete()
+                    .addOnSuccessListener(v -> {
+                        eventsCollection.document(eventId).update("posterUrl", null)
+                                .addOnSuccessListener(u -> callback.onCallback(true))
+                                .addOnFailureListener(e -> {
+                                    Log.e(TAG, "Error removing poster URL from event", e);
+                                    callback.onCallback(true);
+                                });
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e(TAG, "Error deleting image from storage", e);
+                        eventsCollection.document(eventId).update("posterUrl", null)
+                                .addOnSuccessListener(u -> callback.onCallback(true))
+                                .addOnFailureListener(e2 -> callback.onCallback(false));
+                    });
+        } catch (IllegalArgumentException e) {
+            eventsCollection.document(eventId).update("posterUrl", null)
+                    .addOnSuccessListener(u -> callback.onCallback(true))
+                    .addOnFailureListener(e2 -> callback.onCallback(false));
+        }
+    }
 
 
 

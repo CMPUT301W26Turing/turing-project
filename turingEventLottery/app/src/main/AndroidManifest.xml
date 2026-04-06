@@ -86,6 +86,12 @@
         <activity
             android:name=".view.EntrantMapView"
             android:exported="false" />
+        <activity
+            android:name=".view.BrowseImagesView"
+            android:exported="false" />
+        <activity
+            android:name=".view.ImageDetailView"
+            android:exported="false" />
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
