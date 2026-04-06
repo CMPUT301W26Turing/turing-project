@@ -1,4 +1,4 @@
-package com.example.turing_eventlottery.viewmodel;
+package com.example.turing_eventlottery.utility;
 
 import com.google.firebase.Timestamp;
 
