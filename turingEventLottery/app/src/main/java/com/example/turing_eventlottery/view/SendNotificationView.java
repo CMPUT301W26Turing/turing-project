@@ -21,6 +21,7 @@ import com.example.turing_eventlottery.model.Notification;
 import com.example.turing_eventlottery.model.NotificationRepository;
 import com.example.turing_eventlottery.viewmodel.UserViewModel;
 import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,10 +37,11 @@ public class SendNotificationView extends AppCompatActivity {
     private MaterialCardView audienceWaiting, audienceSelected, audienceCancelled;
     private TextView audienceSummary, charCount;
     private EditText messageInput;
+    private SwitchMaterial notificationsSwitch;
     private EventRepository eventRepository;
     private NotificationRepository notificationRepository;
     private UserViewModel userViewModel;
-    
+
     private List<Event> organizerEvents = new ArrayList<>();
     private Event selectedEvent;
     private String selectedAudience = "Waiting List";
@@ -60,7 +62,7 @@ public class SendNotificationView extends AppCompatActivity {
 
     private void initViews() {
         findViewById(R.id.backButton).setOnClickListener(v -> finish());
-        
+
         eventDropdown = findViewById(R.id.eventDropdown);
         audienceWaiting = findViewById(R.id.audienceWaiting);
         audienceSelected = findViewById(R.id.audienceSelected);
@@ -68,10 +70,11 @@ public class SendNotificationView extends AppCompatActivity {
         audienceSummary = findViewById(R.id.audienceSummary);
         messageInput = findViewById(R.id.messageInput);
         charCount = findViewById(R.id.charCount);
+        notificationsSwitch = findViewById(R.id.notificationsSwitch);
 
         setupAudienceSelection();
         setupMessageInput();
-        
+
         findViewById(R.id.sendButton).setOnClickListener(v -> sendNotification());
     }
 
@@ -82,11 +85,11 @@ public class SendNotificationView extends AppCompatActivity {
                 organizerEvents = events;
                 List<String> eventNames = new ArrayList<>();
                 for (Event e : events) eventNames.add(e.getName());
-                
-                ArrayAdapter<String> adapter = new ArrayAdapter<>(this, 
+
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
                         android.R.layout.simple_dropdown_item_1line, eventNames);
                 eventDropdown.setAdapter(adapter);
-                
+
                 eventDropdown.setOnItemClickListener((parent, view, position, id) -> {
                     selectedEvent = organizerEvents.get(position);
                     updateAudienceSummary();
@@ -101,11 +104,11 @@ public class SendNotificationView extends AppCompatActivity {
             MaterialCardView card = (MaterialCardView) v;
             card.setStrokeColor(getColor(R.color.primaryBlue));
             card.setStrokeWidth(4);
-            
+
             if (v.getId() == R.id.audienceWaiting) selectedAudience = "Waiting List";
             else if (v.getId() == R.id.audienceSelected) selectedAudience = "Selected";
             else if (v.getId() == R.id.audienceCancelled) selectedAudience = "Cancelled";
-            
+
             updateAudienceSummary();
         };
 
@@ -129,10 +132,10 @@ public class SendNotificationView extends AppCompatActivity {
             audienceSummary.setText("Select an event to see reach.");
             return;
         }
-        
-        String targetCollection = selectedAudience.equals("Waiting List") ? "waitlist" : 
-                                 selectedAudience.equals("Selected") ? "participants list" : "cancelled list";
-        
+
+        String targetCollection = selectedAudience.equals("Waiting List") ? "waitlist" :
+                selectedAudience.equals("Selected") ? "participants list" : "cancelled list";
+
         audienceSummary.setText("This will reach all entrants in the " + targetCollection + " of " + selectedEvent.getName() + ".");
     }
 
@@ -169,7 +172,7 @@ public class SendNotificationView extends AppCompatActivity {
                 }
             });
         } else {
-        // need to complete for all selected audiences
+            // need to complete for all selected audiences
         }
     }
 
@@ -179,22 +182,35 @@ public class SendNotificationView extends AppCompatActivity {
             return;
         }
 
+        int sentCount = 0;
+        boolean filterOptOut = notificationsSwitch.isChecked();
+
         for (Map<String, Object> userData : users) {
             String userId = (String) userData.get("userId");
-            if (userId != null) {
-                Notification notification = new Notification(
-                        userId,
-                        selectedEvent.getId(),
-                        selectedEvent.getName(),
-                        selectedEvent.getDate(),
-                        message,
-                        status
-                );
-                notificationRepository.addNotification(notification);
+            Boolean optedOut = (Boolean) userData.get("optOutNotifications"); // Firestore field
+
+            if (userId == null) continue;
+
+            // Always send for co-organize or private event notifications
+            boolean alwaysSend = status.equals("Co-Organize Invite") || status.equals("Private Event Invite");
+
+            if (!alwaysSend && filterOptOut && optedOut != null && optedOut) {
+                continue; // skip users who opted out for normal organizer notifications
             }
+
+            Notification notification = new Notification(
+                    userId,
+                    selectedEvent.getId(),
+                    selectedEvent.getName(),
+                    selectedEvent.getDate(),
+                    message,
+                    status
+            );
+            notificationRepository.addNotification(notification);
+            sentCount++;
         }
 
-        Toast.makeText(this, "Notification sent to " + users.size() + " users!", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Notification sent to " + sentCount + " users!", Toast.LENGTH_SHORT).show();
         finish();
     }
 }
