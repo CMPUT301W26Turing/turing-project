@@ -274,9 +274,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="Export Final List (CSV)"
+                android:text="Export CSV"
                 android:textColor="@color/primaryBlue"
                 android:textSize="14sp"
+                android:visibility="gone"
                 app:icon="@drawable/baseline_download_24"
                 app:iconGravity="textStart" />
 

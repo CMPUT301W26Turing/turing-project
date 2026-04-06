@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -21,8 +22,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
-import androidx.annotation.NonNull;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.annotation.RequiresApi;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -34,6 +37,7 @@ import com.example.turing_eventlottery.model.NotificationRepository;
 import com.example.turing_eventlottery.model.QRCodeModel;
 import com.example.turing_eventlottery.model.User;
 import com.example.turing_eventlottery.viewmodel.EventViewModel;
+import com.example.turing_eventlottery.viewmodel.ExportCSV;
 import com.example.turing_eventlottery.viewmodel.UserViewModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.materialswitch.MaterialSwitch;
@@ -41,9 +45,13 @@ import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.Timestamp;
 
+import java.io.IOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -74,8 +82,9 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
     private MaterialSwitch geoSwitch;
     private TabLayout statusTabs;
     private RecyclerView entrantsRecyclerView;
-    private MaterialButton runLotteryButton, drawSingleButton, viewMapButton, addToWaitlistButton;
+    private MaterialButton runLotteryButton, drawSingleButton, viewMapButton, addToWaitlistButton, exportCsvButton;
     private WaitingEntrantsAdapter entrantsAdapter;
+    private ActivityResultLauncher<String> createCsvDocumentLauncher;
 
     private List<Map<String, Object>> waitingList = new ArrayList<>();
     private List<Map<String, Object>> invitedList = new ArrayList<>();
@@ -83,6 +92,7 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
     private List<Map<String, Object>> cancelledList = new ArrayList<>();
 
     private ImageView exportButton, editButton;
+    private String pendingCsvContent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,6 +105,21 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
         eventViewModel = new EventViewModel();
         userViewModel = new UserViewModel(this);
         notificationRepository = new NotificationRepository();
+
+        createCsvDocumentLauncher = registerForActivityResult(
+                new ActivityResultContracts.CreateDocument("text/csv"),
+                uri -> {
+                    if (uri == null || pendingCsvContent == null) {
+                        pendingCsvContent = null;
+                        return;
+                    }
+
+                    if (writeCsvToUri(uri, pendingCsvContent)) {
+                        showCsvExportSuccessToast();
+                    }
+                    pendingCsvContent = null;
+                }
+        );
 
         initViews();
         loadEventDetails();
@@ -123,6 +148,7 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
         exportButton = findViewById(R.id.exportButton);
         editButton = findViewById(R.id.editButton);
         addToWaitlistButton = findViewById(R.id.addToWaitlistButton);
+        exportCsvButton = findViewById(R.id.exportCsvButton);
         sortText = findViewById(R.id.sortText);
         emptyStateText = findViewById(R.id.emptyStateText);
         listTitle = findViewById(R.id.listTitle);
@@ -160,6 +186,9 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
         if (addToWaitlistButton != null) {
             addToWaitlistButton.setOnClickListener(v -> showAddToWaitlistDialog());
         }
+        if (exportCsvButton != null) {
+            exportCsvButton.setOnClickListener(v -> exportFinalEnrolledCsv());
+        }
 
         runLotteryButton.setOnClickListener(v -> runLottery());
         drawSingleButton.setOnClickListener(v -> drawSingle());
@@ -184,7 +213,7 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
             @Override
             public void onTabReselected(TabLayout.Tab tab) {}
         });
-        
+
         // Disable geoSwitch interaction in dashboard, it should be changed via Edit
         geoSwitch.setEnabled(false);
     }
@@ -193,7 +222,7 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
         Dialog dialog = new Dialog(this);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.dialog_add_to_waitlist);
-        
+
         Window window = dialog.getWindow();
         if (window != null) {
             window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
@@ -228,7 +257,7 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
                     break;
                 }
             }
-            
+
             if (!alreadySelected) {
                 selectedUsers.add(user);
                 refreshSelectedUsersList(selectedUsers, selectedAdapter, selectedTitle);
@@ -246,12 +275,12 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
 
             for (User user : selectedUsers) {
                 Notification waitlistInvite = new Notification(
-                    user.getUserId(),
-                    eventId,
-                    thisEvent.getName(),
-                    thisEvent.getDate(),
-                    "You have been invited to join the waitlist for: " + thisEvent.getName(),
-                    "Waitlist Invitation"
+                        user.getUserId(),
+                        eventId,
+                        thisEvent.getName(),
+                        thisEvent.getDate(),
+                        "You have been invited to join the waitlist for: " + thisEvent.getName(),
+                        "Waitlist Invitation"
                 );
                 notificationRepository.addNotification(waitlistInvite);
             }
@@ -372,7 +401,7 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
             case 2:
                 dataToDisplay = enrolledList;
                 emptyMsg = "No entrants enrolled";
-                title = "ENROLLED LIST";
+                title = "FINAL ENROLLED ENTRANTS";
                 break;
             case 3:
                 dataToDisplay = cancelledList;
@@ -398,6 +427,16 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
             emptyStateText.setVisibility(View.GONE);
             entrantsRecyclerView.setVisibility(View.VISIBLE);
         }
+
+        updateExportCsvButton(position);
+    }
+
+    private void updateExportCsvButton(int position) {
+        if (exportCsvButton == null) {
+            return;
+        }
+
+        exportCsvButton.setVisibility(position == 2 ? View.VISIBLE : View.GONE);
     }
 
     private void showSortMenu() {
@@ -635,7 +674,7 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
             Dialog dialog = new Dialog(this);
             dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
             dialog.setContentView(R.layout.dialog_qr_code);
-            
+
             if (dialog.getWindow() != null) {
                 dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
             }
@@ -657,6 +696,70 @@ public class ManageEventView extends AppCompatActivity implements WaitingEntrant
         } catch (Exception e) {
             Toast.makeText(this, "Error generating QR Code", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void exportFinalEnrolledCsv() {
+        if (thisEvent == null) {
+            Toast.makeText(this, "Event details are still loading", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String csvContent = ExportCSV.buildFinalEnrolledEntrantsCsv(enrolledList);
+        String fileName = ExportCSV.createFinalEnrolledFileName(thisEvent.getName(), new Date());
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            saveCsvToDownloads(fileName, csvContent);
+            return;
+        }
+
+        pendingCsvContent = csvContent;
+        createCsvDocumentLauncher.launch(fileName);
+    }
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private void saveCsvToDownloads(String fileName, String csvContent) {
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.Downloads.DISPLAY_NAME, fileName);
+        values.put(MediaStore.Downloads.MIME_TYPE, "text/csv");
+        values.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/TuringEvents");
+
+        Uri csvUri = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+        if (csvUri == null) {
+            Toast.makeText(this, "Failed to export CSV", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (writeCsvToUri(csvUri, csvContent)) {
+            showCsvExportSuccessToast();
+        } else {
+            getContentResolver().delete(csvUri, null, null);
+        }
+    }
+
+    private boolean writeCsvToUri(Uri uri, String csvContent) {
+        try {
+            OutputStream outputStream = getContentResolver().openOutputStream(uri);
+            if (outputStream == null) {
+                throw new IOException("Could not open destination for CSV export");
+            }
+
+            try (OutputStreamWriter writer = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8)) {
+                writer.write(csvContent);
+                writer.flush();
+            }
+            return true;
+        } catch (Exception e) {
+            Log.e("ManageEventView", "Failed to export CSV", e);
+            Toast.makeText(this, "Failed to export CSV", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+    }
+
+    private void showCsvExportSuccessToast() {
+        String message = enrolledList.isEmpty()
+                ? "No enrolled entrants yet. Exported CSV headers only."
+                : "Final enrolled entrants CSV exported.";
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
     private void saveBitmapToGallery(Bitmap bitmap, String filename) {
