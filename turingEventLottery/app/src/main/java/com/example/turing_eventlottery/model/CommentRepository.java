@@ -4,6 +4,8 @@ import android.util.Log;
 
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -19,7 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Comments are stored redundantly under both users and events.
  *
  * @author Miro Straszynski
- * @version 1.1
+ * @version 1.2
  * @since 1.0
  */
 public class CommentRepository {
@@ -81,6 +83,65 @@ public class CommentRepository {
     }
 
     /**
+     * Toggles the like for a comment.
+     *
+     * @param userId the ID of the user toggling the like
+     * @param comment the comment to toggle like on
+     * @param callback callback returning true if successful
+     */
+    public void toggleLikeComment(String userId, Comment comment, ModelCallback<Boolean> callback) {
+        boolean isLiked = comment.getLikedBy() != null && comment.getLikedBy().contains(userId);
+        toggleVote(userId, comment, "likes", "likedBy", "dislikes", "dislikedBy", !isLiked, callback);
+    }
+
+    /**
+     * Toggles the dislike for a comment.
+     *
+     * @param userId the ID of the user toggling the dislike
+     * @param comment the comment to toggle dislike on
+     * @param callback callback returning true if successful
+     */
+    public void toggleDislikeComment(String userId, Comment comment, ModelCallback<Boolean> callback) {
+        boolean isDisliked = comment.getDislikedBy() != null && comment.getDislikedBy().contains(userId);
+        toggleVote(userId, comment, "dislikes", "dislikedBy", "likes", "likedBy", !isDisliked, callback);
+    }
+
+    private void toggleVote(String userId, Comment comment, String countField, String listField, String oppCountField, String oppListField, boolean adding, ModelCallback<Boolean> callback) {
+        WriteBatch batch = db.batch();
+        DocumentReference userRef = db.collection("users").document(comment.getUserId())
+                .collection("comments").document(comment.getCommentId());
+        DocumentReference eventRef = db.collection("events").document(comment.getEventId())
+                .collection("comments").document(comment.getCommentId());
+
+        if (adding) {
+            batch.update(userRef, countField, FieldValue.increment(1));
+            batch.update(eventRef, countField, FieldValue.increment(1));
+            batch.update(userRef, listField, FieldValue.arrayUnion(userId));
+            batch.update(eventRef, listField, FieldValue.arrayUnion(userId));
+
+            List<String> oppList = (oppListField.equals("likedBy")) ? comment.getLikedBy() : comment.getDislikedBy();
+            if (oppList != null && oppList.contains(userId)) {
+                batch.update(userRef, oppCountField, FieldValue.increment(-1));
+                batch.update(eventRef, oppCountField, FieldValue.increment(-1));
+                batch.update(userRef, oppListField, FieldValue.arrayRemove(userId));
+                batch.update(eventRef, oppListField, FieldValue.arrayRemove(userId));
+            }
+        } else {
+            batch.update(userRef, countField, FieldValue.increment(-1));
+            batch.update(eventRef, countField, FieldValue.increment(-1));
+            batch.update(userRef, listField, FieldValue.arrayRemove(userId));
+            batch.update(eventRef, listField, FieldValue.arrayRemove(userId));
+        }
+
+        batch.commit()
+                .addOnSuccessListener(v -> callback.onCallback(true))
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error toggling " + countField, e);
+                    callback.onCallback(false);
+                });
+    }
+
+    /**
      * Deletes a single comment from both the user's and the event's collections.
      *
      * @param comment the comment to delete
@@ -101,14 +162,16 @@ public class CommentRepository {
     }
 
     /**
-     * Gets all comments for a specific event.
+     * Gets comments for an event with sorting.
      *
      * @param eventId the event ID
+     * @param sortBy the field to sort by (e.g., "timestamp", "likes")
+     * @param direction the sort direction
      * @param callback callback returning a list of comments
      */
-    public void getCommentsByEvent(String eventId, ModelCallback<List<Comment>> callback) {
+    public void getCommentsByEvent(String eventId, String sortBy, Query.Direction direction, ModelCallback<List<Comment>> callback) {
         db.collection("events").document(eventId).collection("comments")
-                .orderBy("timestamp", Query.Direction.ASCENDING)
+                .orderBy(sortBy, direction)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     List<Comment> comments = new ArrayList<>();
@@ -117,7 +180,20 @@ public class CommentRepository {
                     }
                     callback.onCallback(comments);
                 })
-                .addOnFailureListener(e -> callback.onCallback(null));
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error getting comments", e);
+                    callback.onCallback(null);
+                });
+    }
+
+    /**
+     * Gets all comments for a specific event.
+     *
+     * @param eventId the event ID
+     * @param callback callback returning a list of comments
+     */
+    public void getCommentsByEvent(String eventId, ModelCallback<List<Comment>> callback) {
+        getCommentsByEvent(eventId, "timestamp", Query.Direction.ASCENDING, callback);
     }
 
     /**

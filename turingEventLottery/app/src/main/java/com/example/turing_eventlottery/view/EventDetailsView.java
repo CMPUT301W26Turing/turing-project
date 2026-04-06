@@ -40,6 +40,7 @@ import com.google.android.gms.location.Priority;
 import com.google.android.gms.tasks.CancellationTokenSource;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -72,6 +73,7 @@ public class EventDetailsView extends AppCompatActivity {
     private LinearLayout commentsList;
     private EditText commentInput;
     private ImageButton postCommentButton;
+    private ImageButton sortCommentsButton;
     
     private View replyPreviewArea;
     private TextView replyingToText;
@@ -84,6 +86,8 @@ public class EventDetailsView extends AppCompatActivity {
     private Event currentEvent;
     
     private String currentParentId = null;
+    private String currentSortBy = "timestamp";
+    private Query.Direction currentSortDirection = Query.Direction.ASCENDING;
 
     private FusedLocationProviderClient fusedLocationClient;
 
@@ -126,6 +130,7 @@ public class EventDetailsView extends AppCompatActivity {
         commentsList = findViewById(R.id.commentsList);
         commentInput = findViewById(R.id.commentInput);
         postCommentButton = findViewById(R.id.postCommentButton);
+        sortCommentsButton = findViewById(R.id.sortCommentsButton);
         
         replyPreviewArea = findViewById(R.id.replyPreviewArea);
         replyingToText = findViewById(R.id.replyingToText);
@@ -324,6 +329,37 @@ public class EventDetailsView extends AppCompatActivity {
                 }
             });
         });
+
+        if (sortCommentsButton != null) {
+            sortCommentsButton.setOnClickListener(this::showSortMenu);
+        }
+    }
+
+    private void showSortMenu(View v) {
+        PopupMenu popup = new PopupMenu(this, v);
+        popup.getMenu().add(0, 1, 0, "Oldest first");
+        popup.getMenu().add(0, 2, 1, "Newest first");
+        popup.getMenu().add(0, 3, 2, "Most liked");
+
+        popup.setOnMenuItemClickListener(item -> {
+            switch (item.getItemId()) {
+                case 1:
+                    currentSortBy = "timestamp";
+                    currentSortDirection = Query.Direction.ASCENDING;
+                    break;
+                case 2:
+                    currentSortBy = "timestamp";
+                    currentSortDirection = Query.Direction.DESCENDING;
+                    break;
+                case 3:
+                    currentSortBy = "likes";
+                    currentSortDirection = Query.Direction.DESCENDING;
+                    break;
+            }
+            loadComments();
+            return true;
+        });
+        popup.show();
     }
 
     private void checkLocationPermissionAndJoin() {
@@ -393,7 +429,7 @@ public class EventDetailsView extends AppCompatActivity {
     }
 
     private void loadComments() {
-        commentRepository.getCommentsByEvent(eventId, comments -> {
+        commentRepository.getCommentsByEvent(eventId, currentSortBy, currentSortDirection, comments -> {
             commentsList.removeAllViews();
             if (comments != null && !comments.isEmpty()) {
                 Map<String, List<Comment>> childrenMap = new HashMap<>();
@@ -442,11 +478,25 @@ public class EventDetailsView extends AppCompatActivity {
         ImageView menuButton = view.findViewById(R.id.commentMenu);
         TextView replyButton = view.findViewById(R.id.replyButton);
         TextView timestampView = view.findViewById(R.id.commentTimestamp);
+        
+        ImageButton likeButton = view.findViewById(R.id.likeButton);
+        ImageButton dislikeButton = view.findViewById(R.id.dislikeButton);
+        TextView likeCountView = view.findViewById(R.id.likeCount);
 
         nameView.setText(comment.getUserName());
         textView.setText(comment.getText());
         if (comment.getTimestamp() != null) {
             timestampView.setText(formatTimestamp(comment.getTimestamp()));
+        }
+        likeCountView.setText(String.valueOf(comment.getLikes()));
+
+        if (currentUser != null) {
+            if (comment.getLikedBy().contains(currentUser.getUserId())) {
+                likeButton.setImageTintList(ColorStateList.valueOf(getColor(R.color.primaryBlue)));
+            }
+            if (comment.getDislikedBy().contains(currentUser.getUserId())) {
+                dislikeButton.setImageTintList(ColorStateList.valueOf(getColor(R.color.red)));
+            }
         }
 
         String initials = "";
@@ -467,6 +517,51 @@ public class EventDetailsView extends AppCompatActivity {
             replyingToText.setText("Replying to " + comment.getUserName());
             replyPreviewArea.setVisibility(View.VISIBLE);
             commentInput.requestFocus();
+        });
+
+        likeButton.setOnClickListener(v -> {
+            if (currentUser == null || "Guest".equals(currentUser.getUserName())) return;
+            commentRepository.toggleLikeComment(currentUser.getUserId(), comment, success -> {
+                if (success) {
+                    boolean nowLiked = !comment.getLikedBy().contains(currentUser.getUserId());
+                    if (nowLiked) {
+                        if (comment.getDislikedBy().contains(currentUser.getUserId())) {
+                            comment.getDislikedBy().remove(currentUser.getUserId());
+                            dislikeButton.setImageTintList(ColorStateList.valueOf(getColor(R.color.headerSubtext)));
+                        }
+                        comment.getLikedBy().add(currentUser.getUserId());
+                        comment.setLikes(comment.getLikes() + 1);
+                        likeButton.setImageTintList(ColorStateList.valueOf(getColor(R.color.primaryBlue)));
+                    } else {
+                        comment.getLikedBy().remove(currentUser.getUserId());
+                        comment.setLikes(comment.getLikes() == 0 ? 0 : comment.getLikes() - 1);
+                        likeButton.setImageTintList(ColorStateList.valueOf(getColor(R.color.headerSubtext)));
+                    }
+                    likeCountView.setText(String.valueOf(comment.getLikes()));
+                }
+            });
+        });
+
+        dislikeButton.setOnClickListener(v -> {
+            if (currentUser == null || "Guest".equals(currentUser.getUserName())) return;
+            commentRepository.toggleDislikeComment(currentUser.getUserId(), comment, success -> {
+                if (success) {
+                    boolean nowDisliked = !comment.getDislikedBy().contains(currentUser.getUserId());
+                    if (nowDisliked) {
+                        if (comment.getLikedBy().contains(currentUser.getUserId())) {
+                            comment.getLikedBy().remove(currentUser.getUserId());
+                            comment.setLikes(comment.getLikes() == 0 ? 0 : comment.getLikes() - 1);
+                            likeButton.setImageTintList(ColorStateList.valueOf(getColor(R.color.headerSubtext)));
+                            likeCountView.setText(String.valueOf(comment.getLikes()));
+                        }
+                        comment.getDislikedBy().add(currentUser.getUserId());
+                        dislikeButton.setImageTintList(ColorStateList.valueOf(getColor(R.color.red)));
+                    } else {
+                        comment.getDislikedBy().remove(currentUser.getUserId());
+                        dislikeButton.setImageTintList(ColorStateList.valueOf(getColor(R.color.headerSubtext)));
+                    }
+                }
+            });
         });
 
         boolean isOwner = currentUser != null && comment.getUserId().equals(currentUser.getUserId());
